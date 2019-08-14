@@ -2,3 +2,4 @@
 1. 入门：http://wiki.ros.org/ROS/Tutorials
 2. 下一步做什么：http://wiki.ros.org/ROS/Tutorials/WhereNext
 3. 学习模拟器：http://gazebosim.org/
+4. 学习 Rviz：http://wiki.ros.org/rviz
