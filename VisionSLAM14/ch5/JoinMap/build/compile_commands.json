@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/dlonng/Autopilot-XMU/VisionSLAM14/ch5/JoinMap/build",
+  "command": "/usr/bin/c++   -DDISABLE_LIBUSB_1_0 -DDISABLE_PCAP -DDISABLE_PNG -DvtkRenderingContext2D_AUTOINIT=\"1(vtkRenderingContextOpenGL)\" -DvtkRenderingCore_AUTOINIT=\"3(vtkInteractionStyle,vtkRenderingFreeType,vtkRenderingOpenGL)\" -isystem /usr/include/eigen3 -isystem /usr/local/include -isystem /usr/local/include/opencv -isystem /usr/local/include/vtk-6.2 -isystem /usr/include/pcl-1.9 -isystem /usr/include/ni  -std=c++11    -march=native -msse4.2 -mfpmath=sse -std=gnu++14 -o CMakeFiles/join_map.dir/join_map.cc.o -c /home/dlonng/Autopilot-XMU/VisionSLAM14/ch5/JoinMap/join_map.cc",
+  "file": "/home/dlonng/Autopilot-XMU/VisionSLAM14/ch5/JoinMap/join_map.cc"
+}
+]
