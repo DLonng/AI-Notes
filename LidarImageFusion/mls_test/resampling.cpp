@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
   filter.setPolynomialOrder(2);
 
   // 采样的半径是
-  filter.setUpsamplingRadius(0.05);
+  filter.setUpsamplingRadius(0.025);
   
   // 采样步数的大小
   filter.setUpsamplingStepSize(0.02);

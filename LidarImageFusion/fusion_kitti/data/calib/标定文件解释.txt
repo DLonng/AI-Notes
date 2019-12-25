@@ -1,0 +1,11 @@
+其中P_velo_to_img 为上文所释的投影矩阵：KRTcl。 
+
+Tr_velo_to_cam 为RTcl矩阵，
+
+R_cam_to_rect为相机畸变矫正矩阵
+
+calib.P_rect{cam+1}为相机内参。
+
+
+for 每个雷达点
+图像坐标 [u, v] = 相机内参 * 雷达到相机的[R T] * 雷达坐标[x, y, z]
