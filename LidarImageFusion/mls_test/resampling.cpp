@@ -30,8 +30,17 @@ int main(int argc, char** argv) {
   
   // Upsampling 采样的方法有 DISTINCT_CLOUD, RANDOM_UNIFORM_DENSITY
   filter.setUpsamplingMethod(pcl::MovingLeastSquares<pcl::PointXYZ, pcl::PointXYZ>::SAMPLE_LOCAL_PLANE);
+  //filter.setUpsamplingMethod(pcl::MovingLeastSquares<pcl::PointXYZ, pcl::PointXYZ>::NONE);
+  //filter.setUpsamplingMethod(pcl::MovingLeastSquares<pcl::PointXYZ, pcl::PointXYZ>::RANDOM_UNIFORM_DENSITY);
+  //filter.setUpsamplingMethod(pcl::MovingLeastSquares<pcl::PointXYZ, pcl::PointXYZ>::VOXEL_GRID_DILATION);
 
-  filter.setPolynomialOrder(2);
+  //filter.setPointDensity(5);
+
+  //filter.setDilationVoxelSize(0.01);
+
+  //filter.setDilationIterations(3);
+
+  filter.setPolynomialOrder(4);
 
   // 采样的半径是
   filter.setUpsamplingRadius(0.025);
