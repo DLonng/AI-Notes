@@ -1,3 +1,0 @@
-/home/dlonng/Autopilot-XMU/PCL/ch14/o_seg/build/CMakeFiles/edit_cache.dir
-/home/dlonng/Autopilot-XMU/PCL/ch14/o_seg/build/CMakeFiles/o_seg.dir
-/home/dlonng/Autopilot-XMU/PCL/ch14/o_seg/build/CMakeFiles/rebuild_cache.dir
