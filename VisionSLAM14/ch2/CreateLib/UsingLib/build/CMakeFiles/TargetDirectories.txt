@@ -1,3 +1,0 @@
-/home/dlonng/Autopilot-XMU/VisionSLAM14/ch2/CreateLib/UsingLib/build/CMakeFiles/edit_cache.dir
-/home/dlonng/Autopilot-XMU/VisionSLAM14/ch2/CreateLib/UsingLib/build/CMakeFiles/hello_shared.dir
-/home/dlonng/Autopilot-XMU/VisionSLAM14/ch2/CreateLib/UsingLib/build/CMakeFiles/rebuild_cache.dir

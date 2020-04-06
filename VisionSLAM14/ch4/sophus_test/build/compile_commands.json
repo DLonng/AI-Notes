@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/dlonng/Documents/EPNProject/sophus_test/build",
-  "command": "/usr/bin/c++    -I/home/dlonng/Documents/github_3drparty/Sophus -I/usr/include/eigen3    -o CMakeFiles/use_sophus.dir/use_sophus.cc.o -c /home/dlonng/Documents/EPNProject/sophus_test/use_sophus.cc",
-  "file": "/home/dlonng/Documents/EPNProject/sophus_test/use_sophus.cc"
-}
-]

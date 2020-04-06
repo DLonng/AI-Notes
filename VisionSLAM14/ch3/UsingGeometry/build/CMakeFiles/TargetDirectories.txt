@@ -1,3 +1,0 @@
-/home/dlonng/Autopilot-XMU/VisionSLAM14/ch3/UsingGeometry/build/CMakeFiles/edit_cache.dir
-/home/dlonng/Autopilot-XMU/VisionSLAM14/ch3/UsingGeometry/build/CMakeFiles/using_geometry.dir
-/home/dlonng/Autopilot-XMU/VisionSLAM14/ch3/UsingGeometry/build/CMakeFiles/rebuild_cache.dir

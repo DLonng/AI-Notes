@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/dlonng/Autopilot-XMU/VisionSLAM14/ch5/build",
-  "command": "/usr/bin/c++    -isystem /usr/local/include -isystem /usr/local/include/opencv  -std=c++11   -o CMakeFiles/image_basics.dir/image_basics.cc.o -c /home/dlonng/Autopilot-XMU/VisionSLAM14/ch5/image_basics.cc",
-  "file": "/home/dlonng/Autopilot-XMU/VisionSLAM14/ch5/image_basics.cc"
-}
-]

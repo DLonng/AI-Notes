@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/dlonng/Autopilot-XMU/VisionSLAM14/ch6/cere_curve_fitting/build",
-  "command": "/usr/bin/c++    -isystem /usr/local/include -isystem /usr/local/include/opencv -I/usr/include/eigen3  -std=c++11   -o CMakeFiles/cere_curve.dir/cere_curve.cc.o -c /home/dlonng/Autopilot-XMU/VisionSLAM14/ch6/cere_curve_fitting/cere_curve.cc",
-  "file": "/home/dlonng/Autopilot-XMU/VisionSLAM14/ch6/cere_curve_fitting/cere_curve.cc"
-}
-]
