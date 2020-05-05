@@ -1,8 +1,8 @@
 /*
- * Description: ROS Node, Fusion img and point cloud
- * Author: Dlonng
- * Date: 2020-05-03 20:41:00
- * LastEditTime: 
+ * @Description: ROS Node, Fusion img and point cloud
+ * @Author: Dlonng
+ * @Date: 2020-05-03 20:41:00
+ * @LastEditTime: 
  */
 
 #ifndef LIDAR_CAMERA_FUSION_H
@@ -32,7 +32,7 @@ private:
     void ImageCallback(const sensor_msgs::Image::ConstPtr& image_msg);
 
     // 点云订阅回调函数
-    void PointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg);
+    void CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg);
 
     // 从 tf 树中寻找两个 frame_id 之间的变换关系，第二个参数应该也可以用引用传递
     tf::StampedTransform FindTransform(const std::string& target_frame, const std::string source_frame);
@@ -41,7 +41,7 @@ private:
     pcl::PointXYZ TransformPoint(const pcl::PointXYZ& in_point, const tf::StampedTransform& in_transform);
 
 private:
-    
+    // 为何要分为 2 个呢？只用一个行不行？
     ros::NodeHandle param_handle;
 
     ros::NodeHandle topic_handle;
@@ -56,11 +56,19 @@ private:
     ros::Publisher pub_fusion_cloud;
 
 private:
+    // 当前图像帧的 ID
+    std::string image_frame_id;
+
+    // 当前融合处理的图像
+    cv::Mat image_frame;
+
     // ZED 相机内参，应该要两个变量
     cv::Mat camera_instrinsics;
 
     // ZED 相机畸变矩阵
     cv::Mat distortion_coefficients;
+
+    cv::Size image_size;
 
 private:
     // 定义相机和雷达之间的坐标转换关系

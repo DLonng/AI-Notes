@@ -1,0 +1,27 @@
+<package format = "2">
+    <name> lidar_camera_fusion </name>
+
+    <version> 1.0.0 </version>
+
+    <description> This package fusion point cloud and image. </description>
+  
+    <url> www.xmu.com </url>
+
+    <author> DLonng </author>
+
+    <maintainer email="dlonnng@gmail.com"> xxx </maintainer>
+
+    <license> BSD </license>
+    
+    <!-- 需要补充依赖项 -->
+    <depend>  </depend>
+
+    <build_depend>  </build_depend>
+
+    <exec_depend>  </exec_depend>
+
+    <test_depend>  </test_depend>
+
+    <doc_depend>  </doc_depend>
+
+</package>
