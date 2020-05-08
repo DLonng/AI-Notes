@@ -1,0 +1,18 @@
+<launch>
+     <!-- 乌龟节点 -->
+    <node pkg="turtlesim" type="turtlesim_node" name="sim"/>
+
+    <!-- 控制乌龟运动的键盘节点 -->
+    <node pkg="turtlesim" type="turtle_teleop_key" name="teleop" output="screen"/>
+    
+    <!-- 线速度和角速度的定义，但是在这个例子中并没有用到哎... -->
+    <param name="scale_linear" value="2" type="double"/>
+    <param name="scale_angular" value="2" type="double"/>
+
+    <!-- 第一个乌龟的 tf 广播者节点，参数为乌龟 1 的名字 /tutle1 -->
+    <node pkg="learning_tf2" type="turtle_tf2_broadcaster" args="/turtle1" name="turtle1_tf2_broadcaster" />
+    
+    <!-- 第二个乌龟的 tf 广播者节点，还是用相同的节点，只不过改变了传递的参数为乌龟 2 的名字 /turtle2 --> 
+    <node pkg="learning_tf2" type="turtle_tf2_broadcaster" args="/turtle2" name="turtle2_tf2_broadcaster" />
+
+  </launch>

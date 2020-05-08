@@ -1,4 +1,4 @@
-# 使用 Kalibr 进行双目相机 ZED Camera-IMU 标定
+# 使用 Kalibr 进行双目相机 ZED Camera-IMU 标定！（未测试）
 
 ## 一、标定目的
 

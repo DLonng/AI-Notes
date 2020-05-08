@@ -1,4 +1,4 @@
-# Robosense - 16 雷达与 ZED 双目相机使用 Autoware 内外参标定方法总结！
+# Robosense - 16 雷达与 ZED 双目相机使用 Autoware 内外参标定方法总结！（未测试）
 
 ## 一、Autoware 安装（自己好像已经安装过了）
 
