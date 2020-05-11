@@ -2,8 +2,9 @@
 
 此项目为我在学习机器学习时总结的笔记配套的代码，笔记文章见我的个人博客：[https://dlonng.com](https://dlonng.com)
 
-- `code/ex1-linear-regression`：线性回归实验
-- `code/ex2-logistic-regression`：逻辑回归实验
+- `ex1-linear-regression`：线性回归实验
+- `ex2-logistic-regression`：逻辑回归实验
+- `ex3-neural-network`：前馈神经网络实验
 
 ##机器学习 Jupyter 环境搭建
 

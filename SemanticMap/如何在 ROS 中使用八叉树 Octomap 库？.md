@@ -7,7 +7,7 @@
 
 ## 二、Octomap 安装
 
-### 2.1 ROS Kinect 功能包 apt 安装
+### 2.1 ROS Kinect 功能包 apt 完全安装
 
 ```shell
 sudo apt-get install ros-kinetic-octomap ros-kinetic-octomap-mapping ros-kinetic-octomap-msgs ros-kinetic-octomap-ros ros-kinetic-octomap-rviz-plugins ros-kinetic-octomap-server
@@ -18,6 +18,14 @@ sudo apt-get install ros-kinetic-octomap ros-kinetic-octomap-mapping ros-kinetic
 ```
 sudo apt-get install ros-kinetic-octomap*
 ```
+
+注意：如果 ros-kinetic-octomap-rviz-plugins 使用过程中出现 rviz core dumped 或者 segmentation default 之类令人莫名奇妙的 rviz 程序崩溃问题，重新使用源码编译安装 octomap-rviz-plugins。
+
+```
+https://github.com/OctoMap/octomap_rviz_plugins
+```
+
+
 
 ### 2.2 源码编译安装
 
@@ -106,7 +114,7 @@ target_link_libraries(${OCTOMAP_LIBRARIES})
 
 - setProHit/setProMiss：这两个函数决定了 inverse sensor model 的 log-odd 概率更新的具体参数
 
-- setClampingThresMax/setClampingThresMin：这两个函数决定了一个体元执行 log-odd 更新的阈值范围。也就是说某一个占据体元的概率值爬升到 0.97（对应的log-odd为3.5）或者空闲体元的概率值下降到 0.12（对应的log-odd为-2）便不再进行 log-odd 更新计算
+- setClampingThresMax/setClampingThresMin：这两个函数决定了一个体元执行 log-odd 更新的阈值范围。也就是说某一个占据体元的概率值爬升到 0.97（对应的log-odd为3.5）或者空闲体元的概率值下降到 0.12（对应的log-odds为-2）便不再进行 log-odds 更新计算
 
 - setOccupancyThres：这个函数定义了 octomap 判定某一个体元属于占据状态的阈值（isNodeOccupied函数），默认是 0.5，一般情况下我们将其设定为 0.7
 
@@ -116,9 +124,37 @@ target_link_libraries(${OCTOMAP_LIBRARIES})
 
 - bin/octovis：3D 可视化栅格地图工具
 
-### 3.1 一些总结
+
+
+### 3.1 基本数据类型
+
+#### 3.1.1 octomap::OcTree
+
+octomap 主要地图数据结构，维护一个 3D 占用栅格地图。
+
+#### 3.1.2 octomap::OcTreeNode
+
+八叉树节点，存储对数占有概率 log-odds。
+
+#### 3.1.3 octomap::OcTreeKey
+
+实现对八叉树节点 OcTreeNode 的查询，即离散的三维体元所处的空间地址。
+
+#### 3.1.4 octomap::KeyRay
+
+KeyRay 用于保存单条光束在三维空间中射线跟踪的结果。
+
+#### 3.1.5 octomap::KeySet
+
+把 OcTreeKey 保存在 KeyHash 表中，以进行更加有效率的更新（Hash 表访问速度 O(1)），KeySet 收纳所有光束（也即点云数据）射线跟踪的结果。
+
+
+
+### 3.2 一些总结
 
 log-odd 与概率值之间可以相互转化，因此在工程实现时 octomap 八叉树节点类 OcTreeNode 存储的数值是 log-odd 数值，并不是概率值。
+
+
 
 ## 四、Octomap 基本编程
 
@@ -136,7 +172,7 @@ octomap::ColorOcTree* octomap = new octomap::ColorOcTree(0.03);
 
 ```cpp
 // updateNode 是插入单个点，接受两个参数，第一个就是 octomap::point3d 类型的 3d 点
-// 第二个参数默认填 true 即可
+// 第二个参数默认填 true 表示占用 occupy，false 表示 free
 double x = 1;
 double y = 2;
 double z = 3;
@@ -198,7 +234,26 @@ else
     ROS_ERROR("Error serializing OctoMap");
 ```
 
-## 五、编程使用 Octomap
+### 4.7 旋转插入局部地图
+
+```cpp
+pcl::transformPointCloud(cloud, *temp, pose.matrix());
+octomap->insertPointCloud(cloud_octo, octomap::point3d(x, y, z));
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 五、Octomap 项目建图
 
 ### 3.1 pcd 点云转 Octomap
 
@@ -216,6 +271,14 @@ else
 
 Octomap 建图就是利用位姿信息将多帧 Octomap 地图拼接成一个全局地图。
 
+[评论有建图的回答](https://blog.csdn.net/sinat_38068956/article/details/84038069)
+
+```
+你好，请问怎么实时将相机的点云转化为八叉树
+
+对于整体点云，先创建 octomap，然后对所有点调用 updateNode 方法即可将点云插入到 octomap 中，单帧点云同理。如果是想整合多帧，需要借助 slam 计算帧间变换矩阵，然后对第一帧外的点云进行投影。
+```
+
 
 
 ### 3.4 占有率和概率更新
@@ -230,6 +293,14 @@ Octomap 建图就是利用位姿信息将多帧 Octomap 地图拼接成一个全
 
 1. 可先订阅点云话题得到点云数据，滤波分割后再发布
 2. 再订阅滤波、分割后点云数据给 Octomap_server 节点，从而得到更加有效的 Octomap 环境地图。
+
+
+
+
+
+
+
+
 
 ### 3.6 体素分辨率
 
