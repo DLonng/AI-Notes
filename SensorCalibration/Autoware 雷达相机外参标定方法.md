@@ -32,13 +32,13 @@ rosdep install -y --from-paths src --ignore-src --rosdistro kinetic
 
 ### 2.1 标定板
 
-使用 9 X 7 的[标定板](http://wiki.ros.org/camera_calibration/Tutorials/StereoCalibration?action=AttachFile&do=view&target=check-108.pdf)，注意是硬纸板：
+使用 9 X 7 的[标定板](http://wiki.ros.org/camera_calibration/Tutorials/StereoCalibration?action=AttachFile&do=view&target=check-108.pdf)，规格为 A0 尺寸的硬纸板(841 × 1189mm) 9 行 7 列，注意要使用硬纸板，软的纸板你举不平整：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/checkboard.png)
 
 ### 2.2 录制标定包（看情况是否录制）
 
-这一步可做可不做，如果你不想在标定时连接相机和雷达，可以提前录制好双目相机和雷达的数据 bag，如果打算连接硬件就跳过这一步。
+如果你不想在标定时连接相机和雷达，可以提前录制好双目相机和雷达的数据 bag，如果打算连接硬件就跳过这一步。
 
 使用 Autoware 录制步骤：
 
@@ -49,6 +49,15 @@ rosdep install -y --from-paths src --ignore-src --rosdistro kinetic
 如下图：
 
 ![图片待补充]()
+
+我打算采用的步骤：
+
+1. 制作标定板
+2. 确定标定板的录制位置
+   - 6 个站位：近距离（左边近、中间近、右边近）、远距离（左边远、中间远、右边远）、项目用的 16 线雷达比较稀疏所以距离要近点
+   - 每个站位做 5 个动作：正向、下俯、上仰、左偏、右偏
+3. 在小车的 Ubuntu 下用 rosbag 录制相机 bag1 和雷达、相机的 bag2
+4. 拷贝到自己电脑上，用 Autoware 回放 bag1 标定内参，回放 bag2 标定外参
 
 ## 三、相机内参标定（相机出厂自带？）
 
@@ -89,6 +98,8 @@ rosrun autoware_camera_lidar_calibrator cameracalibrator.py --square SQUARE_SIZE
 - 联合标定不能使用双目标定的内参文件，只能使用单目标定出的 yaml 文件？待确认
 
 ## 四、雷达相机外参标定
+
+重要：[无人驾驶汽车系统入门（二十二）——使用Autoware实践激光雷达与摄像机组合标定：此文章评论区的问题很有价值](https://blog.csdn.net/AdamShan/article/details/81670732#commentBox)
 
 先回放数据 bag，或者连接相机和雷达：
 
@@ -136,9 +147,22 @@ sudo apt install image-view2
 - Y 轴指向左侧
 - Z 轴指向上方
 
-### 5.3 一个问题
+### 5.3 要考虑的重要问题
 
-2. 外参标定如何使用双目相机的内参？
+2. ZED 有左右图像话题，如何外参标定，是每个图像话题单独外参标定一遍？
+
+3. 外参标定如何使用双目相机的内参？双目相机有左右内参
+
+4. 相机和雷达的时间同步问题 [评论区有同步的问题](https://zhuanlan.zhihu.com/p/55825255)
+
+5. 雷达话题转换的重要问题，一定要确定雷达和相机发布的主题名称和标定工具订阅的主题名称相同：
+
+   ```shel
+   # autoware 读取的节点是 points_raw，如果发布的节点是 velodnye_points 会读取不出来，需要在发布的时候转换
+   rosbag play bagName.bag /velodyne_points:=/points_raw
+   ```
+
+   
 
 ## 参考博客
 
@@ -146,3 +170,10 @@ sudo apt install image-view2
 - https://blog.csdn.net/AdamShan/article/details/81670732
 - [https://blog.csdn.net/X_kh_2001/article/details/89163659?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task](https://blog.csdn.net/X_kh_2001/article/details/89163659?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task)
 - [https://zhuanlan.zhihu.com/p/55825255](https://zhuanlan.zhihu.com/p/55825255)
+- [此文章评论区的问题很有价值](https://blog.csdn.net/AdamShan/article/details/81670732#commentBox)
+
+新添加：
+
+- [使用autoware获得相机内参并与雷达联合标定：标定双目、外参矩阵求逆问题](https://blog.csdn.net/Mr_yangsir/article/details/101013639)
+- [Autoware完整安装及联合标定工具箱安装](https://blog.csdn.net/qq_42615787/article/details/102481314)
+- [Autoware搭建自动驾驶系统.一：数据记录/播放和传感器校准](https://blog.csdn.net/jianxuezixuan/article/details/87283600?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-17.nonecase&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-17.nonecase)

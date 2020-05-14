@@ -1,92 +1,6 @@
-# 如何在 ROS 中使用八叉树 Octomap 库？
-
- ## 一、Octomap 项目地址
-
-- [Octomap](https://octomap.github.io/)
-- [http://octomap.github.io/octomap/doc/](http://octomap.github.io/octomap/doc/)
-
-## 二、Octomap 安装
-
-### 2.1 ROS Kinect 功能包 apt 完全安装
-
-```shell
-sudo apt-get install ros-kinetic-octomap ros-kinetic-octomap-mapping ros-kinetic-octomap-msgs ros-kinetic-octomap-ros ros-kinetic-octomap-rviz-plugins ros-kinetic-octomap-server
-```
-
-或者使用通配符全部安装：
-
-```
-sudo apt-get install ros-kinetic-octomap*
-```
-
-注意：如果 ros-kinetic-octomap-rviz-plugins 使用过程中出现 rviz core dumped 或者 segmentation default 之类令人莫名奇妙的 rviz 程序崩溃问题，重新使用源码编译安装 octomap-rviz-plugins。
-
-```
-https://github.com/OctoMap/octomap_rviz_plugins
-```
 
 
-
-### 2.2 源码编译安装
-
-获取源码：
-
-```shell
-git clone https://github.com/OctoMap/octomap
-```
-
-CMake 编译：
-
-```shell
-cd octomap
-mkdir build
-cd build
-cmake ..
-make
-```
-
-编译通过即可安装：
-
-```shell
-sudo make install
-```
-
-卸载方法，在 `build` 目录下执行：
-
-```shell
-sudo make uninstall
-```
-
-补充，如果没有可视化程序 octovis，可独立安装：
-
-```shell
-sudo apt-get install octovis
-```
-
-### 2.3 配置 CMakeList.txt
-
-```cmake
-find_package(octomap REQUIRED)
-include_directories(${OCTOMAP_INCLUDE_DIRS})
-
-add_executable(xxx xxx.cpp)
-target_link_libraries(${OCTOMAP_LIBRARIES})
-```
-
-### 2.4 配置 package.xml
-
-```xml
-<build_depend>octomap</build_depend>
-<run_depend>octomap</run_depend>
-```
-
-## 二、Rviz 可视化 Octomap
-
-
-
-
-
-## 三、Octomap 框架
+## 一、Octomap 框架
 
 官方文档：[Octomap](http://octomap.github.io/octomap/doc/)
 
@@ -126,7 +40,7 @@ target_link_libraries(${OCTOMAP_LIBRARIES})
 
 
 
-### 3.1 基本数据类型
+## 二、Octomap 基本数据类型
 
 #### 3.1.1 octomap::OcTree
 
@@ -150,13 +64,7 @@ KeyRay 用于保存单条光束在三维空间中射线跟踪的结果。
 
 
 
-### 3.2 一些总结
-
-log-odd 与概率值之间可以相互转化，因此在工程实现时 octomap 八叉树节点类 OcTreeNode 存储的数值是 log-odd 数值，并不是概率值。
-
-
-
-## 四、Octomap 基本编程
+## 三、Octomap 基本编程
 
 ### 4.1 建树
 
@@ -247,78 +155,10 @@ octomap->insertPointCloud(cloud_octo, octomap::point3d(x, y, z));
 
 
 
+## 四、一些总结
+
+log-odd 与概率值之间可以相互转化，因此在工程实现时 octomap 八叉树节点类 OcTreeNode 存储的数值是 log-odd 数值，并不是概率值。
 
 
 
-
-
-
-## 五、Octomap 项目建图
-
-### 3.1 pcd 点云转 Octomap
-
-
-
-
-
-### 3.2 给 Octomap 加上颜色
-
-
-
-
-
-### 3.3 Octomap 建图
-
-Octomap 建图就是利用位姿信息将多帧 Octomap 地图拼接成一个全局地图。
-
-[评论有建图的回答](https://blog.csdn.net/sinat_38068956/article/details/84038069)
-
-```
-你好，请问怎么实时将相机的点云转化为八叉树
-
-对于整体点云，先创建 octomap，然后对所有点调用 updateNode 方法即可将点云插入到 octomap 中，单帧点云同理。如果是想整合多帧，需要借助 slam 计算帧间变换矩阵，然后对第一帧外的点云进行投影。
-```
-
-
-
-### 3.4 占有率和概率更新
-
-
-
-
-
-### 3.5 建图逻辑
-
-获取了实时点云和 octomap 数据之后就可构建环境障碍物，实现运动规划：
-
-1. 可先订阅点云话题得到点云数据，滤波分割后再发布
-2. 再订阅滤波、分割后点云数据给 Octomap_server 节点，从而得到更加有效的 Octomap 环境地图。
-
-
-
-
-
-
-
-
-
-### 3.6 体素分辨率
-
-- 0.01  - 0.05 m
-- 0.5 m 地图范围较大
-- 0.2 m 地图范围较大
-
-
-
-
-
-## 参考博客
-
-- [SLAM拾萃(1)：octomap](https://www.cnblogs.com/gaoxiang12/p/5041142.html)
-- [https://wiki.ros.org/octomap](https://wiki.ros.org/octomap)
-- [使用octomap_server将点云地图转化为八叉树地图和占据栅格地图](https://blog.csdn.net/sylin211/article/details/93743724)
-- [Octomap 在ROS环境下实时显示](https://blog.csdn.net/crp997576280/article/details/74605766)
-- [视觉SLAM笔记（64） 八叉树地图](https://blog.csdn.net/qq_32618327/article/details/103215769?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-2&utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-2)
-- [https://blog.csdn.net/DJ_Dreamaker/article/details/79834954](https://blog.csdn.net/DJ_Dreamaker/article/details/79834954)
-- [https://blog.csdn.net/weixin_39123145/article/details/82219968](https://blog.csdn.net/weixin_39123145/article/details/82219968)
-
+## 
