@@ -89,6 +89,11 @@ target_link_libraries(${OCTOMAP_LIBRARIES})
 1. 使用 octomap_server 节点建图：[Octomap 在ROS环境下实时显示](https://blog.csdn.net/crp997576280/article/details/74605766)、[octomap_server](http://wiki.ros.org/octomap_server)
 2. 自己编写建图节点：[SLAM拾萃(1)：octomap](https://www.cnblogs.com/gaoxiang12/p/5041142.html)
 
+[另一种分类](https://zhuanlan.zhihu.com/p/88874991)：
+
+- 对 SLAM 创建的地图进行处理，转换为 octomap
+- 在 SLAM 的同时进行 octomap 创建
+
 ### 3.2 增量式建图逻辑
 
 Octomap 建图就是利用位姿信息将多帧 octomap 地图拼接成一个全局地图，对于实现增量式的 octomap 构建（也就是像 SLAM 构建点云一样，一边走一边生成全局的 octomap）。
@@ -135,7 +140,17 @@ Octomap 建图就是利用位姿信息将多帧 octomap 地图拼接成一个全
 - 0.5 m 地图范围较大
 - 0.2 m 地图范围较大
 
+#### 3.5.2 [octomap_server](http://wiki.ros.org/octomap_server) 增量式建图的 tf 如何指定？
 
+```
+You need to remap this topic to your sensor data and provide a tf transform between the sensor data and the static map frame
+```
+
+需要提供传感器数据和 static map 之间的 tf 转换？是将融合后的点云和 map 之间的最优位姿关系发到 tf 中，然后 octomap_server 会自动监听？
+
+#### 3.5.3 octomap_server 增量式建图的体素颜色如何指定？
+
+在 octomap_server 使用方法文档中有介绍！
 
 ## 参考博客
 

@@ -8,7 +8,7 @@
 sudo apt-get install ros-kinetic-octomap-rviz-plugins
 ```
 
-该插件使得 RVIZ 能够订阅八叉树的主题：
+该插件使得 RVIZ 能够订阅八叉树的主题，其中的 OccupancyGrid 是显示三维概率地图，也就是 octomap 地图，而 OccupancyMap 是显示二维占据栅格地图：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/rviz_octomap.png)
 
@@ -126,7 +126,10 @@ int main(int argc, char** argv)
     <param name="resolution" value="0.05" />
 
     <!-- name of the fixed frame, needs to be "/map" for SLAM -->
-    <!-- 订阅的点云主题的 header.frame_id = camera -->
+    <!-- 
+         发布静态全局地图帧的 header.frame_id = camera 这里指定的就是相机（因为这个例子的点云是通过 RGBD 相机产生的）
+         也可以指定其他静态全局地图的 frame_id，但在增量式构建地图时，需要提供输入的点云帧和静态全局帧之间的 TF 变换
+    -->
     <param name="frame_id" type="string" value="camera" />
 
     <!-- max range / depth resolution of the kinect in meter -->
@@ -227,7 +230,7 @@ rostopic list
 
 相关问题：
 
-1. 是否能在 RVIZ 中可视化融合后的八叉树的颜色呢？
+1. 是否能在 RVIZ 中可视化融合后的八叉树的颜色呢？[评论回答可以显示颜色](https://blog.csdn.net/crp997576280/article/details/74605766)
 2. 这个 octomap_server 节点是不是只能可视化单帧点云，不能建图？
 
 ## 参考博客
