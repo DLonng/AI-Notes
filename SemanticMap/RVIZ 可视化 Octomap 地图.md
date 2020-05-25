@@ -231,7 +231,7 @@ rostopic list
 相关问题：
 
 1. 是否能在 RVIZ 中可视化融合后的八叉树的颜色呢？[评论回答可以显示颜色](https://blog.csdn.net/crp997576280/article/details/74605766)
-2. 这个 octomap_server 节点是不是只能可视化单帧点云，不能建图？
+2. 这个 octomap_server 节点是不是只能可视化单帧点云，不能建图？可以自动增量式建图！
 
 ## 参考博客
 

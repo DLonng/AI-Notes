@@ -8,7 +8,6 @@
 #ifndef LIDAR_CAMERA_FUSION_H
 #define LIDAR_CAMERA_FUSION_H
 
-
 #include <ros/ros.h>
 
 #include <tf/tf.h>
@@ -17,8 +16,6 @@
 #include <pcl/common/common.h>
 
 #include <opencv2/opencv.hpp>
-
-
 
 class LidarCameraFusion {
 public:
@@ -40,12 +37,19 @@ private:
     // 将 in_point 利用 in_transform 进行坐标转换
     pcl::PointXYZ TransformPoint(const pcl::PointXYZ& in_point, const tf::StampedTransform& in_transform);
 
+    // 对融合后的点云执行欧拉聚类分割
+    void LidarCameraFusion::EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud, 
+                                       std::vector<pcl::PointIndices>& cluster_indices, 
+                                       int cluster_tolerance, 
+                                       int min_cluster_size, 
+                                       int max_cluster_size);
+
 private:
     // 为何要分为 2 个呢？只用一个行不行？
     ros::NodeHandle param_handle;
 
     ros::NodeHandle topic_handle;
-    
+
     // 图像订阅者
     ros::Subscriber sub_image;
 
@@ -83,7 +87,6 @@ private:
 private:
     // 融合的带颜色的点云
     pcl::PointCloud<pcl::PointXYZRGB> colored_cloud;
-
 };
 
 #endif // LIDAR_CAMERA_FUSION_H
