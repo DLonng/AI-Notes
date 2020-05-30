@@ -153,7 +153,9 @@ roslaunch autoware_camera_lidar_calibrator camera_lidar_calibration.launch intri
 如果启动失败，考虑安装 image-view2 组件，然后重新启动：
 
 ```shell
-sudo apt install image-view2
+sudo apt-get install image-view2
+
+sudo apt-get install ros-kinetic-jsk-common
 ```
 
 (3) 启动成功后，联合标定具体步骤如下：
@@ -327,7 +329,6 @@ rosbag play bagName.bag /velodyne_points:=/points_raw
 ## 七、评论区有价值的文章
 
 - https://blog.csdn.net/AdamShan/article/details/81670732#commentBox
-- 
 
 ## 参考博客
 
@@ -342,3 +343,9 @@ rosbag play bagName.bag /velodyne_points:=/points_raw
 - [使用autoware获得相机内参并与雷达联合标定：标定双目、外参矩阵求逆问题](https://blog.csdn.net/Mr_yangsir/article/details/101013639)
 - [Autoware完整安装及联合标定工具箱安装](https://blog.csdn.net/qq_42615787/article/details/102481314)
 - [Autoware搭建自动驾驶系统.一：数据记录/播放和传感器校准](https://blog.csdn.net/jianxuezixuan/article/details/87283600?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-17.nonecase&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-17.nonecase)
+
+
+
+
+
+
