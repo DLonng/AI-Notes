@@ -1,0 +1,8 @@
+roscore
+
+rosbag play --pause zed_lidar_calibration-2020-05-30-16-24-45.bag
+
+roslaunch autoware_camera_lidar_calibrator camera_lidar_calibration.launch intrinsics_file:=/home/dlonng/Documents/calibr_bag/pj_zed_left_autoware_camera_calibration.yaml image_src:=/camera/left/image_raw
+
+
+rosrun rviz rviz
