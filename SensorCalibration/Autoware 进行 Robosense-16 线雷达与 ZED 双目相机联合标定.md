@@ -1,27 +1,3 @@
-步骤：
-
-1. 编译安装 autoware-1.10.0
-2. ZED 相机内参标定
-   1. 标定准备
-      1. 标定板
-      2. 录制 bag
-   2. 启动标定工具自动标定
-   3. 查看内参文件
-3. 雷达和相机外参标定
-   1. 标定准备
-      1. 制作标定板
-      2. 录制雷达和相机的 bag
-   2. 标定过程
-      1. 启动标定工具，导入相机内参
-      2. 回放 bag
-      3. 手动选择
-      4. 查看外参文件
-   3. 标定结果测试
-      1. 启动融合程序，导入标定文件
-      2. 打开 rviz 插件
-
-
-
 ## 一、编译安装 Autoware-1.10.0
 
 我没有安装最新版本的 Autoware，因为新版本不带雷达和相机的标定工具，我安装的是 1.10.0 版本！
@@ -66,7 +42,7 @@ source devel/setup.zsh[.bash]
 ./run
 ```
 
-主界面如下：
+可能需要输入 root 密码，然后启动的主界面如下：
 
 ![主界面](C:\Users\dlonn\Desktop\标定博客图片\主界面.png)
 
@@ -74,25 +50,95 @@ source devel/setup.zsh[.bash]
 
 ## 二、标定 ZED 相机内参
 
+### 2.1 内参标定准备
+
+内参标定需要准备标定板，我用的是我们实验室自己购买的 12x9，棋盘格为 2.5cm 的专业标定板，比较精准，如下：
+
+![标定板](C:\Users\dlonn\Desktop\标定博客图片\标定板.jpg)
+
+然后录制一个相机左右话题的 Bag：
+
+```shell
+rosbag record -O zed_calibration.bag /camera/left/image_raw /camera/right/image_raw
+```
+
+为了得到好的标定结果，录制过程中需要在相机视野里面移动标定板，建议位置如下：
+
+- X 轴标定：移动到视野的最左边，最右边
+- Y 轴标定：移动到视野的最上方，最底部
+- 倾斜标定：改变标定板的角度，斜着拿
+- Size 标定：移动标定板充满整个相机视野
+- X，Y 和 Size 一起标定：保持标定板倾斜启动到视野的最左，最右，最上，最下
+
+然后我拷贝 Bag 到台式机上回放，但是有问题提示需要 `rogbag reindex`：
+
+```shell
+rosbag reindex zed_calibration.bag
+```
+
+执行修复下就 OK，速度很快，不过后面的数据会少一些，可能是拷贝过程中的错误导致的，无伤大雅。
+
+### 1.2 内参标定过程
+
+内参标定比较简单，基本都是自动执行，先 source Autoware 环境以使用标定工具：
+
+```shell
+cd autoware-1.10.0/ros/
+
+source devel/setup.zsh
+```
+
+启动 roscore：
+
+```shell
+roscore
+```
+
+启动标定工具 `autoware_camera_lidar_calibrator`，但是这个工具同时标定双目得到的标定 YAML 文件不能直接作为后面外参标定的输入，因为文件格式有些不同，我也是做实验发现的，因此我单独标定左右相机，这样就会生成可用的 Autoware 格式的 YAML 文件：
+
+```shell
+rosrun autoware_camera_lidar_calibrator cameracalibrator.py --square 0.025  --size 11x8  image:=/camera/left/image_raw
+```
+
+参数如下：
+
+- `--square`：标定板单元格的边长（m），我的标定板是 2.5cm，也就是 0.025m
+- `--size`：标定板长x宽的格子数减一，我的标定板是 12x9，所以填 11x8
+- `image`：要标定的相机话题，左或者右
+
+启动后就是一个黑窗口：
+
+![zed_display](C:\Users\dlonn\Desktop\AI-Notes\SensorCalibration\标定博客图片\zed_display.png)
+
+然后开始回放内参标定 Bag，默认暂停启动，按空格继续：
+
+```shell
+rosbag play --pause zed_calibration.bag
+```
+
+标定过程如下，标定工具会根据棋盘格位置自动检测角点：
+
+
+
+当右上角的 X、Y、Size、Skew 变为绿色时，标定按钮「CALIBRATE」可用，点击即可计算内参矩阵：
+
+
+
+结果在 Shell 中打印出来，点击「SAVE」可保存到 home 目录下：
+
+
+
+注意这里会多保存一个 Autoware 类型的 YAML 文件格式，也就是后面外参标定要导入的文件！内容如下：
+
 
 
 
 
 ## 三、ZED 相机和 Robosense-16 线雷达联合标定
 
-### 3.1 标定准备
+### 3.1 联合标定准备
 
-联合标定也要准备标定板和录制 bag 包。
-
-#### 3.1.1 标定板
-
-联合标定也需要用标定板，我用的是我们实验室自己购买的 12x9，棋盘格为 2.5cm 的专业标定板，比较精准，如下：
-
-![标定板](C:\Users\dlonn\Desktop\标定博客图片\标定板.jpg)
-
-#### 3.1.2 录制回放相机雷达 Bag
-
-另外因为我是在电脑上安装的 Autoware，所以需要在小车上录制雷达和相机的 Bag 数据包，然后再拷贝到我的电脑上回放用于标定工具的话题输入。
+联合标定也要准备标定板和录制 bag 包，标定板用的也是内参标定的棋盘格，另外因为我是在电脑上安装的 Autoware，所以需要在小车上录制雷达和相机的 Bag 数据包，然后再拷贝到我的电脑上回放用于标定工具的话题输入。
 
 我录制 bag 包的命令如下，录制的是ZED 左右相机话题、雷达话题：
 
