@@ -23,6 +23,14 @@ LidarCameraFusion::LidarCameraFusion()
  */
 void LidarCameraFusion::InitROS()
 {
+    // 初始化内参矩阵
+
+    // 初始化畸变矩阵
+
+    // 初始化外参矩阵
+
+
+
     std::string image_input;
     std::string cloud_input;
     std::string fusion_topic;
@@ -139,7 +147,23 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
             以上的矩阵使用 cv::Mat 定义即可
         */
 
-        cam_cloud[i] = TransformPoint(in_cloud_msg->points[i], camera_lidar_tf);
+        //cam_cloud[i] = TransformPoint(in_cloud_msg->points[i], camera_lidar_tf);
+
+        // 用 RT 矩阵变换
+        
+        /*
+            raw_point.at<double>(0, 0) = raw_cloud->points[i].x;
+            raw_point.at<double>(1, 0) = raw_cloud->points[i].y;
+            raw_point.at<double>(2, 0) = raw_cloud->points[i].z;
+            raw_point.at<double>(3, 0) = 1;
+
+            // 4 X 1 = 4 X 4 * 4 X 1;
+            transformed_point = RT * raw_point;
+
+            x = transformed_point.at<double>(0, 0);
+            y = transformed_point.at<double>(1, 0);
+            z = transformed_point.at<double>(2, 0);
+        */
 
         // 使用相机内参将三维空间点投影到像素平面
         row = int(cam_cloud[i].y * fy / cam_cloud[i].z + cy);

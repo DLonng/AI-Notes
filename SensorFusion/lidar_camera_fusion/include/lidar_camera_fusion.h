@@ -8,7 +8,12 @@
 #ifndef LIDAR_CAMERA_FUSION_H
 #define LIDAR_CAMERA_FUSION_H
 
+#include <iostream>
+
 #include <ros/ros.h>
+
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/PointCloud2.h>
 
 #include <tf/tf.h>
 #include <tf/transform_listener.h>

@@ -1,5 +1,7 @@
 # Autoware 标定工具 Calibration Tool Kit 标定外参
 
+- 标定视频：[YouTobe](https://www.youtube.com/watch?v=pfBmfgHf6zg)
+
 ## 一、内参标定
 
 
