@@ -25,7 +25,7 @@ source devel/setup.zsh[.bash]
 
 切换到 Sensing 选项卡：
 
-![sensing]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/sensing.png)
 
 ### 2.2 回放雷达相机 Bag 
 
@@ -41,19 +41,19 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 
 点击 Calibration Tool Kit 启动标定工具：
 
-![calibration_tool_kit]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibration_tool_kit.png)
 
 选择图像输入话题，我只用的 ZED 的左图像话题，如果没有相机话题，确保前面你已经回放了 bag，选择好了点击 OK 确定：
 
-![lefte_imageraw]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/left_imageraw.png)
 
 选择标定类型为相机到 velodyne 雷达的标定（对 Robosense 雷达也适用，只不过需要更改点云的发布话题），点击 OK 确定：
 
-![camera_velodyne]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/camera_velodyne.png)
 
 进入标定主界面 MainWindow：
 
-![main_window_config]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/main_window_config.png)
 
 配置棋盘格参数：
 
@@ -62,21 +62,21 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 
 设置好了后，重启 Calibration Tool Kit，点击左上角 Load 导入第一步标定的相机内参 YAML 文件，但是这个工具只能导入 YML 格式的文件：
 
-![only_yml]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/only_yml.png)
 
 因此需要把前面的内参标定文件拷贝一份，修改格式为 yml 即可，YAML 和 YML 其实是一样的：
 
-![yaml2yml]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/yaml2yml.png)
 
 修改好了之后，再点击 Load 加载 yml 格式的内参文件即可：
 
-![load_yml]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/load_yml.png)
 
 选择不加载相机和雷达的标定数据，因为我们是直接回放 Bag 标定：
 
-![load_camera_data_no]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/load_camera_data_no.png)
 
-![load_cloud_data_no]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/load_cloud_data_no.png)
 
 到这里都设置好了，下面开始外参标定过程！
 
@@ -84,11 +84,11 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 
 打开回放 bag 终端，按空格继续回放数据，主界面会显示相机图像：
 
-![calibr_play_bag]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibr_play_bag.png)
 
 但是右边的点云窗口没有显示数据，需要我们调整视角才可以，视角的调整方法如下（文末有个 pdf 专门介绍）：
 
-![basic_operation]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/basic_operations.png)
 
 简单解释下，建议直接操作下，很容易：
 
@@ -99,31 +99,31 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 - 点云大小：o 键使用小点云、p 使用大点云
 - 改变点云窗口背景颜色：b
 
-我使用的使用直接按 2 切换模式就能看到点云了：
+我使用的使用直接按数字 2 切换模式就能看到点云了：
 
-![model_2]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/mode_2.png)
 
 然后使用上面的视角操作方法，把点云中的标定板放大到中心位置：
 
-![move2center]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/move2center.png)
 
 之后点击右上角的 Grab 捕获当前帧的图像和点云：
 
-![grab_image_cloud]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/grab_image_cloud.png)
 
 如果你**点击 grab 没反应**很正常，可能是棋盘格离得太远或者模糊了，你多试几个位置应该就能捕获到，我回放一个 Bag 也就捕获了 9 张左右。
 
 然后把鼠标放到右下角捕获的点云窗口，选择一个棋盘格的中心位置区域，关于这个区域的选择，我也不太懂，不过我是参考这个标定工具的使用文档给的例子选择的，大概就是标定板的中心位置选择一个圆形的区域，尽量保证右上角的平面法向量垂直于标定板平面：
 
-![标定板区域选择例子]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/CalibrationToolKitExample.png)
 
 鼠标左键点击选择，右键点击取消，我的选择如下，可以参考：
 
-![select_cloud]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/select_cloud.png)
 
 然后重复以上步骤，不断回放暂停，Grab 捕获单帧图像和点云（我测试至少要选择 4 帧），选择点云区域，直到回放结束，接着就可以点击右上角的「Calibrate」按钮计算外参矩阵（左上角显示），然后再点击「Project」查看标定效果：
 
-![calibrate_project]()
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibrate_project.png)
 
 可以看到我这里选择的不太好，有点歪了，需要重新选择，以下是我重新标定的结果，还算可以：
 

@@ -6,7 +6,7 @@
 
 不建议[官方的 git check 安装方式](https://gitlab.com/autowarefoundation/autoware.ai/autoware/-/wikis/Source-Build)，因为不熟悉 git 可能会遇到问题，直接在[Gitlab 仓库](https://gitlab.com/autowarefoundation/autoware.ai/autoware)选择 1.10.0 版本下载即可：
 
-![下载 Autoware 源码](C:\Users\dlonn\Desktop\标定博客图片\下载 Autoware 源码.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/download_autoware.png)
 
 ### 1.2 编译 Autoware-1.10.0
 
@@ -44,7 +44,7 @@ source devel/setup.zsh[.bash]
 
 可能需要输入 root 密码，然后启动的主界面如下：
 
-![主界面](C:\Users\dlonn\Desktop\标定博客图片\主界面.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/autoware_main.png)
 
 至此 Autoware 就安装好了，后面我们需要用它提供的标定工具包来进行内参和外参的标定，以及标定结果的融合效果测试。
 
@@ -54,7 +54,7 @@ source devel/setup.zsh[.bash]
 
 内参标定需要准备标定板，我用的是我们实验室自己购买的 12x9，棋盘格为 2.5cm 的专业标定板，比较精准，如下：
 
-![标定板](C:\Users\dlonn\Desktop\标定博客图片\标定板.jpg)
+![checkboard](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/checkboard.jpg)
 
 然后录制一个相机左右话题的 Bag：
 
@@ -108,7 +108,7 @@ rosrun autoware_camera_lidar_calibrator cameracalibrator.py --square 0.025  --si
 
 启动后就是一个黑窗口：
 
-![zed_display](C:\Users\dlonn\Desktop\AI-Notes\SensorCalibration\标定博客图片\zed_display.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/zed_display.png)
 
 然后开始回放内参标定 Bag，默认暂停启动，按空格继续：
 
@@ -118,21 +118,19 @@ rosbag play --pause zed_calibration.bag
 
 标定过程如下，标定工具会根据棋盘格位置自动检测角点：
 
-
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/zed_calibr_left.png)
 
 当右上角的 X、Y、Size、Skew 变为绿色时，标定按钮「CALIBRATE」可用，点击即可计算内参矩阵：
 
-
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibr_left_get.png)
 
 结果在 Shell 中打印出来，点击「SAVE」可保存到 home 目录下：
 
-
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibr_left_result.png)
 
 注意这里会多保存一个 Autoware 类型的 YAML 文件格式，也就是后面外参标定要导入的文件！内容如下：
 
-
-
-
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/autoware_camera_calibr_yaml.png)
 
 ## 三、ZED 相机和 Robosense-16 线雷达联合标定
 
@@ -158,7 +156,7 @@ rosbag reindex zed_lidar_calibration.bag
 rosbag info
 ```
 
-![rosbag_info](C:\Users\dlonn\Desktop\标定博客图片\rosbag_info.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/rosbag_info.png)
 
 回放 Bag 使用如下命令，加上 `--pause` 意思是启动即暂停，防止跑掉数据，按空格继续回放：
 
@@ -193,7 +191,11 @@ roslaunch autoware_camera_lidar_calibrator camera_lidar_calibration.launch intri
 - `intrinsics_file`：前面标定 ZED 的内参文件
 - `image_src`：要标定的相机话题，这里用的 left image，有需要也可以用 right image
 
-遇到的第一个错误，启动失败提示找不到 `image-view2`，直接 apt 安装：
+遇到的第一个错误，启动失败提示找不到 `image-view2`：
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/image-view2-fail.png)
+
+直接 apt 安装即可：
 
 ```shell
 sudo apt-get install ros-kinetic-jsk-common
@@ -203,7 +205,7 @@ sudo apt-get install ros-kinetic-jsk-common
 
 遇到的第二个错误，提示找不到 `libopencv_core3.so.3.3`：
 
-![opencv_core3](C:\Users\dlonn\Desktop\标定博客图片\opencv_core3.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/opencv_core3.png)
 
 我在系统中查找 `libopencv_core3.so` 这个库：
 
@@ -227,7 +229,7 @@ sudo cp /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_* /opt/ros/kinetic/lib
 
 之后我就可以启动这个标定工具了，界面如下就是一个图片查看器：
 
-![image-view2](C:\Users\dlonn\Desktop\标定博客图片\image-view2.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/image-view2.png)
 
 然后开始回放 Bag 数据，记得按空格开始回放：
 
@@ -237,7 +239,7 @@ rosbag play --pause zed_lidar_calibration.bag
 
 上面的 image-view2 就会出现相机画面，然后我们按空格暂停回放，准备标定：
 
-![image-view2-bag](C:\Users\dlonn\Desktop\标定博客图片\image-view2-bag.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/image-view2-bag.png)
 
 标定还需要启动 rviz：
 
@@ -247,11 +249,11 @@ rosrun rviz rviz
 
 点击 Add 添加要订阅的 Image 和 PontCloud2 话题：
 
-![add_rviz_topic](C:\Users\dlonn\Desktop\标定博客图片\add_rviz_topic.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/add_rviz_topic.png)
 
 分别设置每个订阅话题的 topic、FixedFrame 设置为 rslidar 不然会没有点云显示、切换点云查看视角，用鼠标滑轮调整点云距离，确保能看到我这样的标定板：
 
-![rviz_rslidar_zed](C:\Users\dlonn\Desktop\标定博客图片\rviz_rslidar_zed.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/rviz_rslidar_zed.png)
 
 然后我们同时切换出 image-view2 的界面，点击工具栏放大图像，然后按照如下步骤手动选择一个像素点和点云进行单次标定：
 
@@ -260,15 +262,15 @@ rosrun rviz rviz
 3. 然后在 rviz 中选择一个对应的点云数据点，当你的鼠标右下角出现一个浅红色的路标记号时即可点击该数据点
 4. 观察 image-view2 的窗口是否出现 points 的提示信息
 
-![calibr_process](C:\Users\dlonn\Desktop\标定博客图片\calibr_process.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibr_process.png)
 
 重复以上步骤，选择 9 个不同的像素-点云对，因为需要足够的数据才能计算外参矩阵，当第 9 个点选择完后，该工具会自动计算外参标定矩阵：
 
-![nine_calibr](C:\Users\dlonn\Desktop\标定博客图片\nine_calibr.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/nine_calibr.png)
 
 最终的标定文件保存在 home 目录下，以下是外参文件内容，第一个就是 4x4 的外参矩阵：
 
-![calibr_result](C:\Users\dlonn\Desktop\标定博客图片\calibr_result.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibr_result.png)
 
 ### 3.3 标定结果测试
 
@@ -285,15 +287,15 @@ rosbag play --pause zed_lidar_calibration.bag /rslidar_points:=/points_raw
 - Ref：选择上一步的外参标定文件
 - image topic source：因为 Camera ID 已经指定了，所以这里只需要填 topic 名即可
 
-![calibr_publish](C:\Users\dlonn\Desktop\标定博客图片\calibr_publish.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibr_publish.png)
 
 点击 OK 关闭窗口（查看终端是否会输出红色错误信息，一般不会），然后再点击 Points Image 选择相机 ID 为 left，点击 OK 确定（此时终端再输出一些信息，但不会报红色错误），如果你的终端出现红色错误信息，就要查看配置是否正确了：
 
-![points_image](C:\Users\dlonn\Desktop\标定博客图片\points_image.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/points_image.png)
 
-再点击下面的 Rviz 启动 rviz，注意不要单独在终端中 rosrun 启动 rviz，单独启动没有 image-view2 的插件，在 autoware 中启动提供融合的插件：
+再点击下面的 Rviz 启动 rviz，注意不要单独在终端中 rosrun 启动 rviz，单独启动没有 image-view2 的插件，在 autoware 中启动提供融合的插件 ImageViewerPlugin：
 
-![add_image_view_panel](C:\Users\dlonn\Desktop\标定博客图片\add_image_view_panel.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/add_image_view_panel.png)
 
 进行如下选择：
 
@@ -302,7 +304,7 @@ rosbag play --pause zed_lidar_calibration.bag /rslidar_points:=/points_raw
 
 然后切换到回放 Bag 终端，按空格继续回放数据，即可出现融合效果，我这里效果一般般，后面打算再重新标定：
 
-![fusion_result](C:\Users\dlonn\Desktop\标定博客图片\fusion_result.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/fusion_result.png)
 
 OK！以上就是我的雷达相机内外参标定总结！
 
