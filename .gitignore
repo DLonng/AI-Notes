@@ -5,6 +5,11 @@
 **/.vscode
 
 
+#---------------catkin-make-------
+**/devel
+**/.catkin_workspace
+
+
 # ----------------C------------------
 # Prerequisites
 *.d
