@@ -9,8 +9,10 @@
 #define LIDAR_CAMERA_FUSION_H
 
 #include <iostream>
+#include <string>
 
 #include <ros/ros.h>
+#include <cv_bridge/cv_bridge.h>
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -19,6 +21,12 @@
 #include <tf/transform_listener.h>
 
 #include <pcl/common/common.h>
+//#include <pcl/search/kdtree.h>
+#include <pcl/search/search.h>
+#include <pcl/kdtree/kdtree.h>
+#include <pcl/segmentation/extract_clusters.h>
+
+#include <pcl_ros/point_cloud.h>
 
 #include <opencv2/opencv.hpp>
 
@@ -43,7 +51,7 @@ private:
     pcl::PointXYZ TransformPoint(const pcl::PointXYZ& in_point, const tf::StampedTransform& in_transform);
 
     // 对融合后的点云执行欧拉聚类分割
-    void LidarCameraFusion::EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud, 
+    void EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud, 
                                        std::vector<pcl::PointIndices>& cluster_indices, 
                                        int cluster_tolerance, 
                                        int min_cluster_size, 
@@ -71,13 +79,25 @@ private:
     // 当前融合处理的图像
     cv::Mat image_frame;
 
-    // ZED 相机内参，应该要两个变量
-    cv::Mat camera_instrinsics;
+    // Robosense 雷达和 ZED 相机外参
+    cv::Mat camera_extrinsic_mat;
+
+    // ZED 相机内参
+    cv::Mat camera_instrinsics_mat;
+
+    // ZED 相机内参
+    float fx, fy, cx, cy;
 
     // ZED 相机畸变矩阵
     cv::Mat distortion_coefficients;
 
+    // ZED 相机图像大小
     cv::Size image_size;
+
+    // ZED 相机畸变模型
+    std::string dist_model;
+
+    bool camera_instrinsics_mat_ok;
 
 private:
     // 定义相机和雷达之间的坐标转换关系

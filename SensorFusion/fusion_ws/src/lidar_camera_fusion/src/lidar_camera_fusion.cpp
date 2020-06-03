@@ -8,7 +8,9 @@
 #include "lidar_camera_fusion.h"
 
 LidarCameraFusion::LidarCameraFusion()
-    : camera_lidar_tf_ok(false)
+    : param_handle("~")
+    , camera_lidar_tf_ok(false)
+    , camera_instrinsics_mat_ok(false)
     , image_frame_id("")
 {
 
@@ -23,21 +25,44 @@ LidarCameraFusion::LidarCameraFusion()
  */
 void LidarCameraFusion::InitROS()
 {
-    // 初始化内参矩阵
+    // 先读取外参文件
+    std::string calibration_file;
 
-    // 初始化畸变矩阵
+    param_handle.param<std::string>("calibration_file", calibration_file, "");
+    
+    if (calibration_file.empty()) {
+        ROS_ERROR("[%s] missing calibration file path '%S'. ", "lidar_camera_fusion", calibration_file.c_str());
+        ros::shutdown();
+        return ;
+    }
 
-    // 初始化外参矩阵
+    cv::FileStorage fs(calibration_file, cv::FileStorage::READ);
 
+    if (!fs.isOpened()) {
+        ROS_ERROR("[%s] cannot open file calibration file [%s]", "lidar_camera_fusion", calibration_file.c_str());
+        ros::shutdown();
+        return;
+    }
 
+    // 读取内外参
+    fs["CameraExtrinsicMat"] >> camera_extrinsic_mat;
+
+    fs["CameraMat"] >> camera_instrinsics_mat;
+    camera_instrinsics_mat_ok = true;
+
+    fs["DistCoeff"] >> distortion_coefficients;
+
+    fs["ImageSize"] >> image_size;
+
+    fs["DistModel"] >> dist_model;
 
     std::string image_input;
     std::string cloud_input;
     std::string fusion_topic;
 
     // 获取的参数名：image_input，获取的参数值存储在：image_input，缺省值：/cv_camera/image_raw
-    param_handle.param<std::string>("image_input", image_input, "/cv_camera/image_raw");
-    param_handle.param<std::string>("cloud_input", cloud_input, "/velodyne_points");
+    param_handle.param<std::string>("image_input", image_input, "/camera/left/image_raw");
+    param_handle.param<std::string>("cloud_input", cloud_input, "/rslidar_points");
     param_handle.param<std::string>("fusion_topic", fusion_topic, "/fusion_cloud");
 
     // 订阅 image_input 话题
@@ -63,18 +88,22 @@ void LidarCameraFusion::InitROS()
 void LidarCameraFusion::ImageCallback(const sensor_msgs::Image::ConstPtr& image_msg)
 {
     // 1. 确保相机内参和畸变矩阵已经初始化！
+    if (camera_instrinsics_mat_ok == false) {
+        ROS_INFO("[%s] wait to read camera instrinsics mat!", "lidar_camera_fusion");
+        return;
+    }
 
     // 2. ros_img -> cv_imag
     // image_msg: 图像指针，brg8: 编码参数
     // rgb8: CV_8UC3, color image with red-green-blue color order
     // https://blog.csdn.net/bigdog_1027/article/details/79090571
-    cv_bridge::CvImagePtr cv_image_ptr = cv_bridge::toCvCopy(image_msg, "brg8");
+    cv_bridge::CvImagePtr cv_image_ptr = cv_bridge::toCvCopy(image_msg, "bgr8");
     cv::Mat cv_image = cv_image_ptr->image;
 
     // 3. OpenCV 去畸变
     // cv_image: 原畸变 OpenCV 图像，image_frame：去畸变后的图像
     // camera_instrinsics：相机内参矩阵，distortion_coefficients：相机畸变矩阵
-    cv::undistort(cv_image, image_frame, camera_instrinsics, distortion_coefficients);
+    cv::undistort(cv_image, image_frame, camera_instrinsics_mat, distortion_coefficients);
 
     // 4. 发布去畸变的图像消息
 
@@ -93,39 +122,49 @@ void LidarCameraFusion::ImageCallback(const sensor_msgs::Image::ConstPtr& image_
 void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 {
     // 1. 确保当前融合的图像已经去畸变
-    if (current_frame.empty() || image_frame_id = "") {
+    if (image_frame.empty() || image_frame_id == "") {
         ROS_INFO("lidar_camera_fusion: waiting for current image frame ...");
         return;
     }
 
+#if 0
     // 2. 从 tf 树中寻找雷达和相机的坐标变换关系
     if (camera_lidar_tf_ok == false)
         camera_lidar_tf = FindTransform(image_frame_id, cloud_msg->header.frame_id);
 
     // 3. 保证相机内参和坐标转换准备完成
-    if (/* 相机内参 == false */ || camera_lidar_tf_ok == false) {
+    if (camera_instrinsics_mat_ok == false || camera_lidar_tf_ok == false) {
         ROS_INFO("lidar_camera_fusion: waiting for camera intrinsics and camera lidar tf ...");
         return;
     }
+#endif
 
     // 4. ROS point cloud -> PCL point cloud
     pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_msg(new pcl::PointCloud<pcl::PointXYZ>);
+    // pcl_ros
     pcl::fromROSMsg(*cloud_msg, *in_cloud_msg);
 
     // 5. 需不需要对 PCL 点云做分割地面等操作？
 
-    // 融合后的点云
+    // 融合后的一帧点云
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-
     out_cloud->points.clear();
 
     pcl::PointXYZRGB color_point;
 
-    std::vector<pcl::PointXYZ> cam_cloud(in_cloud_msg->points.size());
+    //std::vector<pcl::PointXYZ> cam_cloud(in_cloud_msg->points.size());
 
-    int row = 0;
-    int col = 0;
-    cv::Vec3b rgb_pixel;
+    //int row = 0;
+    //int col = 0;
+    
+    //cv::Vec3b rgb_pixel;
+
+    cv::Mat raw_point(4, 1, cv::DataType<double>::type);
+    cv::Mat transformed_point(4, 1, cv::DataType<double>::type);
+
+    double x;
+    double y;
+    double z;
 
     // 6. 遍历点云，给每个点加上颜色
     for (size_t i = 0; i < in_cloud_msg->points.size(); i++) {
@@ -150,49 +189,49 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
         //cam_cloud[i] = TransformPoint(in_cloud_msg->points[i], camera_lidar_tf);
 
         // 用 RT 矩阵变换
-        
-        /*
-            raw_point.at<double>(0, 0) = raw_cloud->points[i].x;
-            raw_point.at<double>(1, 0) = raw_cloud->points[i].y;
-            raw_point.at<double>(2, 0) = raw_cloud->points[i].z;
-            raw_point.at<double>(3, 0) = 1;
+        raw_point.at<double>(0, 0) = in_cloud_msg->points[i].x;
+        raw_point.at<double>(1, 0) = in_cloud_msg->points[i].y;
+        raw_point.at<double>(2, 0) = in_cloud_msg->points[i].z;
+        raw_point.at<double>(3, 0) = 1;
 
-            // 4 X 1 = 4 X 4 * 4 X 1;
-            transformed_point = RT * raw_point;
+        // 4 X 1 = 4 X 4 * 4 X 1;
+        transformed_point = camera_extrinsic_mat * raw_point;
 
-            x = transformed_point.at<double>(0, 0);
-            y = transformed_point.at<double>(1, 0);
-            z = transformed_point.at<double>(2, 0);
-        */
+        x = transformed_point.at<double>(0, 0);
+        y = transformed_point.at<double>(1, 0);
+        z = transformed_point.at<double>(2, 0);
 
         // 使用相机内参将三维空间点投影到像素平面
-        row = int(cam_cloud[i].y * fy / cam_cloud[i].z + cy);
-        col = int(cam_cloud[i].x * fx / cam_cloud[i].z + cx);
+        int col = int(x * fx / z + cx);
+        int row = int(y * fy / z + cy);
 
-        // 只融合在像素平面内的点云
-        if ((row >= 0) && (row < image_size.height) && (col >= 0) && (col < image_size.width) && cam_cloud[i].z > 0) {
-            color_point.x = in_cloud->points[i].x;
-            color_point.y = in_cloud->points[i].y;
-            color_point.z = in_cloud->points[i].z;
+        // 只融合在像素平面内的点云 - 这里的问题！没有进入 for
+        if ((row >= 0) && (row < image_size.height) && (col >= 0) && (col < image_size.width) && z > 0) {
+            color_point.x = in_cloud_msg->points[i].x;
+            color_point.y = in_cloud_msg->points[i].y;
+            color_point.z = in_cloud_msg->points[i].z;
 
-            rgb_pixel = image_frame.at<cv::Vec3b>(row, col);
+            cv::Vec3b rgb_pixel = image_frame.at<cv::Vec3b>(row, col);
 
-            color_point.r = rgb_pixel[2];
-            color_point.g = rgb_pixel[1];
-            color_point.b = rgb_pixel[0];
+            color_point.r = rgb_pixel[2] * 2;
+            color_point.g = rgb_pixel[1] * 2;
+            color_point.b = rgb_pixel[0] * 2;
 
+            ROS_INFO("lidar_camera_fusion: R G B: %f %f %f", color_point.r, color_point.g, color_point.b);
+    
             out_cloud->points.push_back(color_point);
         }
     }
 
     // 执行欧拉聚类分割
-    std::vector<pcl::PointIndices> cluster_indices;
+    //std::vector<pcl::PointIndices> cluster_indices;
     // 聚类容忍度为 3m，最少点云数量为 100，最大点云数量为 25000，这 3 个参数需要根据实际情况调整！
-    EucCluster(out_cloud, cluster_indices, 3, 100, 25000);
+    //EucCluster(out_cloud, cluster_indices, 3, 100, 25000);
 
     // 执行随机森林分类
 
     // 以下需要发布聚类 + 分割的误差最小化的融合点云
+
     sensor_msgs::PointCloud2 fusion_cloud;
 
     // PCL cloud -> ROS cloud
@@ -200,6 +239,8 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
 
     fusion_cloud.header = cloud_msg->header;
 
+    ROS_INFO("lidar_camera_fusion: publish fusion cloud");
+    
     // 发布融合后的带颜色的点云
     pub_fusion_cloud.publish(fusion_cloud);
 }
@@ -254,15 +295,15 @@ pcl::PointXYZ LidarCameraFusion::TransformPoint(const pcl::PointXYZ& in_point, c
  * @Date: 2020-05-18
  * @LastEditTime: 
  */
-void LidarCameraFusion::EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud, 
-                                   std::vector<pcl::PointIndices>& cluster_indices, 
-                                   int cluster_tolerance, 
-                                   int min_cluster_size, 
-                                   int max_cluster_size)
+void LidarCameraFusion::EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud,
+    std::vector<pcl::PointIndices>& cluster_indices,
+    int cluster_tolerance,
+    int min_cluster_size,
+    int max_cluster_size)
 {
     // 设置使用 kdtree 搜索
     pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kd_tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
-    kd_tree->setInputCloud(out_cloud);
+    kd_tree->setInputCloud(in_cloud);
 
     // 创建欧拉聚类对象
     pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> euc;
@@ -271,12 +312,12 @@ void LidarCameraFusion::EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_clo
     euc.setClusterTolerance(cluster_tolerance);
     euc.setMinClusterSize(min_cluster_size);
     euc.setMaxClusterSize(max_cluster_size);
-    
+
     // 设置使用 kdtree 搜索最近邻居
     euc.setSearchMethod(kd_tree);
-    
+
     euc.setInputCloud(in_cloud);
-    
+
     // 执行欧拉聚类
     euc.extract(cluster_indices);
 }

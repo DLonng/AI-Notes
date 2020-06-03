@@ -105,42 +105,40 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/mode_2.png)
 
-然后使用上面的视角操作方法，把点云中的标定板放大到中心位置：
+如果需要更换背景，按 b 键改变为大致灰色即可：
 
-![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/move2center.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/change_bgcolor.png)
 
-之后点击右上角的 Grab 捕获当前帧的图像和点云：
+我这里就不该背景了，黑色也挺好看出点云的，然后使用上面的视角操作方法，把点云中的标定板放大到中心位置：
 
-![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/grab_image_cloud.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/change_cloud_view2.png)
+
+之后点击右上角的 Grab 捕获当前帧的图像和点云，使用 `-` 和 `+` 缩放视角：
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/grab_3.png)
 
 如果你**点击 grab 没反应**很正常，可能是棋盘格离得太远或者模糊了，你多试几个位置应该就能捕获到，我回放一个 Bag 也就捕获了 9 张左右。
 
-然后把鼠标放到右下角捕获的点云窗口，选择一个棋盘格的中心位置区域，关于这个区域的选择，我也不太懂，不过我是参考这个标定工具的使用文档给的例子选择的，大概就是标定板的中心位置选择一个圆形的区域，尽量保证右上角的平面法向量垂直于标定板平面：
+然后把鼠标放到右下角捕获的点云窗口，选择一个棋盘格的中心位置区域，关于这个区域的选择，我是参考这个标定工具的使用文档给的例子选择的，大概就是标定板的中心位置选择一个圆形的区域，尽量保证右上角的平面法向量垂直于标定板平面：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/CalibrationToolKitExample.png)
 
 鼠标左键点击选择，右键点击取消，我的选择如下，可以参考：
 
-![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/select_cloud.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/select_cloud2.png)
 
-然后重复以上步骤，不断回放暂停，Grab 捕获单帧图像和点云（我测试至少要选择 4 帧），选择点云区域，直到回放结束，接着就可以点击右上角的「Calibrate」按钮计算外参矩阵（左上角显示），然后再点击「Project」查看标定效果：
+然后重复以上步骤，不断回放暂停，Grab 捕获单帧图像和点云（我一般选择 9 帧左右），选择点云区域，直到回放结束，接着就可以点击右上角的「Calibrate」按钮计算外参矩阵（左上角显示），然后再点击「Project」查看标定效果：
 
-![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibrate_project.png)
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/result_4.png)
 
-可以看到我这里选择的不太好，有点歪了，需要重新选择，以下是我重新标定的结果，还算可以：
+可以切换左下方的图片窗口，看看每个捕获的图片和对应的点云帧的对其效果，另外左边也能看到标定的误差，当然是越小越好，我目前的标定效果一般般，后续打算再标几次。
 
+标定好之后，点击左上角「save」保存外参矩阵即可，建议带上时间戳：
 
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/save.png)
 
+最后的外参数文件如下，这个文件包含了相机内参和相机到雷达的外参：
 
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/ext_mat.png)
 
-
-
-
-
-
-
-
-
-
-
-以上就是我的雷达相机联合标定过程！
+以上就是我的雷达相机联合标定过程！希望能帮助正在标定雷达和相机的同学 ^_^！
