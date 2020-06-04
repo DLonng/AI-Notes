@@ -30,6 +30,10 @@
 
 #include <opencv2/opencv.hpp>
 
+
+#include <image_transport/image_transport.h>
+
+
 class LidarCameraFusion {
 public:
     LidarCameraFusion();
@@ -81,6 +85,8 @@ private:
 
     // Robosense 雷达和 ZED 相机外参
     cv::Mat camera_extrinsic_mat;
+    
+    cv::Mat camera_extrinsic_mat_inv;
 
     // ZED 相机内参
     cv::Mat camera_instrinsics_mat;

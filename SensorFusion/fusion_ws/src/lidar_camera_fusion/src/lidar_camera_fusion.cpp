@@ -46,10 +46,23 @@ void LidarCameraFusion::InitROS()
 
     // 读取内外参
     fs["CameraExtrinsicMat"] >> camera_extrinsic_mat;
+    
+    camera_extrinsic_mat_inv = camera_extrinsic_mat.inv();
 
+    ROS_INFO("lidar_camera_fusion: camera_extrinsic_mat[0][0] %f", camera_extrinsic_mat.at<double>(0, 0));
+    
     fs["CameraMat"] >> camera_instrinsics_mat;
+    
     camera_instrinsics_mat_ok = true;
 
+
+    fx = static_cast<float>(camera_instrinsics_mat.at<double>(0, 0));
+    fy = static_cast<float>(camera_instrinsics_mat.at<double>(1, 1));
+    cx = static_cast<float>(camera_instrinsics_mat.at<double>(0, 2));
+    cy = static_cast<float>(camera_instrinsics_mat.at<double>(1, 2));
+
+    ROS_INFO("lidar_camera_fusion: camera_instrinsics_mat fx %f fy %f cx %f cy %f", fx, fy, cx, cy);
+    
     fs["DistCoeff"] >> distortion_coefficients;
 
     fs["ImageSize"] >> image_size;
@@ -106,11 +119,18 @@ void LidarCameraFusion::ImageCallback(const sensor_msgs::Image::ConstPtr& image_
     cv::undistort(cv_image, image_frame, camera_instrinsics_mat, distortion_coefficients);
 
     // 4. 发布去畸变的图像消息
+    static image_transport::ImageTransport it(topic_handle);
+    static image_transport::Publisher pub_image = it.advertise("identified_image", 1);
+    static sensor_msgs::ImagePtr msg;
+    msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_frame).toImageMsg();
+    pub_image.publish(msg);
 
     // 5. 保存当前图像帧的 ID 和大小
     image_frame_id = image_msg->header.frame_id;
     image_size.height = image_frame.rows;
     image_size.width = image_frame.cols;
+
+    //ROS_INFO("lidar_camera_fusion: image_frame_id %d, height %d, width %d", image_frame_id, image_size.height, image_size.width);
 }
 
 /*
@@ -195,29 +215,33 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
         raw_point.at<double>(3, 0) = 1;
 
         // 4 X 1 = 4 X 4 * 4 X 1;
-        transformed_point = camera_extrinsic_mat * raw_point;
-
+        transformed_point = camera_extrinsic_mat_inv * raw_point;
+        
         x = transformed_point.at<double>(0, 0);
         y = transformed_point.at<double>(1, 0);
         z = transformed_point.at<double>(2, 0);
+
 
         // 使用相机内参将三维空间点投影到像素平面
         int col = int(x * fx / z + cx);
         int row = int(y * fy / z + cy);
 
-        // 只融合在像素平面内的点云 - 这里的问题！没有进入 for
+        // 只融合在像素平面内的点云 - 这里的 RGB = 0 0 0
         if ((row >= 0) && (row < image_size.height) && (col >= 0) && (col < image_size.width) && z > 0) {
             color_point.x = in_cloud_msg->points[i].x;
             color_point.y = in_cloud_msg->points[i].y;
             color_point.z = in_cloud_msg->points[i].z;
 
+            //ROS_INFO("lidar_camera_fusion: color_point x y z %f %f %f", color_point.x, color_point.y, color_point.z);
+            
             cv::Vec3b rgb_pixel = image_frame.at<cv::Vec3b>(row, col);
 
-            color_point.r = rgb_pixel[2] * 2;
-            color_point.g = rgb_pixel[1] * 2;
-            color_point.b = rgb_pixel[0] * 2;
+            color_point.r = rgb_pixel[2];
+            color_point.g = rgb_pixel[1];
+            color_point.b = rgb_pixel[0];
 
-            ROS_INFO("lidar_camera_fusion: R G B: %f %f %f", color_point.r, color_point.g, color_point.b);
+            //ROS_INFO("lidar_camera_fusion: color_point  R G B: %f %f %f", color_point.r, color_point.g, color_point.b);
+            //ROS_INFO("lidar_camera_fusion: rgb_pixel R G B: %f %f %f", rgb_pixel[2], rgb_pixel[1], rgb_pixel[0]);
     
             out_cloud->points.push_back(color_point);
         }
