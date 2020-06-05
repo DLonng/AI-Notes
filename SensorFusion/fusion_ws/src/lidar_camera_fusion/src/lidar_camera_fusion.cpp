@@ -11,6 +11,7 @@ LidarCameraFusion::LidarCameraFusion()
     : param_handle("~")
     , camera_lidar_tf_ok(false)
     , camera_instrinsics_mat_ok(false)
+    , camera_extrinsic_mat_ok(false)
     , image_frame_id("")
 {
 
@@ -25,34 +26,38 @@ LidarCameraFusion::LidarCameraFusion()
  */
 void LidarCameraFusion::InitROS()
 {
-    // 先读取外参文件
     std::string calibration_file;
-
     param_handle.param<std::string>("calibration_file", calibration_file, "");
     
     if (calibration_file.empty()) {
-        ROS_ERROR("[%s] missing calibration file path '%S'. ", "lidar_camera_fusion", calibration_file.c_str());
+        ROS_ERROR("[%s]: missing calibration file path '%S'. ", kNodeName, calibration_file.c_str());
         ros::shutdown();
         return ;
     }
 
+    // 读取 Autoware 雷达相机外参标定文件
     cv::FileStorage fs(calibration_file, cv::FileStorage::READ);
 
     if (!fs.isOpened()) {
-        ROS_ERROR("[%s] cannot open file calibration file [%s]", "lidar_camera_fusion", calibration_file.c_str());
+        ROS_ERROR("[%s]: cannot open file calibration file [%s]. ", kNodeName, calibration_file.c_str());
         ros::shutdown();
-        return;
+        return ;
+    } else {
+        camera_extrinsic_mat_ok = true;
     }
 
-    // 读取内外参
+    // 导入雷达相机外参
     fs["CameraExtrinsicMat"] >> camera_extrinsic_mat;
     
+    // 不用 TF 转换，需要对外参矩阵求逆，因为标定的方向是 [相机 -> 雷达]
+    // 而融合的方向是 [雷达 -> 相机]
     camera_extrinsic_mat_inv = camera_extrinsic_mat.inv();
+    
 
-    ROS_INFO("lidar_camera_fusion: camera_extrinsic_mat[0][0] %f", camera_extrinsic_mat.at<double>(0, 0));
+    ROS_INFO("[%s]: camera_extrinsic_mat[0][0] %f", kNodeName, camera_extrinsic_mat.at<double>(0, 0));
     
+    // 读取相机内参
     fs["CameraMat"] >> camera_instrinsics_mat;
-    
     camera_instrinsics_mat_ok = true;
 
 

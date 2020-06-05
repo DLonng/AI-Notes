@@ -34,6 +34,9 @@
 #include <image_transport/image_transport.h>
 
 
+const std::string kNodeName = "lidar_camera_fusion";
+
+
 class LidarCameraFusion {
 public:
     LidarCameraFusion();
@@ -102,8 +105,12 @@ private:
 
     // ZED 相机畸变模型
     std::string dist_model;
-
+    
+    // 内参是否初始化
     bool camera_instrinsics_mat_ok;
+
+    // 雷达相机外参是否初始化
+    bool camera_extrinsic_mat_ok;
 
 private:
     // 定义相机和雷达之间的坐标转换关系
