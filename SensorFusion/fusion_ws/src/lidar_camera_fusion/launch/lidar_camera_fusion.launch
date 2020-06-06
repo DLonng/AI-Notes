@@ -8,6 +8,7 @@
     <!-- 图像点云融合输出话题名 -->
     <arg name = "fusion_topic" default = "/fusion_cloud"/>
 
+    <!-- Autoware 外参标定文件路径 -->
     <arg name = "calibration_file" default = "$(find lidar_camera_fusion)/calibr_file/2020-06-03-09-59-autoware_lidar_camera_calibration.yaml" />
 
     <!-- 图像点云融合节点 -->

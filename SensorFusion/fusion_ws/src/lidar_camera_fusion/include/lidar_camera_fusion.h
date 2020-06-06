@@ -30,12 +30,11 @@
 
 #include <opencv2/opencv.hpp>
 
-
-#include <image_transport/image_transport.h>
-
+//#include <image_transport/image_transport.h>
 
 const std::string kNodeName = "lidar_camera_fusion";
 
+#define USING_TF 1 
 
 class LidarCameraFusion {
 public:
@@ -52,7 +51,7 @@ private:
     void CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg);
 
     // 从 tf 树中寻找两个 frame_id 之间的变换关系，第二个参数应该也可以用引用传递
-    tf::StampedTransform FindTransform(const std::string& target_frame, const std::string source_frame);
+    tf::StampedTransform FindTransform(const std::string& target_frame, const std::string& source_frame);
 
     // 将 in_point 利用 in_transform 进行坐标转换
     pcl::PointXYZ TransformPoint(const pcl::PointXYZ& in_point, const tf::StampedTransform& in_transform);
@@ -65,7 +64,7 @@ private:
                                        int max_cluster_size);
 
 private:
-    // 为何要分为 2 个呢？只用一个行不行？
+    // 
     ros::NodeHandle param_handle;
 
     ros::NodeHandle topic_handle;
@@ -88,7 +87,8 @@ private:
 
     // Robosense 雷达和 ZED 相机外参
     cv::Mat camera_extrinsic_mat;
-    
+   
+    // 外参逆矩阵
     cv::Mat camera_extrinsic_mat_inv;
 
     // ZED 相机内参
