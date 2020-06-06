@@ -156,7 +156,7 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
         return;
     }
 
-#if 1
+#if 0 
     
     // 2. 从 tf 树中寻找雷达和相机的坐标变换关系
     if (camera_lidar_tf_ok == false)
@@ -226,7 +226,7 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
             以上的矩阵使用 cv::Mat 定义即可
         */
 
-#if 1  
+#if 0  
         cam_cloud[i] = TransformPoint(in_cloud_msg->points[i], camera_lidar_tf);
         col = int(cam_cloud[i].x * fx / cam_cloud[i].z + cx);
         row = int(cam_cloud[i].y * fy / cam_cloud[i].z + cy);
