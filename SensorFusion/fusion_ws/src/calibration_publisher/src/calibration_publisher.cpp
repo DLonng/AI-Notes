@@ -1,6 +1,5 @@
 #include "calibration_publisher.h"
 
-
 const std::string kNodeName = "calibration_publisher";
 
 static std::string camera_frame;
@@ -51,24 +50,22 @@ void TFRegistration(const cv::Mat& camera_ext_mat, const ros::Time& time_stamp) 
 
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, kNodeName);
+    ros::init(argc, argv, "calibration_publisher");
 
-    ROS_INFO("[%s]: start!", kNodeName);
-    
     ros::NodeHandle topic_handle;
     ros::NodeHandle param_handle("~");
 
     std::string image_topic;
     param_handle.param<std::string>("image_topic", image_topic, "/camera/left/image_raw");
 
-    param_handle.param<std::string>("camera_frame", camera_frame, "camera");
+    param_handle.param<std::string>("camera_frame", camera_frame, "left_frame");
     param_handle.param<std::string>("lidar_frame", lidar_frame, "rslidar");
 
     std::string calibration_file;
     param_handle.param<std::string>("calibration_file", calibration_file, "");
 
     if (calibration_file.empty()) {
-        ROS_ERROR("[%s]: missing calibration file path ''%S'. ", kNodeName, calibration_file.c_str());
+        ROS_ERROR("[%s]: missing calibration file path ''%s'. ", kNodeName.c_str(), calibration_file.c_str());
         ros::shutdown();
         return -1;
     }
@@ -76,7 +73,7 @@ int main(int argc, char** argv) {
     cv::FileStorage fs(calibration_file, cv::FileStorage::READ);
 
     if (!fs.isOpened()) {
-        ROS_ERROR("[%s]: cannot open file calibration_file %S. ", kNodeName, calibration_file.c_str());
+        ROS_ERROR("[%s]: cannot open file calibration_file %s. ", kNodeName.c_str(), calibration_file.c_str());
         ros::shutdown();
         return -1;
     }
@@ -84,7 +81,7 @@ int main(int argc, char** argv) {
 
     fs["CameraExtrinsicMat"] >> cam_ext_mat;
 
-    ROS_INFO("[%s]: camera_extrinsic_mat[0][0] %f", kNodeName, cam_ext_mat.at<double>(0, 0));
+    ROS_INFO("[%s]: camera_extrinsic_mat[0][0] %f", kNodeName.c_str(), cam_ext_mat.at<double>(0, 0));
 
     ros::Subscriber sub_imager = topic_handle.subscribe(image_topic, 10, &image_raw_callback);
 

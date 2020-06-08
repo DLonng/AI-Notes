@@ -7,6 +7,10 @@
 
 #include "lidar_camera_fusion.h"
 
+
+const std::string LidarCameraFusion::kNodeName = "lidar_camera_fusion";
+
+
 LidarCameraFusion::LidarCameraFusion()
     : param_handle("~")
     , camera_lidar_tf_ok(false)
@@ -30,7 +34,7 @@ void LidarCameraFusion::InitROS()
     param_handle.param<std::string>("calibration_file", calibration_file, "");
     
     if (calibration_file.empty()) {
-        ROS_ERROR("[%s]: missing calibration file path '%S'. ", kNodeName, calibration_file.c_str());
+        ROS_ERROR("[%s]: missing calibration file path '%S'. ", kNodeName.c_str(), calibration_file.c_str());
         ros::shutdown();
         return ;
     }
@@ -39,7 +43,7 @@ void LidarCameraFusion::InitROS()
     cv::FileStorage fs(calibration_file, cv::FileStorage::READ);
 
     if (!fs.isOpened()) {
-        ROS_ERROR("[%s]: cannot open file calibration file [%s]. ", kNodeName, calibration_file.c_str());
+        ROS_ERROR("[%s]: cannot open file calibration file [%s]. ", kNodeName.c_str(), calibration_file.c_str());
         ros::shutdown();
         return ;
     }
@@ -52,8 +56,8 @@ void LidarCameraFusion::InitROS()
     // 而融合的方向是 [雷达 -> 相机]
     camera_extrinsic_mat_inv = camera_extrinsic_mat.inv();
     camera_extrinsic_mat_ok = true;
-
-    ROS_INFO("[%s]: camera_extrinsic_mat[0][0] %f", kNodeName, camera_extrinsic_mat.at<double>(0, 0));
+   
+    ROS_INFO("[%s]: camera_extrinsic_mat[0][0] %f", kNodeName.c_str(), camera_extrinsic_mat.at<double>(0, 0));
     
     // 读取相机内参
     fs["CameraMat"] >> camera_instrinsics_mat;
@@ -65,7 +69,7 @@ void LidarCameraFusion::InitROS()
     cx = static_cast<float>(camera_instrinsics_mat.at<double>(0, 2));
     cy = static_cast<float>(camera_instrinsics_mat.at<double>(1, 2));
 
-    ROS_INFO("[%s]: camera_instrinsics_mat fx %f fy %f cx %f cy %f", kNodeName, fx, fy, cx, cy);
+    ROS_INFO("[%s]: camera_instrinsics_mat fx %f fy %f cx %f cy %f", kNodeName.c_str(), fx, fy, cx, cy);
    
     // 畸变矩阵
     fs["DistCoeff"] >> distortion_coefficients;
@@ -139,7 +143,7 @@ void LidarCameraFusion::ImageCallback(const sensor_msgs::Image::ConstPtr& image_
     image_size.height = image_frame.rows;
     image_size.width = image_frame.cols;
 
-    ROS_INFO("[%s]: image_frame_id %s, height %d, width %d", kNodeName, image_frame_id, image_size.height, image_size.width);
+    //ROS_INFO("[%s]: image_frame_id %s", kNodeName.c_str(), image_frame_id.c_str());
 }
 
 /*
@@ -152,20 +156,19 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
 {
     // 1. 确保当前融合的图像已经去畸变
     if (image_frame.empty() || image_frame_id == "") {
-        ROS_INFO("[%s]: waiting for current image frame ...", kNodeName);
+        ROS_INFO("[%s]: waiting for current image frame ...", kNodeName.c_str());
         return;
     }
 
-#if 0 
+#if USING_TF
     
     // 2. 从 tf 树中寻找雷达和相机的坐标变换关系
     if (camera_lidar_tf_ok == false)
-        camera_lidar_tf = FindTransform("camera", "rslidar");
-        //camera_lidar_tf = FindTransform(image_frame_id, cloud_msg->header.frame_id);
+        camera_lidar_tf = FindTransform(image_frame_id, cloud_msg->header.frame_id);
 
     // 3. 保证相机内参和坐标转换准备完成
     if (camera_instrinsics_mat_ok == false || camera_lidar_tf_ok == false) {
-        ROS_INFO("[%s]: waiting for camera intrinsics and camera lidar tf ...", kNodeName);
+        ROS_INFO("[%s]: waiting for camera intrinsics and camera lidar tf ...", kNodeName.c_str());
         return;
     }
 
@@ -173,7 +176,7 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
 
     // 3. 保证相机内参和坐标转换准备完成
     if (camera_instrinsics_mat_ok == false || camera_extrinsic_mat_ok == false) {
-        ROS_INFO("[%s]: waiting for camera_instrinsics_mat and camera_extrinsic_mat...", kNodeName);
+        ROS_INFO("[%s]: waiting for camera_instrinsics_mat and camera_extrinsic_mat...", kNodeName.c_str());
         return;
     }
 
@@ -226,8 +229,9 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
             以上的矩阵使用 cv::Mat 定义即可
         */
 
-#if 0  
+#if USING_TF  
         cam_cloud[i] = TransformPoint(in_cloud_msg->points[i], camera_lidar_tf);
+        
         col = int(cam_cloud[i].x * fx / cam_cloud[i].z + cx);
         row = int(cam_cloud[i].y * fy / cam_cloud[i].z + cy);
 #else
@@ -265,7 +269,7 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
 
 #endif
 
-        // 只融合在像素平面内的点云 - 这里的 RGB = 0 0 0
+        // 只融合在像素平面内的点云
         if ((row >= 0) && (row < image_size.height) && (col >= 0) && (col < image_size.width) && (z > 0)) {
             color_point.x = in_cloud_msg->points[i].x;
             color_point.y = in_cloud_msg->points[i].y;
@@ -297,8 +301,10 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
     pcl::toROSMsg(*out_cloud, fusion_cloud);
 
     fusion_cloud.header = cloud_msg->header;
+    
+    //ROS_INFO("[%s]: cloud_frame_id %s", kNodeName.c_str(), cloud_msg->header.frame_id.c_str());
 
-    ROS_INFO("lidar_camera_fusion: publish fusion cloud");
+    //ROS_INFO("lidar_camera_fusion: publish fusion cloud");
     
     // 发布融合后的带颜色的点云
     pub_fusion_cloud.publish(fusion_cloud);
@@ -319,9 +325,9 @@ tf::StampedTransform LidarCameraFusion::FindTransform(const std::string& target_
     try {
         transform_listener.lookupTransform(target_frame, source_frame, ros::Time(0), transform);
         camera_lidar_tf_ok = true;
-        ROS_INFO("[%s]: camera_lidar_tf Get!", kNodeName);
+        ROS_INFO("[%s]: camera_lidar_tf Get!", kNodeName.c_str());
     } catch (tf::TransformException e) {
-        ROS_INFO("[%s]: %s", kNodeName, e.what());
+        ROS_INFO("[%s]: %s", kNodeName.c_str(), e.what());
     }
 
     return transform;

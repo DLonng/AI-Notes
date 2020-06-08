@@ -58,7 +58,7 @@ int main(int argc, char** argv)
             */
             listener.waitForTransform("/turtle2", "/turtle1", ros::Time(0), ros::Duration(3.0));
 
-            // 寻找 turtlei 到 turtle2 的坐标变换
+            // 寻找 turtle1 到 turtle2 的坐标变换
             // target_frame: turtle2 
             // source_frame: turtle1
             // ros::Time(0): 获取变换的时间，这里获取最新的变换

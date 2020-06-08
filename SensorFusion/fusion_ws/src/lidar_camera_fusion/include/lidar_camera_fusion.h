@@ -2,7 +2,7 @@
  * @Description: ROS Node, Fusion img and point cloud
  * @Author: Dlonng
  * @Date: 2020-05-03 20:41:00
- * @LastEditTime: 
+ * @LastEditTime:
  */
 
 #ifndef LIDAR_CAMERA_FUSION_H
@@ -32,9 +32,7 @@
 
 //#include <image_transport/image_transport.h>
 
-const std::string kNodeName = "lidar_camera_fusion";
-
-#define USING_TF 1 
+#define USING_TF 0 
 
 class LidarCameraFusion {
 public:
@@ -57,14 +55,14 @@ private:
     pcl::PointXYZ TransformPoint(const pcl::PointXYZ& in_point, const tf::StampedTransform& in_transform);
 
     // 对融合后的点云执行欧拉聚类分割
-    void EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud, 
-                                       std::vector<pcl::PointIndices>& cluster_indices, 
-                                       int cluster_tolerance, 
-                                       int min_cluster_size, 
-                                       int max_cluster_size);
+    void EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud,
+                    std::vector<pcl::PointIndices>& cluster_indices,
+                    int cluster_tolerance,
+                    int min_cluster_size,
+                    int max_cluster_size);
 
 private:
-    // 
+    //
     ros::NodeHandle param_handle;
 
     ros::NodeHandle topic_handle;
@@ -87,7 +85,7 @@ private:
 
     // Robosense 雷达和 ZED 相机外参
     cv::Mat camera_extrinsic_mat;
-   
+
     // 外参逆矩阵
     cv::Mat camera_extrinsic_mat_inv;
 
@@ -105,7 +103,7 @@ private:
 
     // ZED 相机畸变模型
     std::string dist_model;
-    
+
     // 内参是否初始化
     bool camera_instrinsics_mat_ok;
 
@@ -125,6 +123,9 @@ private:
 private:
     // 融合的带颜色的点云
     pcl::PointCloud<pcl::PointXYZRGB> colored_cloud;
+
+private:
+    static const std::string kNodeName;
 };
 
 #endif // LIDAR_CAMERA_FUSION_H
