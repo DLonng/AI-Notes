@@ -27,7 +27,7 @@
     <node pkg="learning_tf2" type="turtle_tf2_listener" name="listener" />
 
     <!-- 启动新添加的 carrot1 坐标系广播者节点 -->
-    <node pkg="learning_tf" type="frame_tf_broadcaster" name="broadcaster_frame" />
+    <node pkg="learning_tf2" type="frame_tf2_broadcaster" name="broadcaster_frame" />
 </launch>
 
 

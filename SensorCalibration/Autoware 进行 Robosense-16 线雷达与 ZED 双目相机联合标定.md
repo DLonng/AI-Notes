@@ -1,10 +1,12 @@
+项目要标定雷达和相机，这里记录下我标定过程，用的速腾 Robosense - 16 线雷达和 ZED 双目相机。
+
 ## 一、编译安装 Autoware-1.10.0
 
 我没有安装最新版本的 Autoware，因为新版本不带雷达和相机的标定工具，我安装的是 1.10.0 版本！
 
 ### 1.1 下载 Autoware-1.10.0 源码
 
-不建议[官方的 git check 安装方式](https://gitlab.com/autowarefoundation/autoware.ai/autoware/-/wikis/Source-Build)，因为不熟悉 git 可能会遇到问题，直接在[Gitlab 仓库](https://gitlab.com/autowarefoundation/autoware.ai/autoware)选择 1.10.0 版本下载即可：
+不建议[官方的 git check 安装方式](https://gitlab.com/autowarefoundation/autoware.ai/autoware/-/wikis/Source-Build)，因为不熟悉 git 可能会遇到问题，直接在[GitLab 仓库](https://gitlab.com/autowarefoundation/autoware.ai/autoware)选择 1.10.0 版本下载即可：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/download_autoware.png)
 
@@ -132,7 +134,9 @@ rosbag play --pause zed_calibration.bag
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/autoware_camera_calibr_yaml.png)
 
-## 三、ZED 相机和 Robosense-16 线雷达联合标定
+下面开始标定雷达和相机的外参！
+
+## 三、ZED 相机和 Robosense-16 线雷达联合标定外参
 
 ### 3.1 联合标定准备
 
@@ -144,13 +148,13 @@ rosbag play --pause zed_calibration.bag
 rosbag record -O zed_lidar_calibration.bag /camera/left/image_raw /camera/right/image_raw /rslidar_point
 ```
 
-但是录制完后，我拷贝到台式机上，回放错误，提示我要 `reindex` 以下，我问我同学也遇到过这个问题，暂时不知道为何，不过 reindex 后 Bag 可以正常回放：
+但是录制完后，我拷贝到台式机上，还是提示我要 `reindex` 一下，我估计是小车系统的问题：
 
 ```shell
 rosbag reindex zed_lidar_calibration.bag
 ```
 
-查看下 info，没有问题：
+修复完查看下 info，没有问题：
 
 ```shell
 rosbag info
@@ -168,13 +172,13 @@ rosbag play --pause zed_lidar_calibration.bag
 
 ### 3.2 标定过程
 
-首先启动 roscore：
+首先启动 roscore，也可以不用启动，后面 roslaunch 会自动启动：
 
 ```shell
 roscore
 ```
 
-接着初始化 Autoware：
+接着初始化 Autoware 环境：
 
 ```shell
 cd autoware-1.10.0/ros/
@@ -188,7 +192,7 @@ source devel/setup.zsh
 roslaunch autoware_camera_lidar_calibrator camera_lidar_calibration.launch intrinsics_file:=xxx.yaml image_src:=/camera/left/image_raw
 ```
 
-- `intrinsics_file`：前面标定 ZED 的内参文件
+- `intrinsics_file`：前面标定 ZED 的 YAML 内参文件路径
 - `image_src`：要标定的相机话题，这里用的 left image，有需要也可以用 right image
 
 遇到的第一个错误，启动失败提示找不到 `image-view2`：
@@ -259,7 +263,7 @@ rosrun rviz rviz
 
 1. 观察图像和点云，并在 image-view2 中用鼠标选择一个像素点
 2. 点击 rviz 工具栏的 Publish Point
-3. 然后在 rviz 中选择一个对应的点云数据点，当你的鼠标右下角出现一个浅红色的路标记号时即可点击该数据点
+3. 然后在 rviz 中选择一个对应的点云数据点（要尽量选择准确），当你的鼠标右下角出现一个浅红色的路标记号时即可点击该数据点
 4. 观察 image-view2 的窗口是否出现 points 的提示信息
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibr_process.png)
@@ -272,7 +276,7 @@ rosrun rviz rviz
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/calibr_result.png)
 
-### 3.3 标定结果测试
+## 四、标定结果测试
 
 标定矩阵有了之后，我们来利用 autoware 提供的融合工具来看下标定的效果如何，先来回放数据：
 
@@ -306,5 +310,18 @@ rosbag play --pause zed_lidar_calibration.bag /rslidar_points:=/points_raw
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/fusion_result.png)
 
-OK！以上就是我的雷达相机内外参标定总结！
+## 五、可能遇到的问题
 
+### 5.1 Autoware 编译失败
+
+我的编译过程比较顺利，如果你遇到的编译错误，可以先阅读报错信息，看看是否是缺少某个依赖库，然后在网上搜索安装方法，最好用英文 + Google！如果是一些看不懂的错误，可以直接复制报错信息到搜索引擎，有时也能找到答案。
+
+### 5.2 Rviz 不显示点云
+
+检查 FixedFrame 是否设置为雷达的 frame_id。
+
+### 5.3 标定结果不准
+
+选点的时候仔细点，多标定几次。
+
+以上就是我的雷达相机内外参标定总结，希望能帮助要标定雷达和相机的朋友，后面我会再写一篇用 Autoware 的 Calibration Tool Kit 工具来标定的博客，可以持续关注我！

@@ -1,0 +1,7 @@
+digraph G {
+"rslidar" -> "left_frame"[label=" Broadcaster: /calibration_publisher_node\nAverage rate: 20.232\nBuffer length: 4.3\nMost recent transform: 1590827090.42\nOldest transform: 1590827086.12\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1591679617.06"[ shape=plaintext ] ;
+}->"rslidar";
+}

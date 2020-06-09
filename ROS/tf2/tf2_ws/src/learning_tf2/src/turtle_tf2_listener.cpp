@@ -56,14 +56,30 @@ int main(int argc, char** argv)
                      [ERROR] [1496887441.589043649]: “turtle2” passed to lookupTransform argument target_frame does not exist. 
                 waitForTransform 函数的意思是等待直到系统中存在可用的变换
             */
-            listener.waitForTransform("/turtle2", "/turtle1", ros::Time(0), ros::Duration(3.0));
+            //listener.waitForTransform("/turtle2", "/turtle1", ros::Time::now(), ros::Duration(3.0));
+
 
             // 寻找 turtle1 到 turtle2 的坐标变换
             // target_frame: turtle2 
             // source_frame: turtle1
             // ros::Time(0): 获取变换的时间，这里获取最新的变换
             // ros::Duration(0.0): 寻找变换的超时时间，默认为 0，该参数默认省略，我这里加上了
-            transformStamped = tfBuffer.lookupTransform("turtle2", "turtle1", ros::Time(0), ros::Duration(0.0));
+            
+            transformStamped = tfBuffer.lookupTransform("turtle2", "turtle1", ros::Time(0));
+            //transformStamped = tfBuffer.lookupTransform("turtle2", "turtle1", ros::Time::now(), ros::Duration(3.0));
+            
+#if 0
+            ros::Time past = ros::Time::now() - ros::Duration(5.0);
+            transformStamped = tfBuffer.lookupTransform("turtle2", "turtle1", past, ros::Duration(1.0));
+#endif
+
+#if 0
+            ros::Time now = ros::Time::now();
+            ros::Time past = now - ros::Duration(5.0);
+            transformStamped = tfBuffer.lookupTransform("turtle2", now,
+                             "turtle1", past,
+                             "world", ros::Duration(1.0));
+#endif                             
         } catch (tf2::TransformException& ex) {
             // 打印异常信息
             ROS_WARN("%s", ex.what());

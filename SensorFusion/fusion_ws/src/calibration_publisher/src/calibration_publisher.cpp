@@ -3,7 +3,7 @@
 const std::string kNodeName = "calibration_publisher";
 
 static std::string camera_frame;
-static std::string lidar_frame;
+static std::string target_frame;
 
 static cv::Mat cam_ext_mat;
 
@@ -41,7 +41,7 @@ void TFRegistration(const cv::Mat& camera_ext_mat, const ros::Time& time_stamp) 
 
     transfrom.setRotation(quaternion);
 
-    broadcaster.sendTransform(tf::StampedTransform(transfrom, time_stamp, lidar_frame, camera_frame));
+    broadcaster.sendTransform(tf::StampedTransform(transfrom, time_stamp, target_frame, camera_frame));
 }
 
 
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     param_handle.param<std::string>("image_topic", image_topic, "/camera/left/image_raw");
 
     param_handle.param<std::string>("camera_frame", camera_frame, "left_frame");
-    param_handle.param<std::string>("lidar_frame", lidar_frame, "rslidar");
+    param_handle.param<std::string>("target_frame", target_frame, "rslidar");
 
     std::string calibration_file;
     param_handle.param<std::string>("calibration_file", calibration_file, "");

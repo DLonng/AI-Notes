@@ -19,6 +19,8 @@
 
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
+#include <geometry_msgs/PointStamped.h>
+
 
 #include <pcl/common/common.h>
 //#include <pcl/search/kdtree.h>
@@ -32,7 +34,7 @@
 
 //#include <image_transport/image_transport.h>
 
-#define USING_TF 0 
+#define USING_TF 1 
 
 class LidarCameraFusion {
 public:
