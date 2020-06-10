@@ -166,4 +166,7 @@ catkin_make
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/color_octomap.png)
 
-我在 B 站录了个简短的视频，可以去看下初步的效果：
+我在 B 站录了个简短的视频，可以去看下初步的效果：[ROS 单帧带颜色八叉树 Octomap 地图构建实验](https://www.bilibili.com/video/BV1hz4y197Wb)
+
+## 四、八叉树建图
+

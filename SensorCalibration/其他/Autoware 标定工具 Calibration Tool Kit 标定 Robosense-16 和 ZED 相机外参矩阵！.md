@@ -1,5 +1,3 @@
-标定视频：[YouTobe](https://www.youtube.com/watch?v=pfBmfgHf6zg)
-
 ## 一、安装 Autoware & ZED 内参标定 & 外参标定准备
 
 之前的这篇文章：[Autoware 进行 Robosense-16 线雷达与 ZED 双目相机联合标定！](https://dlonng.com/posts/autoware-calibr-1) 记录了我用 Autoware 标定相机和雷达的过程，虽然用的不是 Calibration ToolKit 工具，但是博客里面的这些章节也适用本次的  Calibration Tool Kit 工具：
@@ -8,7 +6,7 @@
 - 二、标定 ZED 相机内参
 - 3.1 联合标定准备
 
-如果你是第一次看这篇 Calibration Tool Kit 联合标定的博客，建议先按照之前的博客安装 Autoware、标定 ZED 内参和做好外参标定的准备，最好用上篇博客的方法标定一次。
+如果你是第一次看这篇 Calibration Tool Kit 联合标定的博客，建议先按照之前的博客安装 Autoware、标定 ZED 内参和做好外参标定的准备（标定板，录制标定包等），最好用上篇博客的方法标定一次。
 
 所以这篇博客我就直接开始介绍使用 Calibration Tool Kit 标定雷达和相机外参的过程！
 
@@ -157,12 +155,14 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/ros_fusion_result.png)
 
-我录了个融合视频，可以看看：[B 站：Robosense-16 雷达与 ZED 相机数据融合](https://www.bilibili.com/video/BV1Sp4y1S74w)。
+我也录了个融合视频，可以看看：[B 站：Robosense-16 雷达与 ZED 相机数据融合](https://www.bilibili.com/video/BV1Sp4y1S74w)。
 
 ## 五、标定资源
 
-标定工具的使用文档在这里：
+以下是我标定过程中收集的一些好的资料，这里也分享给大家：
 
+- 标定工具的使用文档在这里：[CalibrationToolkit_Manual.pdf](https://github.com/DLonng/AI-Notes/tree/master/SensorFusion/fusion_ws/src/calibration_publisher/docs)
+- 这里还有个视频，有条件的同学可以看看：[Yutobe：Autoware 标定相机和雷达](https://www.youtube.com/watch?v=pfBmfgHf6zg)
 
+另外 ROS 融合节点的程序我还在完善中，建议关注我的 Github 项目，后续会上传节点代码：[AI-Notes: lidar_camera_fusion](https://github.com/DLonng/AI-Notes/tree/master/SensorFusion/fusion_ws/src/lidar_camera_fusion)，如果标定遇到问题，可以公众号后台给我发消息，或者直接在博客平台留言，我看到会尽快回复的，不过公众号应该回复的快些，哈哈![img](file:///C:\Users\dlonn\AppData\Local\Temp\SGPicFaceTpBq\7172\190F826C.png)。
 
-ROS 融合节点的程序我还在完善中，可以关注我的 Github 项目，后续会上传节点代码的：[AI-Notes: lidar_camera_fusion](https://github.com/DLonng/AI-Notes/tree/master/SensorFusion/fusion_ws/src/lidar_camera_fusion)

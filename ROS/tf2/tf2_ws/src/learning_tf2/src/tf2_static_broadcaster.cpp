@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
     // 3. 对坐标变换初始化
     static_transform_stamped.header.stamp = ros::Time::now();
-    static_transform_stamped.header.frame_id = "world";
+    static_transform_stamped.header.frame_id = "camera";
     static_transform_stamped.child_frame_id = static_turtle_name;
 
     // 初始化 x y z

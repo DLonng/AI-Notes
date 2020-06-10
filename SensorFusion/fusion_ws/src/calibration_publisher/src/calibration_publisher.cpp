@@ -42,6 +42,8 @@ void TFRegistration(const cv::Mat& camera_ext_mat, const ros::Time& time_stamp) 
     transfrom.setRotation(quaternion);
 
     broadcaster.sendTransform(tf::StampedTransform(transfrom, time_stamp, target_frame, camera_frame));
+    // 发送反向的 TF
+    //broadcaster.sendTransform(tf::StampedTransform(transfrom, time_stamp, camera_frame, target_frame));
 }
 
 
@@ -80,6 +82,8 @@ int main(int argc, char** argv) {
 
 
     fs["CameraExtrinsicMat"] >> cam_ext_mat;
+    // 发送反向的 TF
+    //cam_ext_mat = cam_ext_mat.inv();
 
     ROS_INFO("[%s]: camera_extrinsic_mat[0][0] %f", kNodeName.c_str(), cam_ext_mat.at<double>(0, 0));
 

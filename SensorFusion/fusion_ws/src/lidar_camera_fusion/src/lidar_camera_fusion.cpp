@@ -205,6 +205,8 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
     double y = 0.0;
     double z = 0.0;
 
+    double tmp_z = 0.0;
+
     // 6. 遍历点云，给每个点加上颜色
     for (size_t i = 0; i < in_cloud_msg->points.size(); i++) {
         /*
@@ -253,6 +255,8 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
 
         col = int(cam_cloud[i].x * fx / cam_cloud[i].z + cx);
         row = int(cam_cloud[i].y * fy / cam_cloud[i].z + cy);
+
+        tmp_z = cam_cloud[i].z;
 #else
 
         // 用 RT 矩阵变换
@@ -286,10 +290,11 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
         col = int(x * fx / z + cx);
         row = int(y * fy / z + cy);
 
+        tmp_z = z;
 #endif
-
+        
         // 只融合在像素平面内的点云, TF 没有效果是因为没改 z 的判断条件！
-        if ((row >= 0) && (row < image_size.height) && (col >= 0) && (col < image_size.width) && (cam_cloud[i].z > 0)) {
+        if ((row >= 0) && (row < image_size.height) && (col >= 0) && (col < image_size.width) && (tmp_z > 0)) {
             color_point.x = in_cloud_msg->points[i].x;
             color_point.y = in_cloud_msg->points[i].y;
             color_point.z = in_cloud_msg->points[i].z;
@@ -322,6 +327,7 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
     pcl::toROSMsg(*out_cloud, fusion_cloud);
 
     fusion_cloud.header = cloud_msg->header;
+    //fusion_cloud.header.frame_id = "left_frame";
 
     //ROS_INFO("[%s]: cloud_frame_id %s", kNodeName.c_str(), cloud_msg->header.frame_id.c_str());
 
@@ -344,6 +350,8 @@ tf::StampedTransform LidarCameraFusion::FindTransform(const std::string& target_
 
     try {
         transform_listener.lookupTransform(target_frame, source_frame, ros::Time(0), transform);
+        // 寻找反向 TF
+        //transform_listener.lookupTransform(source_frame, target_frame, ros::Time(0), transform);
         camera_lidar_tf_ok = true;
         ROS_INFO("[%s]: camera_lidar_tf Get!", kNodeName.c_str());
     } catch (tf::TransformException e) {
