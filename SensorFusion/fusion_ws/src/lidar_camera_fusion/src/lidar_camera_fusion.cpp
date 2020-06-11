@@ -218,9 +218,6 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
             点云到像素平面的投影矩阵 = 相机内参 * 畸变矩阵 * 雷达到相机的外参矩阵
                 P_lidar_cam(3 X 4) = P_cam(3 X 3) * R_rect(3 X 4) * T_lidar_cam(4 X 4);
 
-            因为之前在 ImageCallBack 中已经对图像去畸变了，所以这里不用加矫正矩阵
-                P_lidar_cam(3 X 4) = P_cam(3 X 3) * T_lidar_cam(4 X 4);
-
             坐标需要齐次化：
                 [u, v, 1] = P_lidar_cam(3 X 4) * [x, y, z, 1];
 
@@ -327,7 +324,7 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
     pcl::toROSMsg(*out_cloud, fusion_cloud);
 
     fusion_cloud.header = cloud_msg->header;
-    //fusion_cloud.header.frame_id = "left_frame";
+    //fusion_cloud.header.frame_id = "camera";
 
     //ROS_INFO("[%s]: cloud_frame_id %s", kNodeName.c_str(), cloud_msg->header.frame_id.c_str());
 

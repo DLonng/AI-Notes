@@ -1,6 +1,6 @@
 ## 一、安装 Autoware & ZED 内参标定 & 外参标定准备
 
-之前的这篇文章：[Autoware 进行 Robosense-16 线雷达与 ZED 双目相机联合标定！](https://dlonng.com/posts/autoware-calibr-1) 记录了我用 Autoware 标定相机和雷达的过程，虽然用的不是 Calibration ToolKit 工具，但是博客里面的这些章节也适用本次的  Calibration Tool Kit 工具：
+之前的这篇文章：[Autoware 进行 Robosense-16 线雷达与 ZED 双目相机联合标定！](https://dlonng.com/posts/autoware-calibr-1) 记录了我用 Autoware 标定相机和雷达的过程，虽然用的不是 Calibration Tool Kit 工具，但是博客里面的以下章节也适用本次的  Calibration Tool Kit ：
 
 - 一、编译安装 Autoware-1.10.0
 - 二、标定 ZED 相机内参
@@ -8,7 +8,7 @@
 
 如果你是第一次看这篇 Calibration Tool Kit 联合标定的博客，建议先按照之前的博客安装 Autoware、标定 ZED 内参和做好外参标定的准备（标定板，录制标定包等），最好用上篇博客的方法标定一次。
 
-所以这篇博客我就直接开始介绍使用 Calibration Tool Kit 标定雷达和相机外参的过程！
+这篇博客我就直接开始介绍使用 Calibration Tool Kit 标定雷达和相机外参的过程！
 
 ## 二、Calibration Tool Kit 联合标定雷达和 ZED 相机
 
@@ -59,9 +59,9 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/main_window_config.png)
 
-配置棋盘格参数：
+配置标定板棋盘格参数：
 
-- Pattern Size(m)：标定板中每个格子的边长，单位 m，我的标定板每个格子长 0.025m
+- Pattern Size(m)：标定板中每个格子的边长，单位 m，我的标定板每个格子长 0.025 m
 - Pattern Number：标定板长X宽的单元格数量 - 1，我的标定板是长有 12 个格子，宽有 9 个，所以填 11x8，减一是因为标定检测的是内部角点
 
 设置好了后，重启 Calibration Tool Kit，点击左上角 Load 导入第一步标定的相机内参 YAML 文件，但是这个工具只能导入 YML 格式的文件：
@@ -76,7 +76,7 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/load_yml.png)
 
-选择不加载相机和雷达的标定数据，因为我们是直接回放 Bag 标定：
+选择不加载相机和雷达的标定数据，因为我是直接回放 Bag 标定：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/load_camera_data_no.png)
 
@@ -103,7 +103,7 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 - 点云大小：o 键使用小点云、p 使用大点云
 - 改变点云窗口背景颜色：b
 
-我使用的使用直接按数字 2 切换模式就能看到点云了：
+我使用的使用直接按数字 2 切换模式就能看到点云了，其实这些模式我也不是很懂。。。：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/mode_2.png)
 
@@ -121,7 +121,7 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 
 如果你**点击 grab 没反应**很正常，可能是棋盘格离得太远或者模糊了，你多试几个位置应该就能捕获到，我回放一个 Bag 也就捕获了 9 张左右。
 
-然后把鼠标放到右下角捕获的点云窗口，选择一个棋盘格的中心位置区域，关于这个区域的选择，我是参考这个标定工具的文档例子选择的，大概就是标定板的中心位置选择一个圆形的区域，尽量保证向外侧的平面法向量垂直于标定板平面：
+然后把鼠标放到右下角捕获的点云窗口，选择一个棋盘格的中心位置区域，关于这个区域的选择，我是参考这个标定工具的文档例子（文末有链接）选择的，大概就是标定板的中心位置选择一个圆形的区域，尽量保证向外侧的平面法向量垂直于标定板平面：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/CalibrationToolKitExample.png)
 
@@ -129,7 +129,7 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/select_cloud2.png)
 
-然后重复以上步骤，不断回放暂停，Grab 捕获单帧图像和点云（我一般选择 9 帧左右），选择点云区域，直到回放结束，接着就可以点击右上角的「Calibrate」按钮计算外参矩阵（左上角显示），然后再点击「Project」查看标定效果：
+然后重复以上步骤，不断回放暂停，Grab 捕获单帧图像和点云（多选一些），选择点云区域，直到回放结束，接着就可以点击右上角的「Calibrate」按钮计算外参矩阵（左上角显示），然后再点击「Project」查看标定效果：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/result_4.png)
 
@@ -164,5 +164,6 @@ rosbag play --pause xxx.bag /rslidar_points:=/points_raw
 - 标定工具的使用文档在这里：[CalibrationToolkit_Manual.pdf](https://github.com/DLonng/AI-Notes/tree/master/SensorFusion/fusion_ws/src/calibration_publisher/docs)
 - 这里还有个视频，有条件的同学可以看看：[Yutobe：Autoware 标定相机和雷达](https://www.youtube.com/watch?v=pfBmfgHf6zg)
 
-另外 ROS 融合节点的程序我还在完善中，建议关注我的 Github 项目，后续会上传节点代码：[AI-Notes: lidar_camera_fusion](https://github.com/DLonng/AI-Notes/tree/master/SensorFusion/fusion_ws/src/lidar_camera_fusion)，如果标定遇到问题，可以公众号后台给我发消息，或者直接在博客平台留言，我看到会尽快回复的，不过公众号应该回复的快些，哈哈![img](file:///C:\Users\dlonn\AppData\Local\Temp\SGPicFaceTpBq\7172\190F826C.png)。
+另外 ROS 融合节点的程序我还在完善中，建议关注我的 Github 项目，后续会上传节点代码：[AI-Notes: lidar_camera_fusion](https://github.com/DLonng/AI-Notes/tree/master/SensorFusion/fusion_ws/src/lidar_camera_fusion)，如果标定遇到问题，可以公众号后台给我发消息，或者直接在博客平台留言，我看到会尽快回复的，不过公众号应该回复的快些，哈哈 ：）
 
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/yingliu_code/yinliu_code.png)
