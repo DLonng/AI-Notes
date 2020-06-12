@@ -46,7 +46,6 @@ void LidarCameraFusion::InitROS() {
         return ;
     }
 
-
     // 导入雷达相机外参
     fs["CameraExtrinsicMat"] >> camera_extrinsic_mat;
 
@@ -118,6 +117,7 @@ void LidarCameraFusion::ImageCallback(const sensor_msgs::Image::ConstPtr& image_
     // image_msg: 图像指针，brg8: 编码参数
     // rgb8: CV_8UC3, color image with red-green-blue color order
     // https://blog.csdn.net/bigdog_1027/article/details/79090571
+
     cv_bridge::CvImagePtr cv_image_ptr = cv_bridge::toCvCopy(image_msg, "bgr8");
     cv::Mat cv_image = cv_image_ptr->image;
 
@@ -207,7 +207,7 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
 
     double tmp_z = 0.0;
 
-    // 6. 遍历点云，给每个点加上颜色
+    // 6. 遍历点云，融合像素
     for (size_t i = 0; i < in_cloud_msg->points.size(); i++) {
         /*
             坐标转换直接用矩阵相乘:

@@ -34,7 +34,7 @@
 
 //#include <image_transport/image_transport.h>
 
-#define USING_TF 1 
+#define USING_TF 0 
 
 class LidarCameraFusion {
 public:

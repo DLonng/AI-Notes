@@ -2,14 +2,14 @@
   <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
 
     <!-- resolution in meters per pixel -->
-    <param name="resolution" value="0.4" />
+    <param name="resolution" value="0.05" />
 
     <!-- name of the fixed frame, needs to be "/map" for SLAM -->
     <!-- 
          发布静态全局地图帧的 header.frame_id = camera 这里指定的就是相机（因为这个例子的点云是通过 RGBD 相机产生的）
          也可以指定其他静态全局地图的 frame_id，但在增量式构建地图时，需要提供输入的点云帧和静态全局帧之间的 TF 变换
     -->
-    <param name="frame_id" type="string" value="rslidar" />
+    <param name="frame_id" type="string" value="world" />
 
     <!-- max range / depth resolution of the kinect in meter -->
     <param name="sensor_model/max_range" value="50.0" />
