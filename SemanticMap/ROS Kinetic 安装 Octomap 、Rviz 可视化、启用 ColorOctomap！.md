@@ -138,25 +138,19 @@ catkin_make
   <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
 
     <!-- resolution in meters per pixel -->
-    <param name="resolution" value="0.02" />
+    <param name="resolution" value="0.10" />
 
     <!-- name of the fixed frame, needs to be "/map" for SLAM -->
     <!-- 
-         发布静态全局地图帧的 header.frame_id = rslidar 这里指定的就是雷达（因为融合的点云发布到雷达坐标系下）
-         也可以指定其他静态全局地图的 frame_id，但在增量式构建地图时，需要提供输入的点云帧和静态全局帧之间的 TF 变换
+         增量式构建地图时，需要提供输入的点云帧和静态全局帧之间的 TF 变换
     -->
-    <param name="frame_id" type="string" value="rslidar" />
-
-    <!-- max range / depth resolution of the kinect in meter -->
-    <param name="sensor_model/max_range" value="100.0" />
-    <param name="latch" value="true" />
+    <param name="frame_id" type="string" value="world" />
 
     <param name = "height_map" value = "false" />
     <param name = "colored_map" value = "true" /> 
 
     <!-- topic from where pointcloud2 messages are subscribed -->
     <!-- 要订阅的点云主题名称 /fusion_cloud -->
-    <!-- 这句话的意思是把当前节点订阅的主题名称从 cloud_in 变为 /fusion_cloud -->
     <remap from="/cloud_in" to="/fusion_cloud" />
   </node>
 </launch>

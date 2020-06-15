@@ -2,7 +2,7 @@
   <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
 
     <!-- resolution in meters per pixel -->
-    <param name="resolution" value="0.05" />
+    <param name="resolution" value="0.3" />
 
     <!-- name of the fixed frame, needs to be "/map" for SLAM -->
     <!-- 
