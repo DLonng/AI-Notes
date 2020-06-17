@@ -2,7 +2,7 @@
  * @Description: ROS Node, Fusion img and point cloud
  * @Author: Dlonng
  * @Date: 2020-05-03 20:47:00
- * @LastEditTime:
+ * @LastEditTime: 2020-06-17 09:12:00
  */
 
 #include "lidar_camera_fusion.h"
@@ -54,7 +54,7 @@ void LidarCameraFusion::InitROS() {
     camera_extrinsic_mat_inv = camera_extrinsic_mat.inv();
     camera_extrinsic_mat_ok = true;
 
-    ROS_INFO("[%s]: camera_extrinsic_mat[0][0] %f", kNodeName.c_str(), camera_extrinsic_mat.at<double>(0, 0));
+    ROS_INFO("[%s]: read camera_extrinsic_mat[0][0] %f", kNodeName.c_str(), camera_extrinsic_mat.at<double>(0, 0));
 
     // 读取相机内参
     fs["CameraMat"] >> camera_instrinsics_mat;
@@ -66,7 +66,7 @@ void LidarCameraFusion::InitROS() {
     cx = static_cast<float>(camera_instrinsics_mat.at<double>(0, 2));
     cy = static_cast<float>(camera_instrinsics_mat.at<double>(1, 2));
 
-    ROS_INFO("[%s]: camera_instrinsics_mat fx %f fy %f cx %f cy %f", kNodeName.c_str(), fx, fy, cx, cy);
+    ROS_INFO("[%s]: read camera_instrinsics_mat fx %f fy %f cx %f cy %f", kNodeName.c_str(), fx, fy, cx, cy);
 
     // 畸变矩阵
     fs["DistCoeff"] >> distortion_coefficients;
@@ -168,7 +168,7 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
         return;
     }
 
-#else
+#else // 直接使用读取的外参矩阵
 
     // 3. 保证相机内参和坐标转换准备完成
     if (camera_instrinsics_mat_ok == false || camera_extrinsic_mat_ok == false) {
@@ -324,11 +324,8 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
     pcl::toROSMsg(*out_cloud, fusion_cloud);
 
     fusion_cloud.header = cloud_msg->header;
-    //fusion_cloud.header.frame_id = "camera";
 
-    //ROS_INFO("[%s]: cloud_frame_id %s", kNodeName.c_str(), cloud_msg->header.frame_id.c_str());
-
-    //ROS_INFO("lidar_camera_fusion: publish fusion cloud");
+    ROS_INFO("[%s]: publish fusion cloud.", kNodeName.c_str());
 
     // 发布融合后的带颜色的点云
     pub_fusion_cloud.publish(fusion_cloud);
@@ -347,8 +344,6 @@ tf::StampedTransform LidarCameraFusion::FindTransform(const std::string& target_
 
     try {
         transform_listener.lookupTransform(target_frame, source_frame, ros::Time(0), transform);
-        // 寻找反向 TF
-        //transform_listener.lookupTransform(source_frame, target_frame, ros::Time(0), transform);
         camera_lidar_tf_ok = true;
         ROS_INFO("[%s]: camera_lidar_tf Get!", kNodeName.c_str());
     } catch (tf::TransformException e) {

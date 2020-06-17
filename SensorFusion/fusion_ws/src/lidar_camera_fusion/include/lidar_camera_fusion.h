@@ -2,7 +2,7 @@
  * @Description: ROS Node, Fusion img and point cloud
  * @Author: Dlonng
  * @Date: 2020-05-03 20:41:00
- * @LastEditTime:
+ * @LastEditTime: 2020-06-17 09:12:00
  */
 
 #ifndef LIDAR_CAMERA_FUSION_H
@@ -30,7 +30,11 @@
 
 #include <pcl_ros/point_cloud.h>
 
-#include <opencv2/opencv.hpp>
+// system opecv-3.4.3
+//#include <opencv2/opencv.hpp>
+
+// ROS kinetic-3.3.1-dev
+#include <opencv-3.3.1-dev/opencv2/opencv.hpp>
 
 //#include <image_transport/image_transport.h>
 
@@ -64,7 +68,6 @@ private:
                     int max_cluster_size);
 
 private:
-    //
     ros::NodeHandle param_handle;
 
     ros::NodeHandle topic_handle;

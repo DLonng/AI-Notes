@@ -3,11 +3,7 @@ project(lidar_camera_fusion)
 
 add_compile_options(-std=c++11)
 
-set(OpenCV_DIR /opt/ros/kinetic/share/OpenCV-3.3.1-dev)
-
-
 find_package(catkin REQUIRED COMPONENTS
-  OpenCV
   cv_bridge
   image_transport
   pcl_conversions
@@ -15,12 +11,15 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf)
 
-# ROS Kinetic OpenCV-3.3.1
+
+# System OpenCV-3.4.3
+find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 # PCL
-#find_package(PCL REQUIRED)
-#include_directories(${PCL_INCLUDE_DIRS})
+find_package(PCL REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
+
 
 catkin_package(CATKIN_DEPENDS
   cv_bridge
@@ -30,15 +29,21 @@ catkin_package(CATKIN_DEPENDS
   roscpp
   tf)
 
+
 add_executable(lidar_camera_fusion
   src/lidar_camera_fusion.cpp
   src/main.cpp)
 
-target_include_directories(lidar_camera_fusion PRIVATE
-  ${catkin_INCLUDE_DIRS}
-  include)
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS})
+
+#target_include_directories(lidar_camera_fusion PRIVATE
+#  ${catkin_INCLUDE_DIRS}
+#  include)
 
 target_link_libraries(lidar_camera_fusion
-  ${OpenCV_LIBRARIES}
+  ${OpenCV_LIBS}
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
