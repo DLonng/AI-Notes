@@ -7,6 +7,8 @@
 
 #include "lidar_camera_fusion.h"
 
+//#include <pcl/filters/voxel_grid.h>
+
 
 const std::string LidarCameraFusion::kNodeName = "lidar_camera_fusion";
 
@@ -178,11 +180,51 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
 
 #endif
 
-    // 4. ROS point cloud -> PCL point cloud
-    pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_msg(new pcl::PointCloud<pcl::PointXYZ>);
-    // pcl_ros
-    pcl::fromROSMsg(*cloud_msg, *in_cloud_msg);
 
+#if 0 
+    pcl::PCLPointCloud2* tmp_cloud = new pcl::PCLPointCloud2;
+    pcl::PCLPointCloud2::ConstPtr cloudPtr(tmp_cloud); 
+
+    pcl::PCLPointCloud2 cloud_filtered;
+
+    pcl_conversions::toPCL(*cloud_msg, *tmp_cloud);
+
+    // 做一次离群点的滤波
+    pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> sor;
+    sor.setInputCloud (cloudPtr);
+    sor.setMeanK(30);
+    sor.setStddevMulThresh (1.0);
+    sor.filter(cloud_filtered);
+
+    sensor_msgs::PointCloud2 filter_output;
+    pcl_conversions::fromPCL(cloud_filtered, filter_output);
+#endif
+
+    // 4. ROS point cloud -> PCL point cloud
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud_msg(new pcl::PointCloud<pcl::PointXYZ>);
+    // pcl_ros
+    pcl::fromROSMsg(*cloud_msg, *pcl_cloud_msg);
+
+#if 0
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+
+    // 创建 SOR 滤波器
+    pcl::VoxelGrid<pcl::PointXYZ> sor;
+    sor.setInputCloud (pcl_cloud_msg);
+
+    // 设置查询点的邻近点数为 50，计算查询点到 50 个点的平均距离
+    sor.setMeanK (10);
+
+    // 设置噪声点阈值为 1.0
+    // 如果一个邻近点的距离超过平均距离的 1 倍，则被标记为噪声点
+    sor.setStddevMulThresh (1.0);
+
+    // 保存滤波器输出为滤除噪声后的点
+    sor.filter (*cloud_filtered);
+#endif
+    
+    auto in_cloud_msg = pcl_cloud_msg;
+    
     // 5. 需不需要对 PCL 点云做分割地面等操作？
 
     // 融合后的一帧点云

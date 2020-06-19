@@ -10,18 +10,30 @@
   - Whether visualization should encode height with different colors
 - `color/[r/g/b/a]` (`float`)
   - Color for visualizing occupied cells when ~heigh_map=False, in range [0:1]
-
 - `sensor_model/max_range` (`float`, default: -1 (unlimited))
-  - Maximum range in meter for inserting point cloud data when dynamically building a map. Limiting the range to something useful (e.g. 5m) prevents spurious erroneous points far away from the robot.
-
+  - 动态构建地图时用于插入点云数据的最大范围（以米为单位），将范围限制在有用的范围内（例如5m）可以防止虚假的错误点。
 - `sensor_model/[hit|miss]` (`float`, default: 0.7 / 0.4)
-  - Probabilities for hits and misses in the sensor model when dynamically building a map
-
+  - 动态构建地图时传感器模型的命中率和未命中率
 - `sensor_model/[min|max]` (`float`, default: 0.12 / 0.97)
-  - Minimum and maximum probability for clamping when dynamically building a map
-
+  - 动态构建地图时的最小和最大 clamp 概率
 - `latch` (`bool`, default: True for a static map, false if no initial map is given)
-  - Whether topics are published latched or only once per change. For maximum performance when building a map (with frequent updates), set to false. When set to true, on every map change all topics and visualizations will be created.
+  - 不管主题是锁定发布还是每次更改仅发布一次，为了在构建地图（频繁更新）时获得最佳性能，请将其设置为 false，如果设置为 true，在每个地图上更改都会创建所有主题和可视化。
+- `base_frame_id`(string, default: base_footprint)
+  - The robot's base frame in which ground plane detection is performed (if enabled)
+- `filter_ground`(bool, default: false)
+  - 动态构建地图时是否应从扫描数据中检测并忽略地平面，这会将清除地面所有内容，但不会将地面作为障碍物插入到地图中。如果启用此功能，则可以使用 ground_filter 对其进行进一步配置
+- `ground_filter/distance` (`float`, default: 0.04)
+  - 将点（在 z 方向上）分割为接地平面的距离阈值，小于该阈值被认为是平面
+- `ground_filter/angle` (`float`, default: 0.15)
+  - 被检测平面相对于水平面的角度阈值，将其检测为地面
+- `ground_filter/plane_distance` (`float`, default: 0.07)
+  - 对于要检测为平面的平面，从 z = 0 到距离阈值（来自PCL的平面方程的第4个系数）
+- `pointcloud_[min|max]_z` (`float`, default: -/+ infinity)
+  - 要在回调中插入的点的最小和最大高度，在运行任何插入或接地平面滤波之前，将丢弃此间隔之外的任何点。您可以以此为基础根据高度进行粗略过滤，但是如果启用了 ground_filter，则此间隔需要包括接地平面。
+- `occupancy_[min|max]_z` (`float`, default: -/+ infinity)
+  - 最终 map 中要考虑的最小和最大占用单元格高度，发送可视化效果和碰撞 map 时，这会忽略区间之外的所有已占用体素，但不会影响实际的 octomap 表示。
+- `filter_speckles`(bool)
+  - 是否滤除斑点，暂时未测试效果
 
 ## 二、要求 TF 变换
 
@@ -50,8 +62,6 @@ Required transform of sensor data into the global map frame if you do scan integ
 - 当前融合点云帧的坐标系是：我的融合逻辑是从点云坐标系到相机坐标系，所以应该是相机坐标系吧？待实验确定！
 
 - 全局导航地图帧的坐标系是：车体全局（融合）坐标系？
-
-
 
 ## 三、ColorOctomap 启用方法
 

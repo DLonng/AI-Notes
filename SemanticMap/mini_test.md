@@ -189,7 +189,7 @@ roslaunch lidar_camera_fusion lidar_camera_fusion.launch
 rosrun rviz rviz
 ```
 
-查看融合主题是否正常输出。
+查看融合主题是否正常输出，这里经常不能显示出 Image，需要自己先 Remove Image 然后重新 Add，这个问题暂时还没解决，但是不影响。
 
 ### 2.6 启动建图节点
 
@@ -230,6 +230,10 @@ rosrun tf2_ros static_transform_publisher 0 0 0 0 0 0 base_link rslidar
 这样系统中就存在「camera_init -> rslidar」的 TF 了：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/mini_test_tf_tree.png)
+
+### 2.9 查看 ROS_DEBUG
+
+如何查看 ROS_DEBUG 的日志？目前只能显示 INFO
 
 ## 三、建图过程
 
@@ -284,3 +288,57 @@ sudo apt-get install octovis
 octovis xxx.ot[bt]
 ```
 
+保存的八叉树地图不能显示颜色信息！需要解决！小车跑的可以保存带颜色的地图。
+
+## 四、调整建图参数
+
+### 4.1 测试 latch 
+
+ latch 设置为 false 能够加快建图速度，取消每次地图的改变都发布所有主题和可视化对象的功能：
+
+```xml
+<param name = "latch" value = "false">
+```
+
+### 4.2 移动物体
+
+- 小车不动，视野内的物体运动，运动轨迹会自动清除！
+- 小车运动，视野内的物体运动，观察当运动物体离开视野后，运动轨迹是否存在？存在一些！需要解决这个问题
+- resolution：0.1，max_range 20m
+
+## 五、航院数据集
+
+### 5.1 测试目的
+
+- 测试野外建图效果，查找问题
+- 录制数据集
+
+### 5.2 建图结果
+
+- 分辨率：20cm，录制频率回放
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/HangYuan-2020-06-18-17-00-0.20m.png)
+
+- 分辨率：15cm，录制频率回放
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/HangYuan-2020-06-18-17-00-0.15m.png)
+
+- 分辨率：10cm，录制频率回放
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/HangYuan-2020-06-18-17-00-0.10m.png)
+
+- 分辨率：10cm，0.5 倍速回放
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/HangYuan-2020-06-18-17-00-0.10m-0.5r.png)
+
+- 分辨率：5cm，0.5 倍数回放
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/HangYuan-2020-06-18-17-00-0.05m-0.5r.png)
+
+### 5.3 野外建图存在的问题
+
+- 运动轨迹没有测试
+- 分辨率不高的情况，地面不会完全填充满，存在空点（同一路线，多跑几次，来回跑，可否这地图构建稠密？）
+- 把右边相机也融合点云，加入地图中？
+- 融合节点频率
+- 建图节点频率
