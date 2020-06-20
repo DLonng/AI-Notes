@@ -26,6 +26,9 @@
     <param name = "height_map" value = "false" />
     <param name = "colored_map" value = "true" />
 
+    <param name = "outrem_radius" type = "double" value = "1.0" />
+    <param name = "outrem_neighbors" type = "int" value = "10" />
+
     <!-- when building map, set to false! -->
     <param name = "latch" value = "false" /> 
 

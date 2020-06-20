@@ -53,6 +53,11 @@
 #include <pcl/filters/passthrough.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+// 高斯滤波器
+#include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/filters/radius_outlier_removal.h>
+
+
 #include <tf/transform_listener.h>
 #include <tf/message_filter.h>
 #include <message_filters/subscriber.h>
@@ -226,6 +231,10 @@ protected:
   double m_res;
   unsigned m_treeDepth;
   unsigned m_maxTreeDepth;
+
+  // RadiusOutlierRemoval
+  double m_outrem_radius;
+  int m_outrem_neighbors;
 
   double m_pointcloudMinX;
   double m_pointcloudMaxX;

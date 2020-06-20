@@ -158,7 +158,3 @@ octomap->insertPointCloud(cloud_octo, octomap::point3d(x, y, z));
 ## 四、一些总结
 
 log-odd 与概率值之间可以相互转化，因此在工程实现时 octomap 八叉树节点类 OcTreeNode 存储的数值是 log-odd 数值，并不是概率值。
-
-
-
-## 

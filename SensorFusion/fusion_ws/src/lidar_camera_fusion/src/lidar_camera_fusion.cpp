@@ -84,7 +84,7 @@ void LidarCameraFusion::InitROS() {
     std::string fusion_topic;
 
     // 获取的参数名：image_input，获取的参数值存储在：image_input，缺省值：/camera/left/image_raw
-    param_handle.param<std::string>("image_input", image_input, "/camera/left/image_raw");
+    param_handle.param<std::string>("image_input", image_input, "/semantic_img");
     param_handle.param<std::string>("cloud_input", cloud_input, "/rslidar_points");
     param_handle.param<std::string>("fusion_topic", fusion_topic, "/fusion_cloud");
 
@@ -119,14 +119,19 @@ void LidarCameraFusion::ImageCallback(const sensor_msgs::Image::ConstPtr& image_
     // image_msg: 图像指针，brg8: 编码参数
     // rgb8: CV_8UC3, color image with red-green-blue color order
     // https://blog.csdn.net/bigdog_1027/article/details/79090571
-
     cv_bridge::CvImagePtr cv_image_ptr = cv_bridge::toCvCopy(image_msg, "bgr8");
     cv::Mat cv_image = cv_image_ptr->image;
 
+#if USING_RAW
     // 3. OpenCV 去畸变
     // cv_image: 原畸变 OpenCV 图像，image_frame：去畸变后的图像
     // camera_instrinsics：相机内参矩阵，distortion_coefficients：相机畸变矩阵
     cv::undistort(cv_image, image_frame, camera_instrinsics_mat, distortion_coefficients);
+#else
+    // 使用去畸变的语义图像
+    image_frame = cv_image_ptr->image;
+#endif
+
 
 #if 0
     // 4. 发布去畸变的图像消息
@@ -152,10 +157,16 @@ void LidarCameraFusion::ImageCallback(const sensor_msgs::Image::ConstPtr& image_
  * @LastEditTime:
  */
 void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg) {
-    // 1. 确保当前融合的图像已经去畸变
-    if (image_frame.empty() || image_frame_id == "") {
-        ROS_INFO("[%s]: waiting for current image frame ...", kNodeName.c_str());
-        return;
+    // 1. 确保当前融合的图像不为空
+    if (image_frame.empty()) {
+        ROS_INFO("[%s]: image_frame is empty! Waiting for current image frame ...", kNodeName.c_str());
+        return ;
+    }
+
+    // 再次确保 image_frame_id 不为空，因为 TF 要用到
+    if (image_frame_id == "") {
+        ROS_INFO("[%s]: image_frame_id is null! Please check image topic sender!", kNodeName.c_str());
+        return ;
     }
 
 #if USING_TF
@@ -361,6 +372,8 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
     // 以下需要发布聚类 + 分割的误差最小化的融合点云
 
     sensor_msgs::PointCloud2 fusion_cloud;
+
+    // PCL filter in here? must be ok
 
     // PCL cloud -> ROS cloud
     pcl::toROSMsg(*out_cloud, fusion_cloud);

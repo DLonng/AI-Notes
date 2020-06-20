@@ -42,6 +42,7 @@
 //#include <image_transport/image_transport.h>
 
 #define USING_TF 0 
+#define USING_RAW 1
 
 class LidarCameraFusion {
 public:

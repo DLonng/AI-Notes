@@ -337,8 +337,31 @@ octovis xxx.ot[bt]
 
 ### 5.3 野外建图存在的问题
 
-- 运动轨迹没有测试
+- 运动轨迹没有测试，还要多测试测试！
 - 分辨率不高的情况，地面不会完全填充满，存在空点（同一路线，多跑几次，来回跑，可否这地图构建稠密？）
 - 把右边相机也融合点云，加入地图中？
 - 融合节点频率
 - 建图节点频率
+
+## 七、地图滤波
+
+### 7.1 半径滤波器
+
+原始地图分辨率 15cm：
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/origin_hangyuan_15cm.png)
+
+半径滤波结果，滤波半径 1m，滤除 1m 半径内少于 10 个邻居的点云（这个参数还可以）：
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/outrem_result_1m_10Neighbors.png)
+
+原始地图分辨率 10cm，0.5 r 倍速回放：
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/origin_hangyuan_10cm_0.5r.png)
+
+半径滤波结果，滤波半径 1m，滤除 1m 半径内少于 10 个邻居的点云：
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/outrem_hangyuan_10cm_0.5r_1m_10n.png)
+
+### 7.2 高斯滤波器
+
