@@ -56,6 +56,8 @@ OctomapServer::OctomapServer(const ros::NodeHandle private_nh_, const ros::NodeH
   m_res(0.05),
   m_treeDepth(0),
   m_maxTreeDepth(0),
+  m_outrem_radius(-std::numeric_limits<double>::max()),
+  m_outrem_neighbors(-std::numeric_limits<int>::max()),
   m_pointcloudMinX(-std::numeric_limits<double>::max()),
   m_pointcloudMaxX(std::numeric_limits<double>::max()),
   m_pointcloudMinY(-std::numeric_limits<double>::max()),
@@ -78,6 +80,10 @@ OctomapServer::OctomapServer(const ros::NodeHandle private_nh_, const ros::NodeH
   m_nh_private.param("height_map", m_useHeightMap, m_useHeightMap);
   m_nh_private.param("colored_map", m_useColoredMap, m_useColoredMap);
   m_nh_private.param("color_factor", m_colorFactor, m_colorFactor);
+
+  // add outrem filter
+  m_nh_private.param("outrem_radius", m_outrem_radius, m_outrem_radius);
+  m_nh_private.param("outrem_neighbors", m_outrem_neighbors, m_outrem_neighbors);
 
   m_nh_private.param("pointcloud_min_x", m_pointcloudMinX,m_pointcloudMinX);
   m_nh_private.param("pointcloud_max_x", m_pointcloudMaxX,m_pointcloudMaxX);
@@ -267,6 +273,36 @@ void OctomapServer::insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr
   //
   PCLPointCloud pc; // input cloud for filtering and ground-detection
   pcl::fromROSMsg(*cloud, pc);
+  
+#if 0
+  // 对一帧 pc 点云进行高斯滤波 pcl::PointCloud<pcl::PointXYZRGB>
+  // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+
+  // 创建 SOR 滤波器
+  pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+  sor.setInputCloud (pc.makeShared());
+
+  // 设置查询点的邻近点数为 50，计算查询点到 50 个点的平均距离
+  sor.setMeanK (50);
+
+  // 设置噪声点阈值为 1.0
+  // 如果一个邻近点的距离超过平均距离的 1 倍，则被标记为噪声点
+  sor.setStddevMulThresh (2.0);
+
+  // 保存滤波器输出为滤除噪声后的点
+  sor.filter (pc);
+#else
+  // 对一帧 pc 点云进行半径滤波 pcl::PointCloud<pcl::PointXYZRGB>
+  pcl::RadiusOutlierRemoval<pcl::PointXYZRGB> outrem;
+   
+  outrem.setInputCloud(pc.makeShared());
+
+  outrem.setRadiusSearch(m_outrem_radius); 
+
+  outrem.setMinNeighborsInRadius (m_outrem_neighbors);
+
+  outrem.filter(pc);
+#endif
 
   tf::StampedTransform sensorToWorldTf;
   try {
