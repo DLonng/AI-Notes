@@ -10,6 +10,26 @@ date: 2020-05-14 22:00:00
 
 这里记录下我学习官方的 rosbag 教程的笔记：[ROS rosbag](http://wiki.ros.org/rosbag/Commandline)
 
+## 我常用的几个操作
+
+虽然命令很多，但是我在工作中常用的命令就如下几个：
+
+### 1. 录包
+
+录制所有话题：
+
+```shell
+rosbag record -a
+```
+
+录制指定话题，设置 bag 包名：
+
+```shell
+rosbag record -O bag_name.bag /topic1_name /topic2_name /xxx
+```
+
+
+
 ## 一、rosbag 基本作用
 
 rosbag 工具可以录制一个包、从一个或多个包中重新发布消息、查看一个包的基本信息、检查一个包的消息定义，基于 Python 表达式过滤一个包的消息，压缩和解压缩一个包以及重建一个包的索引。
