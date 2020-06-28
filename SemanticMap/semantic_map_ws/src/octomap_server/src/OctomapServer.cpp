@@ -292,15 +292,19 @@ void OctomapServer::insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr
   // 保存滤波器输出为滤除噪声后的点
   sor.filter (pc);
 #else
-  // 对一帧 pc 点云进行半径滤波 pcl::PointCloud<pcl::PointXYZRGB>
+  // 对一帧融合后的点云进行半径滤波
   pcl::RadiusOutlierRemoval<pcl::PointXYZRGB> outrem;
-   
+  
+  // 设置输入点云，这里要传递指针，所以做个 share_ptr 的拷贝
   outrem.setInputCloud(pc.makeShared());
 
+  // 设置滤波半径，launch 中配置
   outrem.setRadiusSearch(m_outrem_radius); 
 
+  // 设置近邻数量，launch 中配置
   outrem.setMinNeighborsInRadius (m_outrem_neighbors);
 
+  // 执行半径滤波
   outrem.filter(pc);
 #endif
 
