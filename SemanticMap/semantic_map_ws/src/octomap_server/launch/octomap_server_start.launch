@@ -4,14 +4,14 @@
     <!-- <param name = "map_file" type = "string" value = "/home/dlonng/Documents/octomap_bags/HangYuanMap/HangYuan-2020-06-18-17-00-0.10m-0.5r-outrem-1m-10n.ot" /> -->
 
     <!-- resolution in meters per pixel -->
-    <param name = "resolution" value = "0.15" />
+    <param name = "resolution" value = "0.25" />
 
     <!-- name of the fixed frame, needs to be "/map" for SLAM -->
     <!-- 静态全局地图的 frame_id，但在增量式构建地图时，需要提供输入的点云帧和静态全局帧之间的 TF 变换 -->
     <param name = "frame_id" type = "string" value = "camera_init" />
 
     <!-- set min to speed up! -->
-    <param name="sensor_model/max_range" value="50.0" />
+    <param name = "sensor_model/max_range" value = "15.0" />
 
     <!-- 机器人坐标系 base_link，滤除地面需要该 frame -->
     <!-- <param name = "base_frame_id" type = "string" value = "base_link" /> -->
@@ -40,7 +40,7 @@
     <!-- topic from where pointcloud2 messages are subscribed -->
     <!-- 要订阅的点云主题名称 /pointcloud/output -->
     <!-- 这句话的意思是把当前节点订阅的主题名称从 cloud_in 变为 /pointcloud/output -->
-    <remap from="/cloud_in" to="/fusion_cloud" />
+    <remap from = "/cloud_in" to = "/fusion_cloud" />
  
   </node>
 </launch>

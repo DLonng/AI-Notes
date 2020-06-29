@@ -157,7 +157,7 @@ void LidarCameraFusion::ImageCallback(const sensor_msgs::Image::ConstPtr& image_
  * @LastEditTime:
  */
 void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg) {
-    // 1. 确保当前融合的图像不为空
+    // 确保当前融合的图像不为空
     if (image_frame.empty()) {
         ROS_INFO("[%s]: image_frame is empty! Waiting for current image frame ...", kNodeName.c_str());
         return ;

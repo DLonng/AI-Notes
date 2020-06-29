@@ -1,6 +1,6 @@
 <launch>
     <!-- 输入图像缺省值改为 ZED 相机左话题 -->
-    <arg name = "left_image_input" default = "/camera/left/image_raw"/>
+    <arg name = "left_image_input" default = "/semantic_img"/>
 
     <!-- 输入点云缺省值要改成 Robosense 雷达主题名 -->
     <arg name = "cloud_input" default = "/rslidar_points"/>
