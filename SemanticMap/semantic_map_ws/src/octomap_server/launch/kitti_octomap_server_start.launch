@@ -8,7 +8,7 @@
 
     <!-- name of the fixed frame, needs to be "/map" for SLAM -->
     <!-- 静态全局地图的 frame_id，但在增量式构建地图时，需要提供输入的点云帧和静态全局帧之间的 TF 变换 -->
-    <param name = "frame_id" type = "string" value = "camera_init" />
+    <param name = "frame_id" type = "string" value = "world" />
 
     <!-- set min to speed up! -->
     <param name = "sensor_model/max_range" value = "15.0" />
