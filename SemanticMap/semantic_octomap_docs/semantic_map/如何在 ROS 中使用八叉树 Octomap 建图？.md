@@ -162,3 +162,4 @@ You need to remap this topic to your sensor data and provide a tf transform betw
 - [https://blog.csdn.net/DJ_Dreamaker/article/details/79834954](https://blog.csdn.net/DJ_Dreamaker/article/details/79834954)
 - [https://blog.csdn.net/weixin_39123145/article/details/82219968](https://blog.csdn.net/weixin_39123145/article/details/82219968)
 - [**octomap, slam, path planning: how does it all fit together?**](https://answers.ros.org/question/221092/octomap-slam-path-planning-how-does-it-all-fit-together/)
+- https://blog.csdn.net/sylin211/article/details/93743724?utm_medium=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.compare&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.compare

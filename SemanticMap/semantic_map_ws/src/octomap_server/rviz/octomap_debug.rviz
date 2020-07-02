@@ -92,10 +92,10 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 155
+      Max Intensity: 140
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: PointCloud2
@@ -109,7 +109,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
       Enabled: true
       Max. Height Display: 3.40282347e+38
@@ -150,11 +150,11 @@ Visualization Manager:
         base_link:
           rslidar:
             {}
-        camera:
-          {}
         map:
           camera_init:
             aft_mapped:
+              {}
+            camera:
               {}
             laser_odom:
               {}
@@ -209,7 +209,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 20.7915039
+      Distance: 15.415349
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -224,10 +224,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.485200346
+      Pitch: 0.815200388
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 0.0208202563
+      Yaw: 3.02900529
     Saved: ~
 Window Geometry:
   Displays:

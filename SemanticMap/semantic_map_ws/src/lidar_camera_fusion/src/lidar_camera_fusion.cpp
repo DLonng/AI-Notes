@@ -9,6 +9,9 @@
 
 //#include <pcl/filters/voxel_grid.h>
 
+#define USING_TF 0 
+#define USING_RAW 1
+#define USING_KITTI 1
 
 const std::string LidarCameraFusion::kNodeName = "lidar_camera_fusion";
 
@@ -52,8 +55,16 @@ void LidarCameraFusion::InitROS() {
     fs["CameraExtrinsicMat"] >> camera_extrinsic_mat;
 
     // 不用 TF 转换，需要对外参矩阵求逆，因为标定的方向是 [相机 -> 雷达]
-    // 而融合的方向是 [雷达 -> 相机]
-    camera_extrinsic_mat_inv = camera_extrinsic_mat.inv();
+    // 而融合的方向是 [雷达 -> 相机]，不需要对 KITTI 求逆，暂时不知道为何。。
+    bool is_kitti = false;
+    param_handle.param<bool>("is_kitti", is_kitti, false);
+
+    // 在 launch 中增加了一个是否使用 kitti 数据集的参数，主要是区分是否对外参矩阵求逆！
+    if (is_kitti)
+        camera_extrinsic_mat = camera_extrinsic_mat; // KITTI 不需要求逆
+    else
+        camera_extrinsic_mat = camera_extrinsic_mat.inv(); // 自己的小车如果不使用 TF 则需要求逆
+
     camera_extrinsic_mat_ok = true;
 
     ROS_INFO("[%s]: read camera_extrinsic_mat[0][0] %f", kNodeName.c_str(), camera_extrinsic_mat.at<double>(0, 0));
@@ -84,7 +95,7 @@ void LidarCameraFusion::InitROS() {
     std::string fusion_topic;
 
     // 获取的参数名：image_input，获取的参数值存储在：image_input，缺省值：/camera/left/image_raw
-    param_handle.param<std::string>("image_input", image_input, "/semantic_img");
+    param_handle.param<std::string>("image_input", image_input, "/camera/left/image_raw");
     param_handle.param<std::string>("cloud_input", cloud_input, "/rslidar_points");
     param_handle.param<std::string>("fusion_topic", fusion_topic, "/fusion_cloud");
 
@@ -121,15 +132,19 @@ void LidarCameraFusion::ImageCallback(const sensor_msgs::Image::ConstPtr& image_
     // https://blog.csdn.net/bigdog_1027/article/details/79090571
     cv_bridge::CvImagePtr cv_image_ptr = cv_bridge::toCvCopy(image_msg, "bgr8");
     cv::Mat cv_image = cv_image_ptr->image;
-
-#if USING_RAW
+    
+    // 如果语义分割之前已经去畸变则这里不需要去，如果没有则需要打开宏
+    // 因为下载的是同步加矫正的 KITTI 数据，所以不需要矫正
+    // 暂时使用 KITTI 测试，如果使用小车，则不要再语义分割前进行去畸变，在这里处理即可
+#if USING_KITTI
+    // 接收的图像已经去了畸变，这里不再处理
+    image_frame = cv_image_ptr->image;
+#else
     // 3. OpenCV 去畸变
     // cv_image: 原畸变 OpenCV 图像，image_frame：去畸变后的图像
     // camera_instrinsics：相机内参矩阵，distortion_coefficients：相机畸变矩阵
+    // 接收的图像没有去畸变，这里调用 opencv undistort 进行去畸变
     cv::undistort(cv_image, image_frame, camera_instrinsics_mat, distortion_coefficients);
-#else
-    // 使用去畸变的语义图像
-    image_frame = cv_image_ptr->image;
 #endif
 
 
@@ -316,7 +331,7 @@ void LidarCameraFusion::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr& 
         raw_point.at<double>(3, 0) = 1;
 
         // 4 X 1 = 4 X 4 * 4 X 1;
-        transformed_point = camera_extrinsic_mat_inv * raw_point;
+        transformed_point = camera_extrinsic_mat * raw_point;
 
         x = transformed_point.at<double>(0, 0);
         y = transformed_point.at<double>(1, 0);
@@ -430,9 +445,9 @@ pcl::PointXYZ LidarCameraFusion::TransformPoint(const pcl::PointXYZ& in_point, c
  *          min_cluster_size: 聚类的最小点云数量
  *          max_cluster_size: 聚类的最大点云数量
  *          return: 聚类的结果 std::vector<pcl::PointIndices>，每行代表一个聚类簇，pcl::PointIndeices = std::vector<int>
- * @Author: Dlonng
+ * @Author: DLonng
  * @Date: 2020-05-18
- * @LastEditTime:
+ * @LastEditTime: 2020-05-18
  */
 void LidarCameraFusion::EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud,
                                    std::vector<pcl::PointIndices>& cluster_indices,
