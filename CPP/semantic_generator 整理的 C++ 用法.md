@@ -26,3 +26,25 @@ class SemanticsOcTreeNode : public ColorOcTreeNode {
 ```
 
 为何要使用 friend class？
+
+### 代码注释风格
+
+使用 Doxygen 风格：
+
+```cpp
+/**
+ * Manipulate log_odds value of a voxel by changing it by log_odds_update (relative).
+ * This only works if key is at the lowest octree level
+ *
+ * @param key OcTreeKey of the NODE that is to be updated
+ * @param log_odds_update value to be added (+) to log_odds value of node
+ * @param lazy_eval whether update of inner nodes is omitted after the update (default: false).
+ *   This speeds up the insertion, but you need to call updateInnerOccupancy() when done.
+ * @return pointer to the updated NODE
+ */
+```
+
+-  https://zh-google-styleguide.readthedocs.io/en/latest/google-cpp-styleguide/comments/
+- https://blog.csdn.net/guyue35/article/details/46775211
+- [Doxygen](https://www.cnblogs.com/silencehuan/p/11169084.html)
+
