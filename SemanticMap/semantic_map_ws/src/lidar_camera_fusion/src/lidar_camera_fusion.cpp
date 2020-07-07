@@ -21,6 +21,7 @@ LidarCameraFusion::LidarCameraFusion()
     , camera_lidar_tf_ok(false)
     , camera_instrinsics_mat_ok(false)
     , camera_extrinsic_mat_ok(false)
+    , is_kitti(false)
     , image_frame_id("") {
 
     InitROS();
@@ -54,9 +55,8 @@ void LidarCameraFusion::InitROS() {
     // 导入雷达相机外参
     fs["CameraExtrinsicMat"] >> camera_extrinsic_mat;
 
-    // 不用 TF 转换，需要对外参矩阵求逆，因为标定的方向是 [相机 -> 雷达]
-    // 而融合的方向是 [雷达 -> 相机]，不需要对 KITTI 求逆，暂时不知道为何。。
-    bool is_kitti = false;
+    // 不用 TF 转换，需要对外参矩阵求逆，因为标定的方向是 [相机 -> 雷达]，而融合的方向是 [雷达 -> 相机]
+    // 不需要对 KITTI 求逆，给的标定矩阵就是 [雷达 -> 相机]。
     param_handle.param<bool>("is_kitti", is_kitti, false);
 
     // 在 launch 中增加了一个是否使用 kitti 数据集的参数，主要是区分是否对外参矩阵求逆！
@@ -131,21 +131,21 @@ void LidarCameraFusion::ImageCallback(const sensor_msgs::Image::ConstPtr& image_
     // rgb8: CV_8UC3, color image with red-green-blue color order
     // https://blog.csdn.net/bigdog_1027/article/details/79090571
     cv_bridge::CvImagePtr cv_image_ptr = cv_bridge::toCvCopy(image_msg, "bgr8");
-    cv::Mat cv_image = cv_image_ptr->image;
+    //cv::Mat cv_image = cv_image_ptr->image;
     
     // 如果语义分割之前已经去畸变则这里不需要去，如果没有则需要打开宏
     // 因为下载的是同步加矫正的 KITTI 数据，所以不需要矫正
     // 暂时使用 KITTI 测试，如果使用小车，则不要再语义分割前进行去畸变，在这里处理即可
-#if USING_KITTI
-    // 接收的图像已经去了畸变，这里不再处理
-    image_frame = cv_image_ptr->image;
-#else
-    // 3. OpenCV 去畸变
-    // cv_image: 原畸变 OpenCV 图像，image_frame：去畸变后的图像
-    // camera_instrinsics：相机内参矩阵，distortion_coefficients：相机畸变矩阵
-    // 接收的图像没有去畸变，这里调用 opencv undistort 进行去畸变
-    cv::undistort(cv_image, image_frame, camera_instrinsics_mat, distortion_coefficients);
-#endif
+    if (is_kitti) {
+        // 接收的图像已经去了畸变，这里不再处理
+        image_frame = cv_image_ptr->image;
+    } else {
+        // 3. OpenCV 去畸变
+        // cv_image: 原畸变 OpenCV 图像，image_frame：去畸变后的图像
+        // camera_instrinsics：相机内参矩阵，distortion_coefficients：相机畸变矩阵
+        // 接收的图像没有去畸变，这里调用 opencv undistort 进行去畸变
+        cv::undistort(cv_image_ptr->image, image_frame, camera_instrinsics_mat, distortion_coefficients);
+    }
 
 
 #if 0

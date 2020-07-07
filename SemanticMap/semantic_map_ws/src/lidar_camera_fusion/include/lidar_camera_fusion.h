@@ -116,6 +116,9 @@ private:
     // 雷达相机外参是否初始化
     bool camera_extrinsic_mat_ok;
 
+    // 用来判断当前是否用的数据集测试
+    bool is_kitti;
+
 private:
     // 定义相机和雷达之间的坐标转换关系
     tf::StampedTransform camera_lidar_tf;

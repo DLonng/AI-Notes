@@ -95,7 +95,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 140
+      Max Intensity: 197
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: PointCloud2
@@ -133,7 +133,17 @@ Visualization Manager:
           Value: false
         camera:
           Value: true
+        camera_color_left:
+          Value: true
+        camera_color_right:
+          Value: true
+        camera_gray_left:
+          Value: true
+        camera_gray_right:
+          Value: true
         camera_init:
+          Value: true
+        imu_link:
           Value: true
         laser_odom:
           Value: false
@@ -141,6 +151,10 @@ Visualization Manager:
           Value: false
         rslidar:
           Value: false
+        velo_link:
+          Value: true
+        world:
+          Value: true
       Marker Scale: 5
       Name: TF
       Show Arrows: true
@@ -148,16 +162,29 @@ Visualization Manager:
       Show Names: true
       Tree:
         base_link:
+          imu_link:
+            camera_color_left:
+              {}
+            camera_color_right:
+              {}
+            camera_gray_left:
+              {}
+            camera_gray_right:
+              {}
+            velo_link:
+              {}
           rslidar:
             {}
+        camera:
+          {}
         map:
           camera_init:
             aft_mapped:
               {}
-            camera:
-              {}
             laser_odom:
               {}
+        world:
+          {}
       Update Interval: 0
       Value: true
     - Class: rviz/Image
@@ -224,10 +251,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.815200388
+      Pitch: 0.55520016
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 3.02900529
+      Yaw: 3.21900654
     Saved: ~
 Window Geometry:
   Displays:

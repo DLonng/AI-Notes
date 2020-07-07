@@ -57,6 +57,12 @@ kitti2bag: error: too few arguments
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/kitti2bag_cp.png)
 
+使用：
+
+```shell
+kitti2bag -t 2011_09_26 -r 0020 raw_synced .
+```
+
 参考链接：
 
 - https://github.com/tomas789/kitti2bag/issues/20

@@ -160,5 +160,65 @@ self.cloud_ros.fields.append(PointField(
 
 - [sensor_msgs/PointCloud2 Documentation - ros.org](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/PointCloud2.html)
 
-### 2.x softmax
+### 2.7 squeeze & unsqueeze
 
+
+
+参考博客：
+
+- https://blog.csdn.net/xiexu911/article/details/80820028
+
+### 2.8 torch.topk
+
+```python
+pred_confidences, pred_labels  = torch.topk(input = class_probs, k = 3, dim = 1, largest = True, sorted = True)
+```
+
+
+
+参考链接：
+
+- https://pytorch.org/docs/master/generated/torch.topk.html
+
+### 2.9 pytorch tensor
+
+参考博客：
+
+- https://www.jianshu.com/p/495c7f1e9cfe
+
+### 2.10 softmax
+
+对 n 维输入张量运用 `softmax` 函数，将张量的每个元素缩放到（0,1）区间且和为 1。
+
+参考链接：
+
+- https://pytorch.org/docs/master/generated/torch.nn.Softmax.html#torch.nn.Softmax
+- https://pytorch.org/docs/master/nn.functional.html
+- https://www.cnblogs.com/wanghui-garcia/p/10675588.html
+- https://zhuanlan.zhihu.com/p/108344765
+
+### 2.11 sensor_msg::PointCloud
+
+```cpp
+# This message holds a collection of 3d points, plus optional additional
+# information about each point.
+
+# Time of sensor data acquisition, coordinate frame ID.
+Header header
+
+# Array of 3d points. Each Point32 should be interpreted as a 3d point
+# in the frame given in the header.
+geometry_msgs/Point32[] points
+
+# Each channel should have the same number of elements as points array,
+# and the data in each channel should correspond 1:1 with each point.
+# Channel names in common practice are listed in ChannelFloat32.msg.
+ChannelFloat32[] channels
+```
+
+参考链接：
+
+- http://wiki.ros.org/sensor_msgs
+- http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html
+- http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud.html
+- http://docs.ros.org/api/sensor_msgs/html/msg/PointField.html
