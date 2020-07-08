@@ -267,19 +267,124 @@ ChannelFloat32[] channels
 
 ### 2.13 PCL_ADD_RGB 宏的定义
 
+源码里面自定义点云类型用到一个 `PCL_ADD_RGB` 宏，虽然知道是什么意思，但还是找了下资料，确定下详细的定义，我把 `\`去掉了，语法里面是要加上的：
 
+```cpp
+#define PCL_ADD_RGB
+union
+{
+	union {
+        struct { 
+            uint8_t b; 
+            uint8_t g; 
+            uint8_t r; 
+            uint8_t a; 
+        }; 
+        
+        float rgb; 
+    }; 
+	uint32_t rgba; 
+};
+```
+
+在类型定义方面，union 结构还是挺常用的。
 
 参考链接：
 
 - http://docs.ros.org/hydro/api/pcl/html/structpcl_1_1__PointXYZRGB.html#a14c3aa49bc0ced8ef51dc2a89b616af1
 - http://docs.ros.org/hydro/api/pcl/html/point__types_8hpp_source.html
 
-
-
 ### 2.14 sensor_msg::Image
 
+Image 的数据是 uint8 类型的：
 
+```cpp
+std_msgs/Header header
+uint32 height
+uint32 width
+string encoding
+uint8 is_bigendian
+uint32 step
+uint8[] data
+```
 
 参考链接：
 
 - http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Image.html
+
+### 2.15 Struct 与 Union 的结合使用
+
+在源码里面需要自定义语义点云结构，但是我在解析语义颜色的时候，总是出 bug，所以我改了点云语义颜色部分，增加了 4 个颜色字段作为 semantic_color 的联合结构，后面解码的时候直接赋值即可。
+
+这是更改前的自定义点云类型：
+
+```cpp
+struct PointXYZRGBSemanticsMax {
+    PCL_ADD_POINT4D; // Preferred way of adding a XYZ+padding
+    PCL_ADD_RGB;
+
+    union // Semantic color
+    {
+        float semantic_color;
+    };
+
+    union // Confidences
+    {
+        float confidence;
+    };
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW // make sure our new allocators are aligned
+
+} EIGEN_ALIGN16; // enforce SSE padding for correct memory alignment
+```
+
+使用这样的方式，当我需要给 semantic_color 每个直接赋值 RGB 颜色的时候需要使用位运算单独解码，不太方便，而且我这样做程序还会出 Bug：
+
+```cpp
+cv::Vec3b semantic_pixel = semantic_frame.at<cv::Vec3b>(row, col);
+uint8_t s_r = semantic_pixel[2];
+uint8_t s_g = semantic_pixel[1];
+uint8_t s_b = semantic_pixel[0];
+
+semantic_point_max.semantic_color = (s_r << 16) + (s_g << 8) + s_b;
+```
+
+这是更改后的：
+
+```cpp
+struct PointXYZRGBSemanticsMax {
+    PCL_ADD_POINT4D; // Preferred way of adding a XYZ+padding
+    PCL_ADD_RGB;
+
+    union // Semantic color
+    {
+        // 方便进行语义颜色的融合
+        struct {
+            uint8_t s_b;
+            uint8_t s_g;
+            uint8_t s_r;
+            uint8_t s_a;
+        };
+        float semantic_color;
+    };
+
+    union // Confidences
+    {
+        float confidence;
+    };
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW // make sure our new allocators are aligned
+
+} EIGEN_ALIGN16; // enforce SSE padding for correct memory alignment
+```
+
+这样我就可以直接给 RGB 字段赋值了，因为 union 使用的是同一片内存，所以这样做没有问题：
+
+```cpp
+cv::Vec3b semantic_pixel = semantic_frame.at<cv::Vec3b>(row, col);
+semantic_point_max.s_r = semantic_pixel[2];
+semantic_point_max.s_g = semantic_pixel[1];
+semantic_point_max.s_b = semantic_pixel[0];
+```
+
+总结下这里 union 的作用就是对同一片 4 Bytes 内存用不能的类型去解析，可以用一个 4B 的 float，也可以用 4 个 1B 的 uint_8，使用的总内存区域是相同的。
