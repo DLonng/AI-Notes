@@ -24,7 +24,39 @@ self.semantic_color_vect[:, 0 : 1] = semantic_color[:, :, 0].reshape(-1, 1)
 
 - numpy.zeros：全 0 矩阵
 
+  ```python
+  # x 个 y 行 z 列的 3 维矩阵
+  np.ones((x,y,z))
+  
+  # 3 个 2 行 4 列的 3 维矩阵
+  np.ones((3, 2, 4))
+  
+  array([[[ 0.,  0.,  0.,  0.],
+          [ 0.,  0.,  0.,  0.]],
+  
+         [[ 0.,  0.,  0.,  0.],
+          [ 0.,  0.,  0.,  0.]],
+  
+         [[ 0.,  0.,  0.,  0.],
+          [ 0.,  0.,  0.,  0.]]])
+  ```
+
+  [Numpy 创建 3 维矩阵](https://blog.csdn.net/qq_38290604/article/details/89711494?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase)
+
 - numpy.ones：全 1 矩阵
+
+- numpy.shape：读取每个维度的大小
+
+  ```python
+  np.shape([[1, 1], [2, 2], [3, 3]])
+  # 3 行 2 列
+  # shape[0] = 3, shape[1] = 2
+  (3L, 2L)
+  ```
+
+  [Python numpy 函数：shape 用法](https://blog.csdn.net/qq_28618765/article/details/78081959)
+
+
 
 ### 2.3 numpy view
 
@@ -222,3 +254,32 @@ ChannelFloat32[] channels
 - http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud2.html
 - http://docs.ros.org/api/sensor_msgs/html/msg/PointCloud.html
 - http://docs.ros.org/api/sensor_msgs/html/msg/PointField.html
+
+### 2.12 计算机字节序
+
+
+
+参考链接：
+
+- [https://zh.wikipedia.org/wiki/%E5%AD%97%E8%8A%82%E5%BA%8F#%E5%A4%A7%E7%AB%AF%E5%BA%8F](https://zh.wikipedia.org/wiki/字节序#大端序)
+
+
+
+### 2.13 PCL_ADD_RGB 宏的定义
+
+
+
+参考链接：
+
+- http://docs.ros.org/hydro/api/pcl/html/structpcl_1_1__PointXYZRGB.html#a14c3aa49bc0ced8ef51dc2a89b616af1
+- http://docs.ros.org/hydro/api/pcl/html/point__types_8hpp_source.html
+
+
+
+### 2.14 sensor_msg::Image
+
+
+
+参考链接：
+
+- http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Image.html
