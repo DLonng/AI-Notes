@@ -1,6 +1,8 @@
+新买的电脑装的的英伟达独立显卡，虽然 Ubuntu 上有开源 Nvida 驱动可以用，但是界面总是卡卡的，所以安装了下官方的驱动，瞬间丝滑无比，以下是我的方法，简单粗暴。
 
+### Ubuntu 16.04 安装 Nvida 显卡
 
-推荐命令行安装，简单有效：
+推荐命令行安装，简单有效，先添加源：
 
 ```shell
 sudo add-apt-repository ppa:graphics-drivers/ppa
@@ -8,7 +10,7 @@ sudo add-apt-repository ppa:graphics-drivers/ppa
 sudo apt-get update
 ```
 
-查看当前机器显卡推荐的驱动：
+然后查看当前机器显卡推荐安装的驱动：
 
 ```shell
 ubuntu-drivers devices
@@ -27,13 +29,13 @@ driver   : nvidia-410 - third-party free
 driver   : intel-microcode - distro free
 ```
 
-推荐安装 nvidia-430，直接安装推荐的版本：
+推荐安装（recommended） nvidia-430，直接自动安装推荐的版本：
 
 ```shell
 sudo ubuntu-drivers autoinstall
 ```
 
-但是我安装过程中提示缺少一个依赖库，所以为了解决依赖，我使用 aptitude 单独安装 nvidia-430：
+但是我安装过程中提示缺少一个依赖库，所以为了解决依赖，我使用 `aptitude `单独安装 nvidia-430：
 
 ```shell
 sudo aptitude install nvidia-430
@@ -51,4 +53,4 @@ sudo apt install aptitude
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/nvida-smi.png)
 
-有输出说明安装成功！
+有类似输出说明安装成功！话说我应该买个更好的显卡 =_=
