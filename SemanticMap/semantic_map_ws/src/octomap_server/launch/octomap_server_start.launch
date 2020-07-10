@@ -4,7 +4,7 @@
     <!-- <param name = "map_file" type = "string" value = "/home/dlonng/Documents/octomap_bags/HangYuanMap/HangYuan-2020-06-18-17-00-0.10m-0.5r-outrem-1m-10n.ot" /> -->
 
     <!-- resolution in meters per pixel -->
-    <param name = "resolution" value = "0.20" />
+    <param name = "resolution" value = "0.15" />
 
     <!-- name of the fixed frame, needs to be "/map" for SLAM -->
     <!-- 静态全局地图的 frame_id，但在增量式构建地图时，需要提供输入的点云帧和静态全局帧之间的 TF 变换 -->

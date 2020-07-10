@@ -7,8 +7,15 @@
 #include <sstream>
 #include <cstring> // For std::memcpy
 
+#include "semantics_octree/LocalSemanticsOcTree.h"
+
 OctomapGeneratorNode::OctomapGeneratorNode(ros::NodeHandle& nh): nh_(nh)
 {
+  // Test LocalSemanticNode ok!
+  octomap::LocalSemanticsOcTreeNode<octomap::SemanticsMax> local_node;
+  //octomap_generator_ = new OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>();
+  //octomap::LocalSemanticsOcTree<octomap::SemanticsMax> local_map;
+
   nh_.getParam("/octomap/tree_type", tree_type_);
   // Initiate octree
   if(tree_type_ == SEMANTICS_OCTREE_BAYESIAN || tree_type_ == SEMANTICS_OCTREE_MAX)

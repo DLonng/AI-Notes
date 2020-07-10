@@ -12,7 +12,7 @@
     <arg name = "lidar_left_camera_calibration_file" default = "$(find lidar_camera_fusion)/calibr_file/2020-06-03-09-59-autoware_lidar_left_camera_calibration.yaml" />
 
     <!-- 图像点云融合节点 -->
-    <node name = "lidar_left_camera_fusion_node" pkg = "lidar_camera_fusion" type = "lidar_camera_fusion" output = "screen">
+    <node name = "lidar_left_camera_fusion_pre_node" pkg = "lidar_camera_fusion_pre" type = "lidar_camera_fusion_pre" output = "screen">
         <param name = "image_input" type = "str" value = "$(arg left_image_input)" />
         <param name = "cloud_input" type = "str" value = "$(arg cloud_input)" />
 

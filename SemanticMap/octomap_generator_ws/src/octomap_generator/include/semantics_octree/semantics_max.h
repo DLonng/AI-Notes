@@ -43,7 +43,6 @@ struct SemanticsMax {
         return false;
     }
 
-    /// Perform max fusion
     static SemanticsMax semanticFusion(const SemanticsMax s1, const SemanticsMax s2)
     {
         SemanticsMax ret;
@@ -51,10 +50,11 @@ struct SemanticsMax {
         if (s1.semantic_color == s2.semantic_color) {
             ret.semantic_color = s1.semantic_color;
             ret.confidence = (s1.confidence + s2.confidence) / 2.;
-        }
-        // If color is different, keep the larger one and drop a little for the disagreement
-        else {
+        } else {
+            // If color is different, keep the larger one
+            // drop a little for the disagreement
             ret = s1.confidence > s2.confidence ? s1 : s2;
+            // x 0.9 是为了保持差异性而降低一点置信度，该参数可调整
             ret.confidence *= 0.9;
         }
 

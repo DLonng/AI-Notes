@@ -14,7 +14,8 @@ struct PointXYZRGBSemanticsMax {
     PCL_ADD_RGB;
     union // Semantic color
     {
-        // 方便进行语义颜色的融合，每个字段直接赋值即可
+        // 方便进行语义颜色的融合
+        // 每个字段直接赋值即可
         struct {
             uint8_t s_b;
             uint8_t s_g;

@@ -6,7 +6,7 @@
   <!-- <include file = "$(find rslidar_pointcloud)/launch/rs_lidar_16.launch" /> -->
 
   <!-- Start fusion node! -->
-  <include file = "$(find lidar_camera_fusion)/launch/lidar_left_camera_fusion.launch" />
+  <include file = "$(find lidar_camera_fusion_pre)/launch/lidar_left_camera_fusion.launch" />
 
   <!-- Start Octomap node! -->
   <include file = "$(find octomap_server)/launch/octomap_server_start.launch" />

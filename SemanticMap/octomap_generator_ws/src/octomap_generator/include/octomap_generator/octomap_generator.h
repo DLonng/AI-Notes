@@ -9,16 +9,25 @@
 #include <semantics_point_type/semantics_point_type.h>
 #include <octomap_generator/octomap_generator_base.h>
 
+
+#include <semantics_octree/LocalSemanticsOcTree.h>
+
 typedef pcl::PointCloud<PointXYZRGBSemanticsBayesian> PCLSemanticsBayesian;
 typedef pcl::PointCloud<PointXYZRGBSemanticsMax> PCLSemanticsMax;
 typedef pcl::PointCloud<pcl::PointXYZRGB> PCLColor;
 
 typedef octomap::ColorOcTree ColorOcTree;
+
 typedef octomap::SemanticsOcTree<octomap::SemanticsMax> SemanticsOctreeMax;
 typedef octomap::SemanticsOcTree<octomap::SemanticsBayesian> SemanticsOctreeBayesian;
 
 typedef octomap::SemanticsOcTreeNode<octomap::SemanticsMax> SemanticsOcTreeNodeMax;
 typedef octomap::SemanticsOcTreeNode<octomap::SemanticsBayesian> SemanticsOcTreeNodeBayesian;
+
+
+typedef octomap::LocalSemanticsOcTreeNode<octomap::SemanticsMax> LocalSemanticsOcTreeNodeMax;
+typedef octomap::LocalSemanticsOcTree<octomap::SemanticsMax> LocalSemanticsOctreeMax;
+
 
 /**
  * Templated octomap generator to generate a color octree or a semantic octree (with different fusion methods)

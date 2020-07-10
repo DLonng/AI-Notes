@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(lidar_camera_fusion)
+project(lidar_camera_fusion_pre)
 
 add_compile_options(-std=c++11)
 
@@ -30,15 +30,15 @@ catkin_package(CATKIN_DEPENDS
   roscpp
   tf)
 
-add_executable(lidar_camera_fusion
+add_executable(lidar_camera_fusion_pre
   src/lidar_camera_fusion.cpp
   src/main.cpp)
 
-target_include_directories(lidar_camera_fusion PRIVATE
+target_include_directories(lidar_camera_fusion_pre PRIVATE
   ${catkin_INCLUDE_DIRS}
   include)
 
-target_link_libraries(lidar_camera_fusion
+target_link_libraries(lidar_camera_fusion_pre
   ${OpenCV_LIBRARIES}
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
