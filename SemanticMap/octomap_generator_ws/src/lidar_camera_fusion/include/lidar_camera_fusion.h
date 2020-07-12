@@ -41,6 +41,10 @@
 
 //#include <image_transport/image_transport.h>
 
+
+//#include <std_msgs/Float32MultiArray.h>
+#include <rospy_tutorials/Floats.h>
+
 struct PointXYZRGBSemanticsMax {
     PCL_ADD_POINT4D; // Preferred way of adding a XYZ+padding
     PCL_ADD_RGB;
@@ -89,7 +93,8 @@ private:
     void SemanticImageCallback(const sensor_msgs::Image::ConstPtr& semantic_img);
 
     // 语义置信度矩阵(Height x Width, Float32)订阅回调函数，这里需要接受哪种类型的参数
-    void ConfidenceCallback(const sensor_msgs::Image::ConstPtr& confidence);
+    //void ConfidenceCallback(const std_msgs::Float32MultiArray::ConstPtr& conf);
+    void ConfidenceCallback(const rospy_tutorials::Floats::ConstPtr& conf);
 
     // 从 tf 树中寻找两个 frame_id 之间的变换关系，第二个参数应该也可以用引用传递
     tf::StampedTransform FindTransform(const std::string& target_frame, const std::string& source_frame);

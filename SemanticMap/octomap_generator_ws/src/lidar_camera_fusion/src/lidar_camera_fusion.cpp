@@ -13,14 +13,14 @@
 
 const std::string LidarCameraFusion::kNodeName = "lidar_camera_fusion";
 
-
 LidarCameraFusion::LidarCameraFusion()
     : param_handle("~")
     , camera_lidar_tf_ok(false)
     , camera_instrinsics_mat_ok(false)
     , camera_extrinsic_mat_ok(false)
     , is_kitti(false)
-    , image_frame_id("") {
+    , image_frame_id("")
+{
 
     InitROS();
 }
@@ -36,14 +36,15 @@ LidarCameraFusion::LidarCameraFusion()
   * @author 作者
   * @date 日期
   */
-void LidarCameraFusion::InitROS() {
+void LidarCameraFusion::InitROS()
+{
     std::string calibration_file;
     param_handle.param<std::string>("calibration_file", calibration_file, "");
 
     if (calibration_file.empty()) {
         ROS_ERROR("[%s]: missing calibration file path '%s'. ", kNodeName.c_str(), calibration_file.c_str());
         ros::shutdown();
-        return ;
+        return;
     }
 
     // 读取 Autoware 雷达相机外参标定文件
@@ -52,7 +53,7 @@ void LidarCameraFusion::InitROS() {
     if (!fs.isOpened()) {
         ROS_ERROR("[%s]: cannot open file calibration file [%s]. ", kNodeName.c_str(), calibration_file.c_str());
         ros::shutdown();
-        return ;
+        return;
     }
 
     // 导入雷达相机外参
@@ -87,6 +88,9 @@ void LidarCameraFusion::InitROS() {
     // 图像大小
     fs["ImageSize"] >> image_size;
 
+    // 初始化置信度矩阵
+    confidences = cv::Mat::zeros(image_size.height, image_size.width, cv::DataType<float>::type);
+
     // 畸变矩阵
     fs["DistCoeff"] >> distortion_coefficients;
 
@@ -97,13 +101,13 @@ void LidarCameraFusion::InitROS() {
     std::string image_raw;
     // 原始 Robosense-16 点云
     std::string cloud_raw;
-    
+
     // LEDNet 分割后的语义图像
     std::string semantic_img;
 
     // LEDNet 语义图像对应的置信度矩阵
     std::string semantic_confidence;
-    
+
     // Max Fusion 使用的语义点云类型
     std::string semantic_cloud_max;
 
@@ -112,8 +116,8 @@ void LidarCameraFusion::InitROS() {
     param_handle.param<std::string>("cloud_raw", cloud_raw, "/rslidar_points");
 
     param_handle.param<std::string>("semantic_img", semantic_img, "/semantic_img");
-    param_handle.param<std::string>("semantic_confidence", semantic_confidence, "/semantic_confidence");
-    
+    param_handle.param<std::string>("semantic_confidence", semantic_confidence, "/semantic_array");
+
     param_handle.param<std::string>("semantic_cloud_max", semantic_cloud_max, "/semantic_cloud_max");
 
     // 订阅 image_input 话题
@@ -138,7 +142,8 @@ void LidarCameraFusion::InitROS() {
  * @Date: 2020-05-04
  * @LastEditTime:
  */
-void LidarCameraFusion::ImageRawCallback(const sensor_msgs::Image::ConstPtr& image_msg) {
+void LidarCameraFusion::ImageRawCallback(const sensor_msgs::Image::ConstPtr& image_msg)
+{
     // 1. 确保相机内参和畸变矩阵已经初始化！
     if (camera_instrinsics_mat_ok == false) {
         ROS_INFO("[%s] wait to read camera instrinsics mat!", kNodeName.c_str());
@@ -160,7 +165,6 @@ void LidarCameraFusion::ImageRawCallback(const sensor_msgs::Image::ConstPtr& ima
         // 我们自己做语义分割之前图像没有去畸变，这里调用 opencv undistort
         cv::undistort(cv_image_ptr->image, image_frame, camera_instrinsics_mat, distortion_coefficients);
     }
-
 
 #if 0
     // 4. 发布去畸变的图像消息
@@ -200,17 +204,18 @@ void LidarCameraFusion::ImageRawCallback(const sensor_msgs::Image::ConstPtr& ima
   * @author DLonng
   * @date 2020-07-07
   */
-void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg) {
+void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
+{
     // 确保当前融合的原始图像不为空
     if (image_frame.empty()) {
         ROS_INFO("[%s]: image_frame is empty! Waiting for current image frame ...", kNodeName.c_str());
-        return ;
+        return;
     }
 
     // 确保当前融合的语义图像不为空
     if (semantic_frame.empty()) {
         ROS_INFO("[%s]: semantic_frame is empty! Waiting for current semantic frame ...", kNodeName.c_str());
-        return ;
+        return;
     }
 
     // 确保当前融合的置信度矩阵不为空
@@ -222,7 +227,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     // 再次确保 image_frame_id 不为空，因为 TF 要用到
     if (image_frame_id == "") {
         ROS_INFO("[%s]: image_frame_id is null! Please check image topic sender!", kNodeName.c_str());
-        return ;
+        return;
     }
 
 #if USING_TF
@@ -237,7 +242,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
         return;
     }
 
-#else 
+#else
     // 直接使用读取的外参矩阵
     // 保证相机内参和坐标转换读取成功
     if (camera_instrinsics_mat_ok == false || camera_extrinsic_mat_ok == false) {
@@ -270,9 +275,9 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
     // void pcl::fromROSMsg(const sensor_msgs::PointCloud2 &, pcl::PointCloud<T> &);
     pcl::fromROSMsg(*cloud_msg, *pcl_cloud_msg);
-    
+
     auto in_cloud_msg = pcl_cloud_msg;
-    
+
     // 5. 需不需要对 PCL 点云做分割地面等操作？
 
     // 融合后的一帧点云
@@ -317,27 +322,26 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
 #if USING_TF
 
-       // //ROS_INFO("[%s]: in_cloud_msg x %f y %f z %f", kNodeName.c_str(), in_cloud_msg->points[i].x, in_cloud_msg->points[i].y, in_cloud_msg->points[i].z);
-       // 
-       // geometry_msgs::PointStamped rslidar_point; 
-       // rslidar_point.header.frame_id = "rslidar";
-       // 
-       // rslidar_point.point.x = in_cloud_msg->points[i].x;
-       // rslidar_point.point.y = in_cloud_msg->points[i].y;
-       // rslidar_point.point.z = in_cloud_msg->points[i].z;
+        // //ROS_INFO("[%s]: in_cloud_msg x %f y %f z %f", kNodeName.c_str(), in_cloud_msg->points[i].x, in_cloud_msg->points[i].y, in_cloud_msg->points[i].z);
+        //
+        // geometry_msgs::PointStamped rslidar_point;
+        // rslidar_point.header.frame_id = "rslidar";
+        //
+        // rslidar_point.point.x = in_cloud_msg->points[i].x;
+        // rslidar_point.point.y = in_cloud_msg->points[i].y;
+        // rslidar_point.point.z = in_cloud_msg->points[i].z;
 
-       // geometry_msgs::PointStamped left_point; 
+        // geometry_msgs::PointStamped left_point;
 
-       // transform_listener.transformPoint(image_frame_id, rslidar_point, left_point);
-       // 
-       // //ROS_INFO("[%s]:    cam_cloud x %f y %f z %f", kNodeName.c_str(), cam_cloud[i].x, cam_cloud[i].y, cam_cloud[i].z);
-       // //ROS_INFO("[%s]:    left_cloud x %f y %f z %f", kNodeName.c_str(), left_point.point.x, left_point.point.y, left_point.point.z);
-       // 
-       // col = int(left_point.point.x * fx / left_point.point.z + cx);
-       // row = int(left_point.point.y * fy / left_point.point.z + cy);
-       // 
-       // //ROS_INFO("[%s]: col %d row %d z %f", kNodeName.c_str(), col, row, left_point.point.z);
-      
+        // transform_listener.transformPoint(image_frame_id, rslidar_point, left_point);
+        //
+        // //ROS_INFO("[%s]:    cam_cloud x %f y %f z %f", kNodeName.c_str(), cam_cloud[i].x, cam_cloud[i].y, cam_cloud[i].z);
+        // //ROS_INFO("[%s]:    left_cloud x %f y %f z %f", kNodeName.c_str(), left_point.point.x, left_point.point.y, left_point.point.z);
+        //
+        // col = int(left_point.point.x * fx / left_point.point.z + cx);
+        // row = int(left_point.point.y * fy / left_point.point.z + cy);
+        //
+        // //ROS_INFO("[%s]: col %d row %d z %f", kNodeName.c_str(), col, row, left_point.point.z);
 
         cam_cloud[i] = TransformPoint(in_cloud_msg->points[i], camera_lidar_tf);
 
@@ -380,7 +384,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
         tmp_z = z;
 #endif
-        
+
         // 只融合在像素平面内的点云, TF 没有效果是因为没改 z 的判断条件！
         if ((row >= 0) && (row < image_size.height) && (col >= 0) && (col < image_size.width) && (tmp_z > 0)) {
             // add XYZ
@@ -389,7 +393,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
             semantic_point_max.z = in_cloud_msg->points[i].z;
 
             // ROS_INFO("[%s]: col %d row %d z %f", kNodeName.c_str(), col, row, left_point.point.z);
-            
+
             // add RGB
             rgb_pixel = image_frame.at<cv::Vec3b>(row, col);
             semantic_point_max.r = rgb_pixel[2];
@@ -401,7 +405,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
             semantic_point_max.s_r = semantic_pixel[2];
             semantic_point_max.s_g = semantic_pixel[1];
             semantic_point_max.s_b = semantic_pixel[0];
-            
+
             // This have bug!!!
             // 把 image 和 semantic 交换，image 仍然不能正常显示
             //uint8_t s_r = semantic_pixel[0];
@@ -411,8 +415,9 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
             //semantic_point_max.semantic_color = (s_r << 16) + (s_g << 8) + s_b;
 
             // add confidence
-            semantic_point_max.confidence = 0.8;
-            //semantic_point_max.confidence = confidences.at<float>(row, col);
+            //semantic_point_max.confidence = 0.8;
+            semantic_point_max.confidence = confidences.at<float>(row, col);
+            //ROS_INFO("[%s]: confidences.at<float>(%d, %d) = %f", kNodeName.c_str(), row, col, semantic_point_max.confidence);
 
             out_cloud->points.push_back(semantic_point_max);
         }
@@ -440,10 +445,9 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
     ROS_INFO("[%s]: publish fusion cloud.", kNodeName.c_str());
 
-    // 发布融合后的带颜色的点云 
+    // 发布融合后的带颜色的点云
     pub_semantic_cloud.publish(fusion_cloud);
 }
-
 
 /**
   * @brief LEDNet 分割后图像的回调函数
@@ -459,7 +463,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
   * @author DLonng
   * @date 2020-07-07
   */
-void LidarCameraFusion::SemanticImageCallback(const sensor_msgs::Image::ConstPtr& semantic_img) 
+void LidarCameraFusion::SemanticImageCallback(const sensor_msgs::Image::ConstPtr& semantic_img)
 {
     // 确保相机内参和畸变矩阵已经初始化！
     if (camera_instrinsics_mat_ok == false) {
@@ -475,7 +479,7 @@ void LidarCameraFusion::SemanticImageCallback(const sensor_msgs::Image::ConstPtr
         semantic_frame = cv_image_ptr->image;
     else // 我们自己的语义分割没有去畸变，这里要处理
         cv::undistort(cv_image_ptr->image, semantic_frame, camera_instrinsics_mat, distortion_coefficients);
-    
+
     // TODO: 是否需要单独保存语义图像的 ID，用来与 image_frame 比较确保是两者同步？
 }
 
@@ -491,10 +495,39 @@ void LidarCameraFusion::SemanticImageCallback(const sensor_msgs::Image::ConstPtr
   * @author DLonng
   * @date 2020-07-07
   */
-void LidarCameraFusion::ConfidenceCallback(const sensor_msgs::Image::ConstPtr& confidence)
+#if 0 
+void LidarCameraFusion::ConfidenceCallback(const std_msgs::Float32MultiArray::ConstPtr& conf)
 {
-    // TODO: init confidences!
+    // 确保相机内参和畸变矩阵已经初始化！
+    if (camera_instrinsics_mat_ok == false) {
+        ROS_INFO("[%s] SemanticImageCallback: wait to read camera instrinsics mat!", kNodeName.c_str());
+        return;
+    }
 
+    // TODO: init confidences!
+    for (int r = 0; r < image_size.height; r++) {
+        for (int l = 0; l < image_size.width; l++) {
+            this->confidences.at<float>(r, l) = conf->data[r * image_size.width + l];
+            ROS_INFO("[%s]: confidences.at<float>(%d, %d) = %f", kNodeName.c_str(), r, l, this->confidences.at<float>(r, l));
+        }
+    }
+}
+#endif
+
+void LidarCameraFusion::ConfidenceCallback(const rospy_tutorials::Floats::ConstPtr& conf) {
+    // 确保相机内参和畸变矩阵已经初始化！
+    if (camera_instrinsics_mat_ok == false) {
+        ROS_INFO("[%s] SemanticImageCallback: wait to read camera instrinsics mat!", kNodeName.c_str());
+        return;
+    
+
+    // TODO: init confidences!
+    for (int r = 0; r < image_size.height; r++) {
+        for (int l = 0; l < image_size.width; l++) {
+            this->confidences.at<float>(r, l) = conf->data[r * image_size.width + l];
+            //ROS_INFO("[%s]: confidences.at<float>(%d, %d) = %f", kNodeName.c_str(), r, l, this->confidences.at<float>(r, l));
+        }
+    }
 }
 
 /*
@@ -503,7 +536,8 @@ void LidarCameraFusion::ConfidenceCallback(const sensor_msgs::Image::ConstPtr& c
  * @Date: 2020-05-05
  * @LastEditTime:
  */
-tf::StampedTransform LidarCameraFusion::FindTransform(const std::string& target_frame, const std::string& source_frame) {
+tf::StampedTransform LidarCameraFusion::FindTransform(const std::string& target_frame, const std::string& source_frame)
+{
     tf::StampedTransform transform;
 
     camera_lidar_tf_ok = false;
@@ -525,7 +559,8 @@ tf::StampedTransform LidarCameraFusion::FindTransform(const std::string& target_
  * @Date: 2020-05-05
  * @LastEditTime:
  */
-pcl::PointXYZ LidarCameraFusion::TransformPoint(const pcl::PointXYZ& in_point, const tf::StampedTransform& in_transform) {
+pcl::PointXYZ LidarCameraFusion::TransformPoint(const pcl::PointXYZ& in_point, const tf::StampedTransform& in_transform)
+{
     tf::Vector3 point(in_point.x, in_point.y, in_point.z);
 
     tf::Vector3 point_transform = in_transform * point;
@@ -546,10 +581,11 @@ pcl::PointXYZ LidarCameraFusion::TransformPoint(const pcl::PointXYZ& in_point, c
  * @LastEditTime: 2020-05-18
  */
 void LidarCameraFusion::EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud,
-                                   std::vector<pcl::PointIndices>& cluster_indices,
-                                   int cluster_tolerance,
-                                   int min_cluster_size,
-                                   int max_cluster_size) {
+    std::vector<pcl::PointIndices>& cluster_indices,
+    int cluster_tolerance,
+    int min_cluster_size,
+    int max_cluster_size)
+{
     // 设置使用 kdtree 搜索
     pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kd_tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
     kd_tree->setInputCloud(in_cloud);
