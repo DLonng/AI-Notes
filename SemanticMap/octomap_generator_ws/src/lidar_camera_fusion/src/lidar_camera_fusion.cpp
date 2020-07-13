@@ -219,10 +219,10 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     }
 
     // 确保当前融合的置信度矩阵不为空
-    //if (confidences.empty()) {
-    //    ROS_INFO("[%s]: confidence is empty! Waiting for current confidence frame ...", kNodeName.c_str());
-    //    return ;
-    //}
+    if (confidences.empty()) {
+        ROS_INFO("[%s]: confidence is empty! Waiting for current confidence frame ...", kNodeName.c_str());
+        return ;
+    }
 
     // 再次确保 image_frame_id 不为空，因为 TF 要用到
     if (image_frame_id == "") {
@@ -284,7 +284,8 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     //pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     pcl::PointCloud<PointXYZRGBSemanticsMax>::Ptr out_cloud(new pcl::PointCloud<PointXYZRGBSemanticsMax>);
     out_cloud->points.clear();
-
+    
+    // 单个 Max 融合的语义点云
     PointXYZRGBSemanticsMax semantic_point_max;
 
     std::vector<PointXYZRGBSemanticsMax> cam_cloud(in_cloud_msg->points.size());
@@ -401,6 +402,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
             semantic_point_max.b = rgb_pixel[0];
 
             // add semantic color
+            // kitti 没有语义，以下逻辑会导致节点报错，使用没有语义的 bag 注释以下代码
             cv::Vec3b semantic_pixel = semantic_frame.at<cv::Vec3b>(row, col);
             semantic_point_max.s_r = semantic_pixel[2];
             semantic_point_max.s_g = semantic_pixel[1];
@@ -514,18 +516,19 @@ void LidarCameraFusion::ConfidenceCallback(const std_msgs::Float32MultiArray::Co
 }
 #endif
 
-void LidarCameraFusion::ConfidenceCallback(const rospy_tutorials::Floats::ConstPtr& conf) {
+void LidarCameraFusion::ConfidenceCallback(const rospy_tutorials::Floats::ConstPtr& conf)
+{
     // 确保相机内参和畸变矩阵已经初始化！
     if (camera_instrinsics_mat_ok == false) {
         ROS_INFO("[%s] SemanticImageCallback: wait to read camera instrinsics mat!", kNodeName.c_str());
         return;
-    
 
-    // TODO: init confidences!
-    for (int r = 0; r < image_size.height; r++) {
-        for (int l = 0; l < image_size.width; l++) {
-            this->confidences.at<float>(r, l) = conf->data[r * image_size.width + l];
-            //ROS_INFO("[%s]: confidences.at<float>(%d, %d) = %f", kNodeName.c_str(), r, l, this->confidences.at<float>(r, l));
+        // TODO: init confidences!
+        for (int r = 0; r < image_size.height; r++) {
+            for (int l = 0; l < image_size.width; l++) {
+                this->confidences.at<float>(r, l) = conf->data[r * image_size.width + l];
+                //ROS_INFO("[%s]: confidences.at<float>(%d, %d) = %f", kNodeName.c_str(), r, l, this->confidences.at<float>(r, l));
+            }
         }
     }
 }

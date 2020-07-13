@@ -31,3 +31,16 @@
 find . -name "xxx.xxx"
 ```
 
+### 2.2 查看系统 CPU 运行状态
+
+使用 top 或者 htop 工具，后者更香：
+
+```shell
+top
+```
+
+```shell
+sudo apt install htop
+htop
+```
+
