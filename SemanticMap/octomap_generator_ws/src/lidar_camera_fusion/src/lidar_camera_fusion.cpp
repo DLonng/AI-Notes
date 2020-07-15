@@ -418,7 +418,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
             // add confidence
             //semantic_point_max.confidence = 0.8;
-            semantic_point_max.confidence = confidences.at<float>(row, col);
+             semantic_point_max.confidence = confidences.at<float>(row, col);
             //ROS_INFO("[%s]: confidences.at<float>(%d, %d) = %f", kNodeName.c_str(), row, col, semantic_point_max.confidence);
 
             out_cloud->points.push_back(semantic_point_max);

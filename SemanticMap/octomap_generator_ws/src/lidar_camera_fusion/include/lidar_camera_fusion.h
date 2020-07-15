@@ -14,6 +14,7 @@
 #include <string>
 
 #include <cv_bridge/cv_bridge.h>
+
 #include <ros/ros.h>
 
 #include <sensor_msgs/Image.h>
@@ -41,9 +42,9 @@
 
 //#include <image_transport/image_transport.h>
 
-
 //#include <std_msgs/Float32MultiArray.h>
 #include <rospy_tutorials/Floats.h>
+
 
 struct PointXYZRGBSemanticsMax {
     PCL_ADD_POINT4D; // Preferred way of adding a XYZ+padding

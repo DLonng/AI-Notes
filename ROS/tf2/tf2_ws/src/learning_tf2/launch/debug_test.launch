@@ -1,0 +1,7 @@
+<launch>
+     <!-- 乌龟节点 -->
+    <node pkg="turtlesim" type="turtlesim_node" name="sim"/>
+    
+    <!-- 第一个乌龟的 tf 广播者节点，参数为乌龟 1 的名字 /tutle1 -->
+    <node pkg="learning_tf2" type="debug_test" name="debug_test" output="screen" launch-prefix="xterm -e gdb --args"/>
+</launch>

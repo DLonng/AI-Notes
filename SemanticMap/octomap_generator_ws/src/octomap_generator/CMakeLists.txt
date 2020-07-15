@@ -5,9 +5,11 @@ add_compile_options(-std=c++11)
 
 # SET OCTOMAP_OMP to disable/enable OPENMP (experimental for octomap, default disabled)
 SET(OCTOMAP_OMP FALSE CACHE BOOL "Enable/disable OpenMP parallelization")
+
 IF(DEFINED ENV{OCTOMAP_OMP})
   SET(OCTOMAP_OMP $ENV{OCTOMAP_OMP})
 ENDIF(DEFINED ENV{OCTOMAP_OMP})
+
 IF(OCTOMAP_OMP)
   FIND_PACKAGE( OpenMP REQUIRED)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -42,7 +44,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS ${PACKAGE_DEPENDENCIES}
-  DEPENDS octomap PCL
+  DEPENDS OCTOMAP PCL
 )
 
 set(LINK_LIBS
