@@ -45,6 +45,8 @@
 //#include <std_msgs/Float32MultiArray.h>
 #include <rospy_tutorials/Floats.h>
 
+#include <semantic_msg/bayes_msg.h>
+#include <semantic_msg/max_msg.h>
 
 struct PointXYZRGBSemanticsMax {
     PCL_ADD_POINT4D; // Preferred way of adding a XYZ+padding
@@ -72,9 +74,44 @@ struct PointXYZRGBSemanticsMax {
 } EIGEN_ALIGN16; // enforce SSE padding for correct memory alignment
 
 // here we assume a XYZ + RGB + "sementic_color" + "confidence" (as fields)
-// 注册自定义的点云类型
 POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZRGBSemanticsMax,
     (float, x, x)(float, y, y)(float, z, z)(float, rgb, rgb)(float, semantic_color, semantic_color)(float, confidence, confidence))
+
+
+
+
+struct PointXYZRGBSemanticsBayesian {
+    PCL_ADD_POINT4D; // Preferred way of adding a XYZ+padding
+    PCL_ADD_RGB;
+    union // Semantic colors
+    {
+        float data_sem[4];
+        struct
+        {
+            float semantic_color1;
+            float semantic_color2;
+            float semantic_color3;
+        };
+    };
+    union // Confidences
+    {
+        float data_conf[4];
+        struct
+        {
+            float confidence1;
+            float confidence2;
+            float confidence3;
+        };
+    };
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW // make sure our new allocators are aligned
+} EIGEN_ALIGN16; // enforce SSE padding for correct memory alignment
+
+// here we assume a XYZ + RGB + "sementic_colors" + "confidences" (as fields)
+POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZRGBSemanticsBayesian,
+    (float, x, x)(float, y, y)(float, z, z)(float, rgb, rgb)(float, semantic_color1, semantic_color1)(float, semantic_color2, semantic_color2)(float, semantic_color3, semantic_color3)(float, confidence1, confidence1)(float, confidence2, confidence2)(float, confidence3, confidence3))
+
+
+
 
 class LidarCameraFusion {
 public:
@@ -96,6 +133,10 @@ private:
     // 语义置信度矩阵(Height x Width, Float32)订阅回调函数，这里需要接受哪种类型的参数
     //void ConfidenceCallback(const std_msgs::Float32MultiArray::ConstPtr& conf);
     void ConfidenceCallback(const rospy_tutorials::Floats::ConstPtr& conf);
+
+    void MaxSemanticCallback(const semantic_msg::max_msg::ConstPtr& max_semantic);
+
+    void BayesSemanticCallback(const semantic_msg::bayes_msg::ConstPtr& bayes_semantic);
 
     // 从 tf 树中寻找两个 frame_id 之间的变换关系，第二个参数应该也可以用引用传递
     tf::StampedTransform FindTransform(const std::string& target_frame, const std::string& source_frame);
@@ -126,6 +167,12 @@ private:
 
     // 语义图像置信度
     ros::Subscriber sub_confidence;
+
+    // max fusion 自定义消息订阅者
+    ros::Subscriber sub_max_semantic;
+
+    // bayes fusion 自定义消息订阅者
+    ros::Subscriber sub_bayes_semantic;
 
     // 融合结果发布者
     ros::Publisher pub_semantic_cloud;
@@ -173,6 +220,24 @@ private:
     // 是否使用 KITTI 数据集测试
     bool is_kitti;
 
+    // 语义点云类型
+    int semantic_type;
+
+private:
+    // Max 语义
+    cv::Mat max_frame;
+    cv::Mat max_confidences;
+
+    // Bayes 语义
+    cv::Mat bayes_frame_1;
+    cv::Mat bayes_confidences_1;
+
+    cv::Mat bayes_frame_2;
+    cv::Mat bayes_confidences_2;
+
+    cv::Mat bayes_frame_3;
+    cv::Mat bayes_confidences_3;
+
 private:
     // 定义相机和雷达之间的坐标转换关系
     tf::StampedTransform camera_lidar_tf;
@@ -189,6 +254,8 @@ private:
 
 private:
     static const std::string kNodeName;
+    static const int kMaxSemanticType;
+    static const int kBayesSemanticType;
 };
 
 #endif // LIDAR_CAMERA_FUSION_H

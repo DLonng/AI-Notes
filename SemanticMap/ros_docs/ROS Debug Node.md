@@ -111,24 +111,35 @@ output="screen" launch-prefix="xterm -e gdb -ex run --args "
 
 ## 三、VSCode GDB 调试单独节点
 
-ok
+
 
 ## 三、VSCode GDB 调试带 ROS 参数的单独节点
 
-ok
+问题：roslaunch 的参数是如何传递的？
 
-参数是如何传递的？
+
 
 ## 四、VSCode GDB 同时调试多个节点
 
+- 同时启动多个 vscode，分别调试不同节点
+- 顺序启动？
 
 
 
+## 六、VSCode ROS 插件调试节点
 
-
+- 从 launch 文件启动调试，launch 模式
+- 从同一个 launch 中调试多个节点会有问题，有些节点没有启动
+- 每个节点顺序分开启动可以正常调试
+- 在 launch.json 中通过组件化启动也存在问题，可能需要节点之间需要延迟启动
 
 参考博客：
 
 - [ros 项目调试:vscode 下配置开发 ROS 项目](https://blog.csdn.net/weixin_35695879/article/details/85254422)
 - [http://wiki.ros.org/roslaunch/Tutorials/Roslaunch%20Nodes%20in%20Valgrind%20or%20GDB](http://wiki.ros.org/roslaunch/Tutorials/Roslaunch Nodes in Valgrind or GDB)
 - https://bluesat.com.au/a-dummys-guide-to-debugging-ros-systems/
+- [如何配置 VSCode 来调试 ROS 节点](https://blog.csdn.net/u013834525/article/details/106003959?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-7.nonecase&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-7.nonecase#t6)
+- https://github.com/ms-iot/vscode-ros/blob/master/doc/debug-support.md#launch
+- https://github.com/TonyRobotics/RoboWare-Studio
+- https://github.com/TonyRobotics/RoboWare/tree/master/Studio
+- https://blog.csdn.net/JIEJINQUANIL/article/details/102572722

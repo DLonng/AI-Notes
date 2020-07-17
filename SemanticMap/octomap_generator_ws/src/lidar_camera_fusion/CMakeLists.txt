@@ -13,7 +13,11 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
   roscpp
-  tf)
+  tf
+  semantic_msg
+  std_msgs
+)
+
 
 # ROS Kinetic OpenCV-3.3.1
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -22,13 +26,13 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 #find_package(PCL REQUIRED)
 #include_directories(${PCL_INCLUDE_DIRS})
 
-catkin_package(CATKIN_DEPENDS
-  cv_bridge
-  image_transport
-  pcl_conversions
-  pcl_ros
-  roscpp
-  tf)
+catkin_package(
+  INCLUDE_DIRS include
+  #LIBRARIES ${PROJECT_NAME} semantic_msg
+  CATKIN_DEPENDS cv_bridge image_transport pcl_conversions pcl_ros roscpp tf
+)
+
+# https://answers.ros.org/question/237183/the-library-is-neither-a-target-nor-builtinstalled-properly/
 
 add_executable(lidar_camera_fusion
   src/lidar_camera_fusion.cpp
@@ -42,3 +46,6 @@ target_link_libraries(lidar_camera_fusion
   ${OpenCV_LIBRARIES}
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
+
+add_dependencies(lidar_camera_fusion semantic_msg_gencpp)
+#add_dependencies(lidar_camera_fusion ${catkin_EXPORTED_TARGETS})

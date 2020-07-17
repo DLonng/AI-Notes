@@ -80,6 +80,15 @@ namespace octomap
     // Update inner nodes' occupancy, RGB color and semantics
     void updateInnerOccupancy();
 
+    unsigned int getLastUpdateTime();
+
+    void degradeOutdatedNodes(unsigned int time_thres);
+
+    virtual void updateNodeLogOdds(SemanticsOcTreeNode<SEMANTICS>* node, const float& update) const;
+
+    void integrateMissNoTime(SemanticsOcTreeNode<SEMANTICS>* node) const;
+
+
   protected:
     void updateInnerOccupancyRecurs(SemanticsOcTreeNode<SEMANTICS>* node, unsigned int depth);
 

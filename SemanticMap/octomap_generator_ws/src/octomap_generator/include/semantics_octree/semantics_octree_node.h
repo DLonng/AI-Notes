@@ -5,6 +5,9 @@
 #ifndef SEMANTIC_OCTREE_NODE_H
 #define SEMANTIC_OCTREE_NODE_H
 #include <semantics_octree/semantics_octree.h>
+#include <ctime>
+
+
 namespace octomap {
 
 // Forward declaraton for "friend"
@@ -23,6 +26,7 @@ public:
         : ColorOcTreeNode()
         , semantics()
         , use_semantic_color(true)
+        , time_stamp(0)
     {
     }
 
@@ -35,7 +39,7 @@ public:
     /// Operator
     inline bool operator==(const SemanticsOcTreeNode& rhs) const
     {
-        return (rhs.value == value && rhs.semantics == semantics);
+        return (rhs.value == value && rhs.semantics == semantics && rhs.time_stamp == time_stamp);
     }
 
     /// Copy data
@@ -43,6 +47,7 @@ public:
     {
         ColorOcTreeNode::copyData(from);
         semantics = from.getSemantics();
+        time_stamp = from.getTimestamp();
     }
 
     /// Get semantics
@@ -66,9 +71,26 @@ public:
     /// Write to file, also used to serialize octomap, we change the displayed color here
     std::ostream& writeData(std::ostream& s) const;
 
+    // timestamp
+    inline unsigned int getTimestamp() const { return time_stamp; }
+    
+    // 更新当前时间
+    inline void updateTimestamp() { time_stamp = (unsigned int) time(NULL);}
+
+    // 设置当前节点的时间戳
+    inline void setTimestamp(unsigned int t) {time_stamp = t; }
+
+    // update occupancy and timesteps of inner nodes
+    // 更新每个节点的占用概率和时间戳
+    inline void updateOccupancyChildren() {
+      this->setLogOdds(this->getMaxChildLogOdds());  // conservative
+      updateTimestamp();
+    }
+
 protected:
     SEMANTICS semantics;
     bool use_semantic_color; ///<Whether use semantic color rather than rgb color
+    unsigned int time_stamp;
 };
 
 // Node implementation  --------------------------------------

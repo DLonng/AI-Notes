@@ -22,4 +22,9 @@
     <depend> roscpp </depend>
     <depend> tf </depend>
 
+    <build_depend>semantic_msg</build_depend>
+    <exec_depend>semantic_msg</exec_depend>
+
+    <depend> std_msgs </depend>
+
 </package>

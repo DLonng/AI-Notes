@@ -84,8 +84,13 @@ void OctomapGenerator<CLOUD, OCTREE>::insertPointCloud(const pcl::PCLPointCloud2
     // Do ray casting for points in raycast_range_
     if (raycast_cloud.size() > 0)
         octomap_.insertPointCloud(raycast_cloud, origin, raycast_range_, false, true); // use lazy_eval, run updateInnerOccupancy() when done, use discretize to downsample cloud
+    
     // Update colors and semantics, differs between templates
     updateColorAndSemantics(&pcl_cloud);
+
+    // 时间间隔最好能根据运动速度动态更新
+    octomap_.degradeOutdatedNodes(5);
+
     // updates inner node occupancy and colors
     if (endpoint_count > 0)
         octomap_.updateInnerOccupancy();
@@ -172,6 +177,6 @@ bool OctomapGenerator<CLOUD, OCTREE>::save(const char* filename) const
 }
 
 //Explicit template instantiation
-template class OctomapGenerator<PCLColor, ColorOcTree>;
+//template class OctomapGenerator<PCLColor, ColorOcTree>;
 template class OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>;
 template class OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>;

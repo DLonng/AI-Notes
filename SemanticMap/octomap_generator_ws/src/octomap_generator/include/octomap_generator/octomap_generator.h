@@ -12,6 +12,7 @@
 
 #include <semantics_octree/LocalSemanticsOcTree.h>
 
+
 typedef pcl::PointCloud<PointXYZRGBSemanticsBayesian> PCLSemanticsBayesian;
 typedef pcl::PointCloud<PointXYZRGBSemanticsMax> PCLSemanticsMax;
 typedef pcl::PointCloud<pcl::PointXYZRGB> PCLColor;

@@ -68,3 +68,24 @@ class SemanticsOcTreeNode : public ColorOcTreeNode {
 参考博客：
 
 - [C++, 重载，重写，重定义的总结](https://www.cnblogs.com/tanky_woo/archive/2012/02/08/2343203.html)
+
+### typename
+
+```cpp
+for (typename SemanticsOcTree<SEMANTICS>::leaf_iterator it = this->begin_leafs(), end = this->end_leafs(); it != end; ++it) {
+        // 如果节点是占用的，并且内部时间超过阈值就删除
+        if (this->isNodeOccupied(*it)
+            && ((query_time - it->getTimestamp()) > time_thres)) {
+            integrateMissNoTime(&*it);
+        }
+    }
+```
+
+
+
+### Explicit template instantiation
+
+```cpp
+template class OctomapGenerator<PCLColor, ColorOcTree>;
+```
+

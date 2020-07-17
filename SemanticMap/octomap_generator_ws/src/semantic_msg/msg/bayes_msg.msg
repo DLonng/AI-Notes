@@ -1,0 +1,10 @@
+std_msgs/Header header
+
+sensor_msgs/Image semantic_img_1
+rospy_tutorials/Floats confidence_1
+
+sensor_msgs/Image semantic_img_2
+rospy_tutorials/Floats confidence_2
+
+sensor_msgs/Image semantic_img_3
+rospy_tutorials/Floats confidence_3
