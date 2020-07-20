@@ -8,33 +8,37 @@
 #include <sstream>
 
 #include "semantics_octree/LocalSemanticsOcTree.h"
-#include "semantics_octree/OcTreeStamped.h"
 
 OctomapGeneratorNode::OctomapGeneratorNode(ros::NodeHandle& nh)
     : nh_(nh)
 {
-    // Test LocalSemanticNode ok!
-    //octomap::LocalSemanticsOcTreeNode<octomap::SemanticsMax> local_node;
-    //octomap_generator_ = new OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>();
-    //octomap::LocalSemanticsOcTree<octomap::SemanticsMax> local_map;
-
     nh_.getParam("/octomap/tree_type", tree_type_);
     // Initiate octree
     if (tree_type_ == SEMANTICS_OCTREE_BAYESIAN || tree_type_ == SEMANTICS_OCTREE_MAX) {
         if (tree_type_ == SEMANTICS_OCTREE_BAYESIAN) {
             ROS_INFO("Semantic octomap generator [bayesian fusion]");
             octomap_generator_ = new OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>();
+            local_octomap_generator = new OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>();
         } else {
             ROS_INFO("Semantic octomap generator [max fusion]");
             octomap_generator_ = new OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>();
+            local_octomap_generator = new OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>();
         }
         service_ = nh_.advertiseService("toggle_use_semantic_color", &OctomapGeneratorNode::toggleUseSemanticColor, this);
     } else {
         ROS_INFO("Color octomap generator");
         //octomap_generator_ = new OctomapGenerator<PCLColor, ColorOcTree>();
     }
+
     reset();
+
     fullmap_pub_ = nh_.advertise<octomap_msgs::Octomap>("octomap_full", 1, true);
+
+    local_map_pub = nh_.advertise<octomap_msgs::Octomap>("octomap_local", 1, true);
+
+    // 订阅小车的速度
+    //sub_v = nh_.subscribe("scout_status", 1, &OctomapGeneratorNode::ScoutStatusCallback, this);
+
     pointcloud_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, pointcloud_topic_, 5);
     tf_pointcloud_sub_ = new tf::MessageFilter<sensor_msgs::PointCloud2>(*pointcloud_sub_, tf_listener_, world_frame_id_, 5);
     tf_pointcloud_sub_->registerCallback(boost::bind(&OctomapGeneratorNode::insertCloudCallback, this, _1));
@@ -55,6 +59,7 @@ void OctomapGeneratorNode::reset()
     nh_.getParam("/octomap/prob_hit", prob_hit_);
     nh_.getParam("/octomap/prob_miss", prob_miss_);
     nh_.getParam("/tree_type", tree_type_);
+
     octomap_generator_->setClampingThresMin(clamping_thres_min_);
     octomap_generator_->setClampingThresMax(clamping_thres_max_);
     octomap_generator_->setResolution(resolution_);
@@ -63,6 +68,15 @@ void OctomapGeneratorNode::reset()
     octomap_generator_->setProbMiss(prob_miss_);
     octomap_generator_->setRayCastRange(raycast_range_);
     octomap_generator_->setMaxRange(max_range_);
+
+    local_octomap_generator->setClampingThresMin(clamping_thres_min_);
+    local_octomap_generator->setClampingThresMax(clamping_thres_max_);
+    local_octomap_generator->setResolution(resolution_);
+    local_octomap_generator->setOccupancyThres(occupancy_thres_);
+    local_octomap_generator->setProbHit(prob_hit_);
+    local_octomap_generator->setProbMiss(prob_miss_);
+    local_octomap_generator->setRayCastRange(raycast_range_);
+    local_octomap_generator->setMaxRange(max_range_);
 }
 
 bool OctomapGeneratorNode::toggleUseSemanticColor(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
@@ -93,17 +107,33 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
         ROS_ERROR_STREAM("Transform error of sensor data: " << ex.what() << ", quitting callback");
         return;
     }
+
     // Transform coordinate
     Eigen::Matrix4f sensorToWorld;
     pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
     octomap_generator_->insertPointCloud(cloud, sensorToWorld);
+
+    local_octomap_generator->insertPointCloud(cloud, sensorToWorld);
+
     // Publish octomap
     map_msg_.header.frame_id = world_frame_id_;
     map_msg_.header.stamp = cloud_msg->header.stamp;
     if (octomap_msgs::fullMapToMsg(*octomap_generator_->getOctree(), map_msg_))
         fullmap_pub_.publish(map_msg_);
     else
-        ROS_ERROR("Error serializing OctoMap");
+        ROS_ERROR("Error serializing Full OctoMap");
+
+
+    // 更新局部地图并发布主题
+    float v = 1.0;
+    unsigned int time_thres = (1 / v) + 5;
+    local_octomap_generator->UpdateLocalMap(time_thres);
+    local_map_msg.header.frame_id = world_frame_id_;
+    local_map_msg.header.stamp = cloud_msg->header.stamp;
+    if (octomap_msgs::fullMapToMsg(*local_octomap_generator->getOctree(), local_map_msg))
+        local_map_pub.publish(local_map_msg);
+    else
+        ROS_ERROR("Error serializing Local OctoMap");
 }
 
 bool OctomapGeneratorNode::save(const char* filename) const

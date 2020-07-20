@@ -100,6 +100,10 @@ class OctomapGenerator: public OctomapGeneratorBase
      */
     virtual bool save(const char* filename) const;
 
+    // 增加了一个用于更新局部的地图的函数
+    // 最好还是把局部地图单独定义成一个类，不要在全局地图中实现局部地图的功能
+    virtual void UpdateLocalMap(unsigned int time_thres);
+
   protected:
     OCTREE octomap_; ///<Templated octree instance
     float max_range_; ///<Max range for points to be inserted into octomap

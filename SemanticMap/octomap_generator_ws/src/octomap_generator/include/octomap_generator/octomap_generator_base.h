@@ -57,6 +57,8 @@ class OctomapGeneratorBase
 
     /// Save octomap to a file. NOTE: Not tested
     virtual bool save(const char* filename) const = 0;
+
+    virtual void UpdateLocalMap(unsigned int time_thres) = 0;
 };
 
 #endif//OCTOMAP_GENERATOR_BASE

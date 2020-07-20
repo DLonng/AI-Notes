@@ -26,7 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Toolbars:
   toolButtonStyle: 2
 Visualization Manager:
@@ -95,7 +95,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 201
+      Max Intensity: 169
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: PointCloud2
@@ -111,12 +111,24 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
-      Enabled: true
+      Enabled: false
       Max. Height Display: 3.40282347e+38
       Max. Octree Depth: 16
       Min. Height Display: -3.40282347e+38
       Name: ColorOccupancyGrid
       Octomap Topic: /octomap_full
+      Queue Size: 5
+      Value: false
+      Voxel Alpha: 1
+      Voxel Coloring: Cell Color
+      Voxel Rendering: Occupied Voxels
+    - Class: octomap_rviz_plugin/ColorOccupancyGrid
+      Enabled: true
+      Max. Height Display: 3.40282347e+38
+      Max. Octree Depth: 16
+      Min. Height Display: -3.40282347e+38
+      Name: ColorOccupancyGrid
+      Octomap Topic: /octomap_local
       Queue Size: 5
       Value: true
       Voxel Alpha: 1
@@ -127,8 +139,18 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        aft_mapped:
+          Value: true
         base_link:
           Value: false
+        camera:
+          Value: true
+        camera_init:
+          Value: true
+        laser_odom:
+          Value: true
+        map:
+          Value: true
         rslidar:
           Value: false
       Marker Scale: 5
@@ -140,6 +162,14 @@ Visualization Manager:
         base_link:
           rslidar:
             {}
+        camera:
+          {}
+        map:
+          camera_init:
+            aft_mapped:
+              {}
+            laser_odom:
+              {}
       Update Interval: 0
       Value: true
     - Class: rviz/Image
@@ -191,25 +221,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 18.6500015
+      Distance: 36.8117981
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -6.09165668
-        Y: -8.58533859
-        Z: 3.80727797e-05
+        X: -10.6506243
+        Y: -9.69762993
+        Z: 3.95032912e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.360202134
+      Pitch: 0.730201721
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.20092535
+      Yaw: 4.1959362
     Saved: ~
 Window Geometry:
   Displays:

@@ -70,6 +70,15 @@ class OctomapGeneratorNode{
     float prob_miss_; ///<Miss probability of sensor
     int tree_type_; ///<0: color octree, 1: semantic octree using bayesian fusion, 2: semantic octree using max fusion
     octomap_msgs::Octomap map_msg_; ///<ROS octomap message
+
+    // 局部地图管理器
+    OctomapGeneratorBase* local_octomap_generator;
+    ros::Publisher local_map_pub;
+    octomap_msgs::Octomap local_map_msg;
+
+    // 小车当前速度，主要是为了根据小车运动的快慢来更新地图的消失速度
+    //float v;
+    ros::Subscriber sub_v;
   };
 
 #endif//OCTOMAP_GENERATOR_ROS

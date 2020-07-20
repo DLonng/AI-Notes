@@ -89,11 +89,18 @@ void OctomapGenerator<CLOUD, OCTREE>::insertPointCloud(const pcl::PCLPointCloud2
     updateColorAndSemantics(&pcl_cloud);
 
     // 时间间隔最好能根据运动速度动态更新
-    octomap_.degradeOutdatedNodes(5);
+    //octomap_.degradeOutdatedNodes(5);
 
     // updates inner node occupancy and colors
     if (endpoint_count > 0)
         octomap_.updateInnerOccupancy();
+}
+
+template <class CLOUD, class OCTREE>
+void OctomapGenerator<CLOUD, OCTREE>::UpdateLocalMap(unsigned int time_thres)
+{
+    octomap_.degradeOutdatedNodes(time_thres);
+    //octomap_.updateInnerOccupancy();
 }
 
 template <>
