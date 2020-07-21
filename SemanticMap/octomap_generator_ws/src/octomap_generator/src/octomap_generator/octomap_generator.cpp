@@ -143,6 +143,32 @@ void OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>::updateColorAndSemant
 }
 
 template <>
+void OctomapGenerator<PCLSemanticsMax, LocalSemanticsOctreeMax>::updateColorAndSemantics(PCLSemanticsMax* pcl_cloud)
+{
+    for (PCLSemanticsMax::const_iterator it = pcl_cloud->begin(); it < pcl_cloud->end(); it++) {
+        if (!std::isnan(it->x) && !std::isnan(it->y) && !std::isnan(it->z)) {
+            octomap_.averageNodeColor(it->x, it->y, it->z, it->r, it->g, it->b);
+            // Get semantics
+            octomap::SemanticsMax sem;
+            uint32_t rgb;
+            
+            // 0RGB
+            std::memcpy(&rgb, &it->semantic_color, sizeof(uint32_t));
+            sem.semantic_color.r = (rgb >> 16) & 0x0000ff;
+            sem.semantic_color.g = (rgb >> 8) & 0x0000ff;
+            sem.semantic_color.b = (rgb) & 0x0000ff;
+            sem.confidence = it->confidence;
+
+            octomap_.updateNodeSemantics(it->x, it->y, it->z, sem);
+        }
+    }
+    LocalSemanticsOcTreeNodeMax* node = octomap_.search(pcl_cloud->begin()->x, pcl_cloud->begin()->y, pcl_cloud->begin()->z);
+    //std::cout << "Example octree node: " << std::endl;
+    //std::cout << "Color: " << node->getColor()<< std::endl;
+    //std::cout << "Semantics: " << node->getSemantics() << std::endl;
+}
+
+template <>
 void OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>::updateColorAndSemantics(PCLSemanticsBayesian* pcl_cloud)
 {
     for (PCLSemanticsBayesian::const_iterator it = pcl_cloud->begin(); it < pcl_cloud->end(); it++) {
@@ -185,5 +211,9 @@ bool OctomapGenerator<CLOUD, OCTREE>::save(const char* filename) const
 
 //Explicit template instantiation
 //template class OctomapGenerator<PCLColor, ColorOcTree>;
+
 template class OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>;
 template class OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>;
+template class OctomapGenerator<PCLSemanticsMax, LocalSemanticsOctreeMax>;
+
+//template class OctomapGenerator<MyPCLColor, MyColorOcTree>;

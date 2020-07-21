@@ -10,6 +10,7 @@
 #define USING_TF 0
 #define USING_RAW 1
 #define USING_KITTI 1
+#define USING_SEMANTIC 1
 
 const std::string LidarCameraFusion::kNodeName = "lidar_camera_fusion";
 
@@ -231,6 +232,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
         return;
     }
 
+// 关闭代码：把 RGB 当做语义来测试
 #if 0
     // 确保当前融合的语义图像不为空
     if (max_frame.empty()) {
@@ -244,6 +246,9 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
         return;
     }
 #endif
+
+// 关闭代码：把 RGB 当做语义来测试
+#if USING_SEMANTIC
     // 确保当前融合的语义图像不为空
     if (semantic_frame.empty()) {
         ROS_INFO("[%s]: semantic_frame is empty! Waiting for current semantic frame ...", kNodeName.c_str());
@@ -255,6 +260,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
         ROS_INFO("[%s]: confidence is empty! Waiting for current confidence frame ...", kNodeName.c_str());
         return;
     }
+#endif
 
     // 再次确保 image_frame_id 不为空，因为 TF 要用到
     if (image_frame_id == "") {
@@ -416,41 +422,39 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
         // 只融合在像素平面内的点云, TF 没有效果是因为没改 z 的判断条件！
         if ((row >= 0) && (row < image_size.height) && (col >= 0) && (col < image_size.width) && (tmp_z > 0)) {
-            // add XYZ
+    
             semantic_point_max.x = in_cloud_msg->points[i].x;
             semantic_point_max.y = in_cloud_msg->points[i].y;
             semantic_point_max.z = in_cloud_msg->points[i].z;
 
-            // ROS_INFO("[%s]: col %d row %d z %f", kNodeName.c_str(), col, row, left_point.point.z);
-
-            // add RGB
             rgb_pixel = image_frame.at<cv::Vec3b>(row, col);
             semantic_point_max.r = rgb_pixel[2];
             semantic_point_max.g = rgb_pixel[1];
             semantic_point_max.b = rgb_pixel[0];
 
-            // add semantic color
             // kitti 没有语义，以下逻辑会导致节点报错，使用没有语义的 bag 注释以下代码
+            //cv::Vec3b semantic_pixel = semantic_frame.at<cv::Vec3b>(row, col);
+#if USING_SEMANTIC
+            // 测试使用：把 RGB 当做语义
             cv::Vec3b semantic_pixel = semantic_frame.at<cv::Vec3b>(row, col);
             //cv::Vec3b semantic_pixel = max_frame.at<cv::Vec3b>(row, col);
+#else
+            cv::Vec3b semantic_pixel = image_frame.at<cv::Vec3b>(row, col);
+#endif
             semantic_point_max.s_r = semantic_pixel[2];
             semantic_point_max.s_g = semantic_pixel[1];
             semantic_point_max.s_b = semantic_pixel[0];
 
-            // This have bug!!!
-            // 把 image 和 semantic 交换，image 仍然不能正常显示
-            //uint8_t s_r = semantic_pixel[0];
-            //uint8_t s_g = semantic_pixel[1];
-            //uint8_t s_b = semantic_pixel[2];
-            //semantic_point_max.semantic_color = 0;
-            //semantic_point_max.semantic_color = (s_r << 16) + (s_g << 8) + s_b;
-
-            // add confidence
+#if USING_SEMANTIC
             semantic_point_max.confidence = confidences.at<float>(row, col);
             //semantic_point_max.confidence = max_confidences.at<float>(row, col);
+#else
+            // 测试使用：把 RGB 当做语义，设置固定置信度
+            semantic_point_max.confidence = 0.8;
+#endif
+            
 
-            //ROS_INFO("[%s]: confidences.at<float>(%d, %d) = %f", kNodeName.c_str(), row, col, semantic_point_max.confidence);
-
+        
             out_cloud->points.push_back(semantic_point_max);
         }
     }

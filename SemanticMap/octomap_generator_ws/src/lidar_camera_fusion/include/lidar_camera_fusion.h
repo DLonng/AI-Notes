@@ -48,7 +48,6 @@
 #include <semantic_msg/bayes_msg.h>
 #include <semantic_msg/max_msg.h>
 
-
 struct PointXYZRGBSemanticsMax {
     PCL_ADD_POINT4D; // Preferred way of adding a XYZ+padding
     PCL_ADD_RGB;

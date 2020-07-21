@@ -24,6 +24,8 @@ set(PACKAGE_DEPENDENCIES
   pcl_conversions
   std_srvs
   octomap_msgs
+  scout_msgs
+  std_msgs
 )
 
 
@@ -61,3 +63,5 @@ add_executable(octomap_generator
 )
 
 target_link_libraries(octomap_generator ${LINK_LIBS})
+
+add_dependencies(octomap_generator scout_msgs_gencpp)

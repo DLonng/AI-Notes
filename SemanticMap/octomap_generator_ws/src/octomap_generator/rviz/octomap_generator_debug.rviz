@@ -95,7 +95,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 169
+      Max Intensity: 196
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: PointCloud2
@@ -111,26 +111,26 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
-      Enabled: false
+      Enabled: true
       Max. Height Display: 3.40282347e+38
       Max. Octree Depth: 16
       Min. Height Display: -3.40282347e+38
       Name: ColorOccupancyGrid
       Octomap Topic: /octomap_full
       Queue Size: 5
-      Value: false
+      Value: true
       Voxel Alpha: 1
       Voxel Coloring: Cell Color
       Voxel Rendering: Occupied Voxels
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
-      Enabled: true
+      Enabled: false
       Max. Height Display: 3.40282347e+38
       Max. Octree Depth: 16
       Min. Height Display: -3.40282347e+38
       Name: ColorOccupancyGrid
       Octomap Topic: /octomap_local
       Queue Size: 5
-      Value: true
+      Value: false
       Voxel Alpha: 1
       Voxel Coloring: Cell Color
       Voxel Rendering: Occupied Voxels

@@ -2,53 +2,51 @@
 * \author Xuan Zhang
 * \data Mai-July 2018
 */
-#ifndef SEMANTIC_OCTREE_NODE_H
-#define SEMANTIC_OCTREE_NODE_H
-#include <semantics_octree/semantics_octree.h>
+#ifndef LOCAL_SEMANTIC_OCTREE_NODE_H
+#define LOCAL_SEMANTIC_OCTREE_NODE_H
+#include <semantics_octree/local_semantics_octree.h>
 #include <ctime>
-
 
 namespace octomap {
 
 // Forward declaraton for "friend"
 template <class SEMANTICS>
-class SemanticsOcTree;
+class LocalSemanticsOcTree;
 
 /// Node definition
 template <class SEMANTICS>
-class SemanticsOcTreeNode : public ColorOcTreeNode {
+class LocalSemanticsOcTreeNode : public ColorOcTreeNode {
 public:
-    friend class SemanticsOcTree<SEMANTICS>; // Needs access to node children (inherited)
+    friend class LocalSemanticsOcTree<SEMANTICS>; // Needs access to node children (inherited)
 
 public:
     /// Default constructor
-    SemanticsOcTreeNode()
+    LocalSemanticsOcTreeNode()
         : ColorOcTreeNode()
         , semantics()
         , use_semantic_color(true)
-        //, time_stamp(0)
+        , time_stamp(0)
     {
     }
 
     /// Copy constructor
-    SemanticsOcTreeNode(const SemanticsOcTreeNode& rhs)
+    LocalSemanticsOcTreeNode(const LocalSemanticsOcTreeNode& rhs)
     {
         copyData(rhs);
     }
 
     /// Operator
-    inline bool operator==(const SemanticsOcTreeNode& rhs) const
+    inline bool operator==(const LocalSemanticsOcTreeNode& rhs) const
     {
-        //return (rhs.value == value && rhs.semantics == semantics && rhs.time_stamp == time_stamp);
-        return (rhs.value == value && rhs.semantics == semantics);
+        return (rhs.value == value && rhs.semantics == semantics && rhs.time_stamp == time_stamp);
     }
 
     /// Copy data
-    void copyData(const SemanticsOcTreeNode& from)
+    void copyData(const LocalSemanticsOcTreeNode& from)
     {
         ColorOcTreeNode::copyData(from);
         semantics = from.getSemantics();
-        //time_stamp = from.getTimestamp();
+        time_stamp = from.getTimestamp();
     }
 
     /// Get semantics
@@ -72,7 +70,7 @@ public:
     /// Write to file, also used to serialize octomap, we change the displayed color here
     std::ostream& writeData(std::ostream& s) const;
 
-#if 0
+
     // timestamp
     inline unsigned int getTimestamp() const { return time_stamp; }
     
@@ -82,43 +80,41 @@ public:
     // 设置当前节点的时间戳
     inline void setTimestamp(unsigned int t) {time_stamp = t; }
 
-
     // update occupancy and timesteps of inner nodes
     // 更新每个节点的占用概率和时间戳
     inline void updateOccupancyChildren() {
       this->setLogOdds(this->getMaxChildLogOdds());  // conservative
       updateTimestamp();
     }
-#endif
 
 protected:
     SEMANTICS semantics;
     bool use_semantic_color; ///<Whether use semantic color rather than rgb color
-    //unsigned int time_stamp;
+    unsigned int time_stamp;
 };
 
 // Node implementation  --------------------------------------
 template <class SEMANTICS>
-bool SemanticsOcTreeNode<SEMANTICS>::isSemanticsSet() const
+bool LocalSemanticsOcTreeNode<SEMANTICS>::isSemanticsSet() const
 {
     return this->semantics.isSemanticsSet();
 }
 
 template <class SEMANTICS>
-void SemanticsOcTreeNode<SEMANTICS>::updateSemanticsChildren()
+void LocalSemanticsOcTreeNode<SEMANTICS>::updateSemanticsChildren()
 {
     semantics = getFusedChildSemantics();
 }
 
 template <class SEMANTICS>
-SEMANTICS SemanticsOcTreeNode<SEMANTICS>::getFusedChildSemantics() const
+SEMANTICS LocalSemanticsOcTreeNode<SEMANTICS>::getFusedChildSemantics() const
 {
     // Fuse semantics of children node by semantic fusion
     SEMANTICS sem;
     bool fusion_started = false;
     if (children != NULL) {
         for (int i = 0; i < 8; i++) {
-            SemanticsOcTreeNode* child = static_cast<SemanticsOcTreeNode*>(children[i]);
+            LocalSemanticsOcTreeNode* child = static_cast<LocalSemanticsOcTreeNode*>(children[i]);
             if (child != NULL && child->isSemanticsSet()) {
                 if (fusion_started)
                     sem = SEMANTICS::semanticFusion(sem, child->getSemantics());
@@ -133,7 +129,7 @@ SEMANTICS SemanticsOcTreeNode<SEMANTICS>::getFusedChildSemantics() const
 }
 
 template <class SEMANTICS>
-std::istream& SemanticsOcTreeNode<SEMANTICS>::readData(std::istream& s)
+std::istream& LocalSemanticsOcTreeNode<SEMANTICS>::readData(std::istream& s)
 {
     s.read((char*)&value, sizeof(value)); // occupancy
     s.read((char*)&color, sizeof(Color)); // color
@@ -141,7 +137,7 @@ std::istream& SemanticsOcTreeNode<SEMANTICS>::readData(std::istream& s)
 }
 
 template <class SEMANTICS>
-std::ostream& SemanticsOcTreeNode<SEMANTICS>::writeData(std::ostream& s) const
+std::ostream& LocalSemanticsOcTreeNode<SEMANTICS>::writeData(std::ostream& s) const
 {
     //TODO adapt to show semantic colors
     s.write((const char*)&value, sizeof(value)); // occupancy
@@ -153,4 +149,4 @@ std::ostream& SemanticsOcTreeNode<SEMANTICS>::writeData(std::ostream& s) const
     return s;
 }
 } // namespace octomap
-#endif // SEMANTIC_OCTREE_NODE_H
+#endif // LOCAL_SEMANTIC_OCTREE_NODE_H

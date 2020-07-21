@@ -17,6 +17,10 @@
 #include <octomap_msgs/Octomap.h>
 #include <octomap_generator/octomap_generator.h>
 
+// 编译完消息后，如果没有找到头文件
+// 重新 source，然后重启 code
+#include <scout_msgs/ScoutStatus.h>
+
 #define COLOR_OCTREE 0
 #define SEMANTICS_OCTREE_MAX 1
 #define SEMANTICS_OCTREE_BAYESIAN 2
@@ -49,6 +53,8 @@ class OctomapGeneratorNode{
      */
     bool save(const char* filename) const;
 
+    void ScoutStatusCallback(const scout_msgs::ScoutStatus::ConstPtr& scout_status);
+
   protected:
     OctomapGeneratorBase* octomap_generator_; ///<Octomap instance pointer
     ros::ServiceServer service_;  ///<ROS service to toggle semantic color display
@@ -77,8 +83,9 @@ class OctomapGeneratorNode{
     octomap_msgs::Octomap local_map_msg;
 
     // 小车当前速度，主要是为了根据小车运动的快慢来更新地图的消失速度
-    //float v;
-    ros::Subscriber sub_v;
+    float linear_velocity;
+    float angular_velocity;
+    ros::Subscriber sub_scout_status;
   };
 
 #endif//OCTOMAP_GENERATOR_ROS

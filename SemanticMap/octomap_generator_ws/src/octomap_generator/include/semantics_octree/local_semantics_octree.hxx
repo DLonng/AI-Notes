@@ -6,14 +6,14 @@ namespace octomap {
 
 // Tree implementation  --------------------------------------
 template <class SEMANTICS>
-SemanticsOcTree<SEMANTICS>::SemanticsOcTree(double resolution)
-    : OccupancyOcTreeBase<SemanticsOcTreeNode<SEMANTICS>>(this->resolution)
+LocalSemanticsOcTree<SEMANTICS>::LocalSemanticsOcTree(double resolution)
+    : OccupancyOcTreeBase<LocalSemanticsOcTreeNode<SEMANTICS>>(this->resolution)
 {
     semanticsOcTreeMemberInit.ensureLinking();
 };
 
 template <class SEMANTICS>
-bool SemanticsOcTree<SEMANTICS>::pruneNode(SemanticsOcTreeNode<SEMANTICS>* node)
+bool LocalSemanticsOcTree<SEMANTICS>::pruneNode(LocalSemanticsOcTreeNode<SEMANTICS>* node)
 {
     // Same as ColorOcTree
     if (!isNodeCollapsible(node))
@@ -36,13 +36,13 @@ bool SemanticsOcTree<SEMANTICS>::pruneNode(SemanticsOcTreeNode<SEMANTICS>* node)
 }
 
 template <class SEMANTICS>
-bool SemanticsOcTree<SEMANTICS>::isNodeCollapsible(const SemanticsOcTreeNode<SEMANTICS>* node) const
+bool LocalSemanticsOcTree<SEMANTICS>::isNodeCollapsible(const LocalSemanticsOcTreeNode<SEMANTICS>* node) const
 {
     // All children must exist, must not have children of
     // their own and have same occupancy probability and same semantic
     if (!this->nodeChildExists(node, 0))
         return false;
-    const SemanticsOcTreeNode<SEMANTICS>* firstChild = this->getNodeChild(node, 0);
+    const LocalSemanticsOcTreeNode<SEMANTICS>* firstChild = this->getNodeChild(node, 0);
     if (this->nodeHasChildren(firstChild))
         return false;
     for (unsigned int i = 1; i < 8; i++) {
@@ -56,20 +56,20 @@ bool SemanticsOcTree<SEMANTICS>::isNodeCollapsible(const SemanticsOcTreeNode<SEM
 }
 
 template <class SEMANTICS>
-void SemanticsOcTree<SEMANTICS>::setUseSemanticColor(bool use)
+void LocalSemanticsOcTree<SEMANTICS>::setUseSemanticColor(bool use)
 {
     // Traverse all tree nodes
-    for (typename SemanticsOcTree<SEMANTICS>::tree_iterator it = this->begin_tree(), end = this->end_tree(); it != end; ++it)
+    for (typename LocalSemanticsOcTree<SEMANTICS>::tree_iterator it = this->begin_tree(), end = this->end_tree(); it != end; ++it)
         it->use_semantic_color = use;
 }
 
 template <class SEMANTICS>
-SemanticsOcTreeNode<SEMANTICS>* SemanticsOcTree<SEMANTICS>::setNodeColor(const OcTreeKey& key,
+LocalSemanticsOcTreeNode<SEMANTICS>* LocalSemanticsOcTree<SEMANTICS>::setNodeColor(const OcTreeKey& key,
     uint8_t r,
     uint8_t g,
     uint8_t b)
 {
-    SemanticsOcTreeNode<SEMANTICS>* n = this->search(key);
+    LocalSemanticsOcTreeNode<SEMANTICS>* n = this->search(key);
     if (n != 0) {
         n->setColor(r, g, b);
     }
@@ -77,10 +77,10 @@ SemanticsOcTreeNode<SEMANTICS>* SemanticsOcTree<SEMANTICS>::setNodeColor(const O
 }
 
 template <class SEMANTICS>
-SemanticsOcTreeNode<SEMANTICS>* SemanticsOcTree<SEMANTICS>::averageNodeColor(const OcTreeKey& key, uint8_t r,
+LocalSemanticsOcTreeNode<SEMANTICS>* LocalSemanticsOcTree<SEMANTICS>::averageNodeColor(const OcTreeKey& key, uint8_t r,
     uint8_t g, uint8_t b)
 {
-    SemanticsOcTreeNode<SEMANTICS>* n = this->search(key);
+    LocalSemanticsOcTreeNode<SEMANTICS>* n = this->search(key);
     if (n != 0) {
         if (n->isColorSet()) {
             ColorOcTreeNode::Color prev_color = n->getColor();
@@ -93,9 +93,9 @@ SemanticsOcTreeNode<SEMANTICS>* SemanticsOcTree<SEMANTICS>::averageNodeColor(con
 }
 
 template <class SEMANTICS>
-SemanticsOcTreeNode<SEMANTICS>* SemanticsOcTree<SEMANTICS>::updateNodeSemantics(const OcTreeKey& key, SEMANTICS obs)
+LocalSemanticsOcTreeNode<SEMANTICS>* LocalSemanticsOcTree<SEMANTICS>::updateNodeSemantics(const OcTreeKey& key, SEMANTICS obs)
 {
-    SemanticsOcTreeNode<SEMANTICS>* n = this->search(key);
+    LocalSemanticsOcTreeNode<SEMANTICS>* n = this->search(key);
     if (n != 0) {
         if (n->isSemanticsSet()) {
             SEMANTICS sem = SEMANTICS::semanticFusion(n->semantics, obs);
@@ -108,13 +108,13 @@ SemanticsOcTreeNode<SEMANTICS>* SemanticsOcTree<SEMANTICS>::updateNodeSemantics(
 }
 
 template <class SEMANTICS>
-void SemanticsOcTree<SEMANTICS>::updateInnerOccupancy()
+void LocalSemanticsOcTree<SEMANTICS>::updateInnerOccupancy()
 {
     this->updateInnerOccupancyRecurs(this->root, 0);
 }
 
 template <class SEMANTICS>
-void SemanticsOcTree<SEMANTICS>::updateInnerOccupancyRecurs(SemanticsOcTreeNode<SEMANTICS>* node, unsigned int depth)
+void LocalSemanticsOcTree<SEMANTICS>::updateInnerOccupancyRecurs(LocalSemanticsOcTreeNode<SEMANTICS>* node, unsigned int depth)
 {
     // Only recurse and update for inner nodes:
     if (this->nodeHasChildren(node)) {
@@ -132,34 +132,24 @@ void SemanticsOcTree<SEMANTICS>::updateInnerOccupancyRecurs(SemanticsOcTreeNode<
         node->updateSemanticsChildren();
     }
 }
-
-
-// 删除过期的节点
+#if 1
 template <class SEMANTICS>
-void SemanticsOcTree<SEMANTICS>::degradeOutdatedNodes(unsigned int time_thres)
-{
-    
-}
-
-
-#if 0
-template <class SEMANTICS>
-unsigned int SemanticsOcTree<SEMANTICS>::getLastUpdateTime()
+unsigned int LocalSemanticsOcTree<SEMANTICS>::getLastUpdateTime()
 {
     // this value is updated whenever inner nodes are
     // updated using updateOccupancyChildren()
-    return SemanticsOcTree<SEMANTICS>::root->getTimestamp();
+    return LocalSemanticsOcTree<SEMANTICS>::root->getTimestamp();
 }
 
 // 删除过期的节点
 template <class SEMANTICS>
-void SemanticsOcTree<SEMANTICS>::degradeOutdatedNodes(unsigned int time_thres)
+void LocalSemanticsOcTree<SEMANTICS>::degradeOutdatedNodes(unsigned int time_thres)
 {
     // 当前查询时间
     unsigned int query_time = (unsigned int)time(NULL);
 
     // 遍历每个叶节点
-    for (typename SemanticsOcTree<SEMANTICS>::leaf_iterator it = this->begin_leafs(), end = this->end_leafs(); it != end; ++it) {
+    for (typename LocalSemanticsOcTree<SEMANTICS>::leaf_iterator it = this->begin_leafs(), end = this->end_leafs(); it != end; ++it) {
         // 如果节点是占用的，并且内部时间超过阈值就删除
         // 或者使用空间欧式距离作为判断阈值，计算所有走过节点的 (x, y, z) 与当前位置的距离，超过指定阈值不显示
     #if 1
@@ -175,19 +165,19 @@ void SemanticsOcTree<SEMANTICS>::degradeOutdatedNodes(unsigned int time_thres)
 }
 
 template <class SEMANTICS>
-void SemanticsOcTree<SEMANTICS>::updateNodeLogOdds(SemanticsOcTreeNode<SEMANTICS>* node, const float& update) const {
-    OccupancyOcTreeBase<SemanticsOcTreeNode<SEMANTICS>>::updateNodeLogOdds(node, update);
+void LocalSemanticsOcTree<SEMANTICS>::updateNodeLogOdds(LocalSemanticsOcTreeNode<SEMANTICS>* node, const float& update) const {
+    OccupancyOcTreeBase<LocalSemanticsOcTreeNode<SEMANTICS>>::updateNodeLogOdds(node, update);
     node->updateTimestamp();
 }
 
 template <class SEMANTICS>
-void SemanticsOcTree<SEMANTICS>::integrateMissNoTime(SemanticsOcTreeNode<SEMANTICS>* node) const {
-    OccupancyOcTreeBase<SemanticsOcTreeNode<SEMANTICS>>::updateNodeLogOdds(node, SemanticsOcTree<SEMANTICS>::prob_miss_log);
+void LocalSemanticsOcTree<SEMANTICS>::integrateMissNoTime(LocalSemanticsOcTreeNode<SEMANTICS>* node) const {
+    OccupancyOcTreeBase<LocalSemanticsOcTreeNode<SEMANTICS>>::updateNodeLogOdds(node, LocalSemanticsOcTree<SEMANTICS>::prob_miss_log);
 }
 
 #endif
 
 template <class SEMANTICS>
-typename SemanticsOcTree<SEMANTICS>::StaticMemberInitializer SemanticsOcTree<SEMANTICS>::semanticsOcTreeMemberInit;
+typename LocalSemanticsOcTree<SEMANTICS>::StaticMemberInitializer LocalSemanticsOcTree<SEMANTICS>::semanticsOcTreeMemberInit;
 
 } // end namespace
