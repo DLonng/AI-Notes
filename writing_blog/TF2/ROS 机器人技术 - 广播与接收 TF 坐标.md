@@ -153,9 +153,7 @@ rosrun tf tf_echo /world /turtle1
 
 如果在控制台输出类似下面的消息，则说明变换发布成功：
 
-```
-
-```
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/learning_tf2_world_turtle.png)
 
 下面我们来编写一个 TF 接收者来使用我们上面发布的变换。
 
@@ -306,11 +304,7 @@ roslaunch learning_tf2 start_demo.launch
 
 运行时会出现 2 个小乌龟，把窗口焦点放到终端，按上下左右键会发现第二个乌龟跟随第一个乌龟运动：
 
-
-
-运行图片
-
-
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/learning_tf2.gif)
 
 但是刚启动时终端会报个错误：
 
