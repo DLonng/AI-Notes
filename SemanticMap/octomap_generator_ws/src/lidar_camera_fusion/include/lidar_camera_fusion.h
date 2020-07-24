@@ -77,15 +77,36 @@ struct PointXYZRGBSemanticsMax {
 POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZRGBSemanticsMax,
     (float, x, x)(float, y, y)(float, z, z)(float, rgb, rgb)(float, semantic_color, semantic_color)(float, confidence, confidence))
 
-
-
-
 struct PointXYZRGBSemanticsBayesian {
     PCL_ADD_POINT4D; // Preferred way of adding a XYZ+padding
     PCL_ADD_RGB;
+
     union // Semantic colors
     {
-        float data_sem[4];
+        //float data_sem[4];
+
+        struct {
+            uint8_t s1_b;
+            uint8_t s1_g;
+            uint8_t s1_r;
+            uint8_t s1_a;
+
+            uint8_t s2_b;
+            uint8_t s2_g;
+            uint8_t s2_r;
+            uint8_t s2_a;
+
+            uint8_t s3_b;
+            uint8_t s3_g;
+            uint8_t s3_r;
+            uint8_t s3_a;
+
+            uint8_t s4_b;
+            uint8_t s4_g;
+            uint8_t s4_r;
+            uint8_t s4_a;
+        };
+
         struct
         {
             float semantic_color1;
@@ -93,6 +114,7 @@ struct PointXYZRGBSemanticsBayesian {
             float semantic_color3;
         };
     };
+
     union // Confidences
     {
         float data_conf[4];
@@ -109,9 +131,6 @@ struct PointXYZRGBSemanticsBayesian {
 // here we assume a XYZ + RGB + "sementic_colors" + "confidences" (as fields)
 POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZRGBSemanticsBayesian,
     (float, x, x)(float, y, y)(float, z, z)(float, rgb, rgb)(float, semantic_color1, semantic_color1)(float, semantic_color2, semantic_color2)(float, semantic_color3, semantic_color3)(float, confidence1, confidence1)(float, confidence2, confidence2)(float, confidence3, confidence3))
-
-
-
 
 class LidarCameraFusion {
 public:

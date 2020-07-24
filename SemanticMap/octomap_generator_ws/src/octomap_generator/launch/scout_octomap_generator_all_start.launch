@@ -13,13 +13,11 @@
 
   <!-- Start Lego Loam! -->
   <include file = "$(find lego_loam)/launch/run_laser_odom.launch" />
-
-  <!-- Start Lego Loam RVIZ! -->
-  <include file = "$(find lego_loam)/launch/demo.launch" />
-
-  <!-- Start scout! Need run init_can.sh-->
+  <!-- <include file = "$(find lego_loam)/launch/demo.launch" /> -->
+  
+  <!-- Start scout, need run init_can.sh -->
   <include file = "$(find scout_bringup)/launch/scout_minimal.launch" />
-
+  
   <!-- Only using in map build test! -->
   <node pkg = "tf2_ros" type = "static_transform_publisher" name = "dlonng_octomap_generator_static_broadcaster" args = "0 0 0 0 0 0 base_link rslidar" />
 

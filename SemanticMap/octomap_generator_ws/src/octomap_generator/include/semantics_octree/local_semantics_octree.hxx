@@ -155,6 +155,8 @@ void LocalSemanticsOcTree<SEMANTICS>::degradeOutdatedNodes(unsigned int time_thr
     #if 1
         if (this->isNodeOccupied(*it) && ((query_time - it->getTimestamp()) > time_thres)) {
           integrateMissNoTime(&*it);
+          //this->deleteNode(it->getX(), it->getY(), it->getZ());
+          //auto key = it->getIndexKey();
         }
     #else
         if (this->isNodeOccupied(*it) && ((query_time > it->getTimestamp()))) {

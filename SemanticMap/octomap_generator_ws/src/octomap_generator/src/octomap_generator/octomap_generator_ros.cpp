@@ -18,8 +18,8 @@ OctomapGeneratorNode::OctomapGeneratorNode(ros::NodeHandle& nh)
         if (tree_type_ == SEMANTICS_OCTREE_BAYESIAN) {
             ROS_INFO("Semantic octomap generator [bayesian fusion]");
             octomap_generator_ = new OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>();
-            // Bayes 语义融合还没有完善，主要是发布频率问题
-            //local_octomap_generator = new OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>();
+            // Bayes 语义融合的发布频率问题还没解决
+            local_octomap_generator = new OctomapGenerator<PCLSemanticsBayesian, LocalSemanticsOctreeBayesian>();
         } else {
             ROS_INFO("Semantic octomap generator [max fusion]");
             octomap_generator_ = new OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>();
@@ -130,7 +130,7 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     else
         ROS_ERROR("Error serializing Full OctoMap");
 
-    // 在自己的机器上使用固定的速度测试，在小车上使用真实的速度
+        // 在自己的机器上使用固定的速度测试，在小车上使用真实的速度
 #if TEST_VEL
     // 更新局部地图并发布主题
     float v = 1.0;
@@ -146,6 +146,7 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     }
 #endif
 
+
     // 发布局部地图消息
     local_map_msg.header.frame_id = world_frame_id_;
     local_map_msg.header.stamp = cloud_msg->header.stamp;
@@ -153,6 +154,7 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
         local_map_pub.publish(local_map_msg);
     else
         ROS_ERROR("Error serializing Local OctoMap");
+       
 }
 
 void OctomapGeneratorNode::ScoutStatusCallback(const scout_msgs::ScoutStatus::ConstPtr& scout_status)

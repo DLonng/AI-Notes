@@ -19,17 +19,30 @@ typedef pcl::PointCloud<pcl::PointXYZRGB> PCLColor;
 
 typedef octomap::ColorOcTree ColorOcTree;
 
+// 全局 Max 语义八叉树节点
+typedef octomap::SemanticsOcTreeNode<octomap::SemanticsMax> SemanticsOcTreeNodeMax;
+// 全局 Max 语义八叉树
 typedef octomap::SemanticsOcTree<octomap::SemanticsMax> SemanticsOctreeMax;
+
+// 局部 Max 语义八叉树节点
+typedef octomap::LocalSemanticsOcTreeNode<octomap::SemanticsMax> LocalSemanticsOcTreeNodeMax;
+// 局部 Max 语义八叉树
+typedef octomap::LocalSemanticsOcTree<octomap::SemanticsMax> LocalSemanticsOctreeMax;
+
+// 全局 Bayes 语义八叉树节点
+typedef octomap::SemanticsOcTreeNode<octomap::SemanticsBayesian> SemanticsOcTreeNodeBayesian;
+// 全局 Bayes 语义八叉树 
 typedef octomap::SemanticsOcTree<octomap::SemanticsBayesian> SemanticsOctreeBayesian;
 
-typedef octomap::SemanticsOcTreeNode<octomap::SemanticsMax> SemanticsOcTreeNodeMax;
-typedef octomap::SemanticsOcTreeNode<octomap::SemanticsBayesian> SemanticsOcTreeNodeBayesian;
+// 局部 Bayes 语义八叉树节点
+typedef octomap::LocalSemanticsOcTreeNode<octomap::SemanticsBayesian> LocalSemanticsOcTreeNodeBayesian;
+// 局部 Bayes 语义八叉树
+typedef octomap::LocalSemanticsOcTree<octomap::SemanticsBayesian> LocalSemanticsOctreeBayesian;
 
-typedef octomap::LocalSemanticsOcTree<octomap::SemanticsMax> LocalSemanticsOctreeMax;
-typedef octomap::LocalSemanticsOcTreeNode<octomap::SemanticsMax> LocalSemanticsOcTreeNodeMax;
 
-//typedef pcl::PointCloud<pcl::PointXYZRGB> MyPCLColor;
-//typedef octomap::MyColorOcTree MyColorOcTree;
+
+//typedef octomap::SemanticsOcTreeNode<octomap::SemanticsBayesian> SemanticsOcTreeNodeBayesian;
+
 
 
 /**

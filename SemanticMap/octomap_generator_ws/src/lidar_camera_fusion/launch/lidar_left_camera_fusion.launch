@@ -13,7 +13,16 @@
     <arg name = "semantic_cloud_max" default = "/semantic_cloud_max"/>
 
     <!-- 左相机与雷达 Autoware 外参标定文件路径 -->
-    <arg name = "lidar_left_camera_calibration_file" default = "$(find lidar_camera_fusion)/calibr_file/2020-06-03-09-59-autoware_lidar_left_camera_calibration.yaml" />
+    <arg name = "lidar_left_camera_calibration_file" default = "$(find lidar_camera_fusion)/calibr_file/2020-06-02-16-25-autoware_lidar_left_camera_calibration.yaml" />
+
+     <!-- 未在原始 launch 中配置 -->
+    <arg name = "max_semantic" default = "/max_semantic"/>
+    
+    <!-- 未在原始 launch 中配置 -->
+    <arg name = "bayes_semantic" default = "/bayes_semantic"/>
+    
+    <!-- 未在原始 launch 中配置 -->
+    <arg name = "semantic_type" default = "1"/>
 
     <!-- 图像点云融合节点 -->
     <node name = "lidar_left_camera_fusion_node" pkg = "lidar_camera_fusion" type = "lidar_camera_fusion" output = "screen">
@@ -24,6 +33,11 @@
         <param name = "semantic_confidence" type = "str" value = "$(arg semantic_confidence)" />
 
         <param name = "semantic_cloud_max" type = "str" value = "$(arg semantic_cloud_max)" />
+
+        <param name = "max_semantic" type = "str" value = "$(arg max_semantic)" />
+        <param name = "bayes_semantic" type = "str" value = "$(arg bayes_semantic)" />
+
+        <param name = "semantic_type" type = "int" value = "$(arg semantic_type)" />
 
         <param name = "calibration_file" type = "str" value = "$(arg lidar_left_camera_calibration_file)" />
     </node>

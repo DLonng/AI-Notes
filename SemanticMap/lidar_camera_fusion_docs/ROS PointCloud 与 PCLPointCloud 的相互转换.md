@@ -4,7 +4,7 @@
 
 这里记录下常用的 ROS 和 PCL 之间的转换。
 
-### 1. sensor_msgs::PCLPointCloud2 <-> pcl::PointCloud<pcl::PointXYZ>
+### 1. sensor_msgs::PCLPointCloud2 <=> pcl::PointCloud<pcl::PointXYZ>
 
 把 ROS PointCloud2 转为 PCL 第一代 PointCloud，方便用 PCL 库处理：
 

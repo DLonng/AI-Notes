@@ -6,7 +6,9 @@
 #define SEMANTICS_BAYESIAN_H
 
 #include <octomap/ColorOcTree.h>
-#define NUM_SEMANTICS 3
+
+// 因为 3 个语义导致传输太慢，所以目前分开的节点使用 2 个语义
+#define NUM_SEMANTICS 2
 
 namespace octomap {
 

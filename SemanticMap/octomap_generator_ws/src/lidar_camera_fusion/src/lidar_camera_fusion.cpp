@@ -10,7 +10,8 @@
 #define USING_TF 0
 #define USING_RAW 1
 #define USING_KITTI 1
-#define USING_SEMANTIC 1
+#define USING_MAX_SEMANTIC 0
+#define USING_BAYES 1
 
 const std::string LidarCameraFusion::kNodeName = "lidar_camera_fusion";
 
@@ -98,6 +99,8 @@ void LidarCameraFusion::InitROS()
 
     // 初始化置信度矩阵
     confidences = cv::Mat::zeros(image_size.height, image_size.width, cv::DataType<float>::type);
+    bayes_confidences_1 = cv::Mat::zeros(image_size.height, image_size.width, cv::DataType<float>::type);
+    bayes_confidences_2 = cv::Mat::zeros(image_size.height, image_size.width, cv::DataType<float>::type);
 
     // 畸变矩阵
     fs["DistCoeff"] >> distortion_coefficients;
@@ -156,21 +159,25 @@ void LidarCameraFusion::InitROS()
     pub_semantic_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>(semantic_cloud_max, 1);
 }
 
-/*
- * @Description: 使用相机内参矩阵，畸变矩阵和 OpenCV 对图像去畸变，并发布矫正后的图像消息
- * @Author: Dlonng
- * @Date: 2020-05-04
- * @LastEditTime:
- */
+/**
+  * @brief ZED 左相机图像订阅回调函数
+  * @details 相机目前的发送频率是 20 Hz
+  * @param[in]  
+  * @return void
+  * @note
+  *     注意不同数据集的去畸变问题
+  * @author DLonng
+  * @date 2020-07-24
+  */
 void LidarCameraFusion::ImageRawCallback(const sensor_msgs::Image::ConstPtr& image_msg)
 {
-    // 1. 确保相机内参和畸变矩阵已经初始化！
+    // 确保相机内参和畸变矩阵已经初始化！
     if (camera_instrinsics_mat_ok == false) {
         ROS_INFO("[%s] wait to read camera instrinsics mat!", kNodeName.c_str());
         return;
     }
 
-    // 2. ros_img -> cv_imag
+    // ros_img -> cv_imag
     // image_msg: 图像指针，brg8: 编码参数
     // rgb8: CV_8UC3, color image with red-green-blue color order
     // https://blog.csdn.net/bigdog_1027/article/details/79090571
@@ -205,24 +212,24 @@ void LidarCameraFusion::ImageRawCallback(const sensor_msgs::Image::ConstPtr& ima
 
 /**
   * @brief  融合 image_raw, cloud_raw, semantic_img, confidences 为一帧语义点云
-  * @details 
-  *     image_raw: ZED Left
-  *     semantic_img: LEDNet
-  *     confidence: Floats
+  * @details 雷达目前的发送频率是 10 Hz
   * @param[in] cloud_msg 订阅的一帧原始点云
   * @return void
   * @note
-  *     因为语义颜色的解析有 BUG，所以给 PointXYZRGBSemanticsMax 加上结构体作为 semantic_color 的 union
+  *     1. 因为语义颜色的解析有 BUG，所以给 PointXYZRGBSemanticsMax 加上结构体作为 semantic_color 的 union
   *             struct {uint8_t s_b; uint8_t s_g; uint8_t s_r; uint8_t s_a;};
   * 
-  *     目前没有使用 TF，直接读取外参矩阵
+  *     2. 给 Bayes 结构体也加上了 RGBA 的 union struct
+  * 
+  *     3. 目前没有使用 TF，直接读取外参矩阵
+  *     
+  *     4. 目前订阅 2 组语义分割的 Bayes 语义后的发布频率为 5 Hz左右，与语义分割的发布频率几乎相同
   * @todo 
   *     image_raw, cloud_raw, semantic_img, confidences 没有进行同步处理！
   *     语义图像暂时没有加上 ID
   *     测试自定义 semantic/max_msg 消息！
-  *     测试自定义 semantic/bayes_msg 消息！
   * @author DLonng
-  * @date 2020-07-07
+  * @date 2020-07-24
   */
 void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 {
@@ -231,6 +238,30 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
         ROS_INFO("[%s]: image_frame is empty! Waiting for current image frame ...", kNodeName.c_str());
         return;
     }
+
+#if USING_BAYES
+
+    if (bayes_frame_1.empty()) {
+        ROS_INFO("[%s]: bayes_frame_1 is empty! Waiting for current bayes_frame_1 ...", kNodeName.c_str());
+        return;
+    }
+
+    if (bayes_frame_2.empty()) {
+        ROS_INFO("[%s]: bayes_frame_2 is empty! Waiting for current bayes_frame_2 ...", kNodeName.c_str());
+        return;
+    }
+
+    if (bayes_confidences_1.empty()) {
+        ROS_INFO("[%s]: bayes_confidences_1 is empty! Waiting for current bayes_confidences_1 ...", kNodeName.c_str());
+        return;
+    }
+
+    if (bayes_confidences_2.empty()) {
+        ROS_INFO("[%s]: bayes_confidences_2 is empty! Waiting for current bayes_confidences_2 ...", kNodeName.c_str());
+        return;
+    }
+
+#endif
 
 // 关闭代码：把 RGB 当做语义来测试
 #if 0
@@ -248,7 +279,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 #endif
 
 // 关闭代码：把 RGB 当做语义来测试
-#if USING_SEMANTIC
+#if USING_MAX_SEMANTIC
     // 确保当前融合的语义图像不为空
     if (semantic_frame.empty()) {
         ROS_INFO("[%s]: semantic_frame is empty! Waiting for current semantic frame ...", kNodeName.c_str());
@@ -289,25 +320,6 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     }
 #endif
 
-#if 0 
-    pcl::PCLPointCloud2* tmp_cloud = new pcl::PCLPointCloud2;
-    pcl::PCLPointCloud2::ConstPtr cloudPtr(tmp_cloud); 
-
-    pcl::PCLPointCloud2 cloud_filtered;
-
-    pcl_conversions::toPCL(*cloud_msg, *tmp_cloud);
-
-    // 做一次离群点的滤波
-    pcl::StatisticalOutlierRemoval<pcl::PCLPointCloud2> sor;
-    sor.setInputCloud (cloudPtr);
-    sor.setMeanK(30);
-    sor.setStddevMulThresh (1.0);
-    sor.filter(cloud_filtered);
-
-    sensor_msgs::PointCloud2 filter_output;
-    pcl_conversions::fromPCL(cloud_filtered, filter_output);
-#endif
-
     // 4. ROS point cloud -> PCL point cloud
     pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud_msg(new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -316,13 +328,23 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
     auto in_cloud_msg = pcl_cloud_msg;
 
-    // 5. 需不需要对 PCL 点云做分割地面等操作？
+#if USING_BAYES
+    // 初始化 Bayes 概率语义点云
+    pcl::PointCloud<PointXYZRGBSemanticsBayesian>::Ptr out_cloud(new pcl::PointCloud<PointXYZRGBSemanticsBayesian>);
+    out_cloud->points.clear();
 
-    // 初始化语义点云
+    PointXYZRGBSemanticsBayesian semantic_point_bayes;
+    std::vector<PointXYZRGBSemanticsBayesian> cam_cloud(in_cloud_msg->points.size());
+#else
+
+    // 初始化最大概率语义点云
     pcl::PointCloud<PointXYZRGBSemanticsMax>::Ptr out_cloud(new pcl::PointCloud<PointXYZRGBSemanticsMax>);
     out_cloud->points.clear();
+
     PointXYZRGBSemanticsMax semantic_point_max;
     std::vector<PointXYZRGBSemanticsMax> cam_cloud(in_cloud_msg->points.size());
+
+#endif
 
     int row = 0;
     int col = 0;
@@ -340,52 +362,9 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
     // 6. 遍历点云，融合像素
     for (size_t i = 0; i < in_cloud_msg->points.size(); i++) {
-        /*
-            坐标转换直接用矩阵相乘:
-                T_lidar_cam(4 X 4) =
-                                     R_lidar_cam(3 X 3), t_lidar_cam(1 X 3)
-                                     0(1 X 3),           1
-
-            点云到像素平面的投影矩阵 = 相机内参 * 畸变矩阵 * 雷达到相机的外参矩阵
-                P_lidar_cam(3 X 4) = P_cam(3 X 3) * R_rect(3 X 4) * T_lidar_cam(4 X 4);
-
-            坐标需要齐次化：
-                [u, v, 1] = P_lidar_cam(3 X 4) * [x, y, z, 1];
-
-            以上的矩阵使用 cv::Mat 定义即可
-        */
-
 #if USING_TF
 
-        // //ROS_INFO("[%s]: in_cloud_msg x %f y %f z %f", kNodeName.c_str(), in_cloud_msg->points[i].x, in_cloud_msg->points[i].y, in_cloud_msg->points[i].z);
-        //
-        // geometry_msgs::PointStamped rslidar_point;
-        // rslidar_point.header.frame_id = "rslidar";
-        //
-        // rslidar_point.point.x = in_cloud_msg->points[i].x;
-        // rslidar_point.point.y = in_cloud_msg->points[i].y;
-        // rslidar_point.point.z = in_cloud_msg->points[i].z;
-
-        // geometry_msgs::PointStamped left_point;
-
-        // transform_listener.transformPoint(image_frame_id, rslidar_point, left_point);
-        //
-        // //ROS_INFO("[%s]:    cam_cloud x %f y %f z %f", kNodeName.c_str(), cam_cloud[i].x, cam_cloud[i].y, cam_cloud[i].z);
-        // //ROS_INFO("[%s]:    left_cloud x %f y %f z %f", kNodeName.c_str(), left_point.point.x, left_point.point.y, left_point.point.z);
-        //
-        // col = int(left_point.point.x * fx / left_point.point.z + cx);
-        // row = int(left_point.point.y * fy / left_point.point.z + cy);
-        //
-        // //ROS_INFO("[%s]: col %d row %d z %f", kNodeName.c_str(), col, row, left_point.point.z);
-
-        cam_cloud[i] = TransformPoint(in_cloud_msg->points[i], camera_lidar_tf);
-
-        col = int(cam_cloud[i].x * fx / cam_cloud[i].z + cx);
-        row = int(cam_cloud[i].y * fy / cam_cloud[i].z + cy);
-
-        tmp_z = cam_cloud[i].z;
 #else
-
         // 用 RT 矩阵变换
         raw_point.at<double>(0, 0) = in_cloud_msg->points[i].x;
         raw_point.at<double>(1, 0) = in_cloud_msg->points[i].y;
@@ -400,19 +379,6 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
         z = transformed_point.at<double>(2, 0);
         // [3][0] = 1;
 
-        /*
-                cv::Mat tmp_point(3, 1, cv::DataType<double>::type);
-                tmp_point.at<double>(0, 0) = x;
-                tmp_point.at<double>(1, 0) = y;
-                tmp_point.at<double>(2, 0) = z;
-
-                cv::Mat u_v(3, 1, cv::DataType<double>::type);
-                u_v = camera_instrinsics_mat * tmp_point;
-
-                int col = u_v.at<double>(0, 0) / u_v.at<double>(2, 0);
-                int row = u_v.at<double>(1, 0) / u_v.at<double>(2, 0);
-        */
-
         // 使用相机内参将三维空间点投影到像素平面
         col = int(x * fx / z + cx);
         row = int(y * fy / z + cy);
@@ -422,7 +388,38 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
         // 只融合在像素平面内的点云, TF 没有效果是因为没改 z 的判断条件！
         if ((row >= 0) && (row < image_size.height) && (col >= 0) && (col < image_size.width) && (tmp_z > 0)) {
-    
+
+#if USING_BAYES
+            // XYZ
+            semantic_point_bayes.x = in_cloud_msg->points[i].x;
+            semantic_point_bayes.y = in_cloud_msg->points[i].y;
+            semantic_point_bayes.z = in_cloud_msg->points[i].z;
+
+            // RGB
+            rgb_pixel = image_frame.at<cv::Vec3b>(row, col);
+            semantic_point_bayes.r = rgb_pixel[2];
+            semantic_point_bayes.g = rgb_pixel[1];
+            semantic_point_bayes.b = rgb_pixel[0];
+
+            cv::Vec3b semantic_pixel_1 = bayes_frame_1.at<cv::Vec3b>(row, col);
+            semantic_point_bayes.s1_r = semantic_pixel_1[2];
+            semantic_point_bayes.s1_g = semantic_pixel_1[1];
+            semantic_point_bayes.s1_b = semantic_pixel_1[0];
+
+            cv::Vec3b semantic_pixel_2 = bayes_frame_2.at<cv::Vec3b>(row, col);
+            semantic_point_bayes.s2_r = semantic_pixel_2[2];
+            semantic_point_bayes.s2_g = semantic_pixel_2[1];
+            semantic_point_bayes.s2_b = semantic_pixel_2[0];
+
+            // 第三个语义图像没有用到
+
+            semantic_point_bayes.confidence1 = bayes_confidences_1.at<float>(row, col);
+            semantic_point_bayes.confidence2 = bayes_confidences_2.at<float>(row, col);
+            // 第三个语义置信度没有用到
+
+            out_cloud->points.push_back(semantic_point_bayes);
+
+#else
             semantic_point_max.x = in_cloud_msg->points[i].x;
             semantic_point_max.y = in_cloud_msg->points[i].y;
             semantic_point_max.z = in_cloud_msg->points[i].z;
@@ -434,60 +431,43 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
             // kitti 没有语义，以下逻辑会导致节点报错，使用没有语义的 bag 注释以下代码
             //cv::Vec3b semantic_pixel = semantic_frame.at<cv::Vec3b>(row, col);
-#if USING_SEMANTIC
+#if USING_MAX_SEMANTIC
             // 测试使用：把 RGB 当做语义
             cv::Vec3b semantic_pixel = semantic_frame.at<cv::Vec3b>(row, col);
             //cv::Vec3b semantic_pixel = max_frame.at<cv::Vec3b>(row, col);
 #else
             cv::Vec3b semantic_pixel = image_frame.at<cv::Vec3b>(row, col);
 #endif
+
             semantic_point_max.s_r = semantic_pixel[2];
             semantic_point_max.s_g = semantic_pixel[1];
             semantic_point_max.s_b = semantic_pixel[0];
 
-#if USING_SEMANTIC
+#if USING_MAX_SEMANTIC
             semantic_point_max.confidence = confidences.at<float>(row, col);
             //semantic_point_max.confidence = max_confidences.at<float>(row, col);
 #else
             // 测试使用：把 RGB 当做语义，设置固定置信度
             semantic_point_max.confidence = 0.8;
 #endif
-            
 
-        
             out_cloud->points.push_back(semantic_point_max);
+
+#endif
         }
     }
 
-    // 执行欧拉聚类分割
-    //std::vector<pcl::PointIndices> cluster_indices;
-
-    // 聚类容忍度为 3m，最少点云数量为 100，最大点云数量为 25000，这 3 个参数需要根据实际情况调整！
-    //EucCluster(out_cloud, cluster_indices, 3, 100, 25000);
-
-    // 执行随机森林分类
-
-    // 以下需要发布聚类 + 分割的误差最小化的融合点云
-
     sensor_msgs::PointCloud2 fusion_cloud;
-
-    // PCL filter in here? must be ok
-
-    // PCL cloud -> ROS cloud
-    // void pcl::toROSMsg(const pcl::PointCloud<T> &, sensor_msgs::PointCloud2 &);
     pcl::toROSMsg(*out_cloud, fusion_cloud);
-
     fusion_cloud.header = cloud_msg->header;
 
     ROS_INFO("[%s]: publish fusion cloud.", kNodeName.c_str());
-
-    // 发布融合后的带颜色的点云
     pub_semantic_cloud.publish(fusion_cloud);
 }
 
 /**
-  * @brief LEDNet 分割后图像的回调函数
-  * @details 目前使用 Max Fusion 语义融合方法
+  * @brief 语义分割的最大概率语义图像回调
+  * @details 没有使用 semantic_msg/max_msg
   * @param[in] semantic_img 订阅的语义图像
   * @return void
   * @note 
@@ -497,7 +477,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
   *     是否需要保存语义图像的 ID？
   *     是否需要保证语义图像与原始图像间的同步？
   * @author DLonng
-  * @date 2020-07-07
+  * @date 2020-07-24
   */
 void LidarCameraFusion::SemanticImageCallback(const sensor_msgs::Image::ConstPtr& semantic_img)
 {
@@ -515,41 +495,17 @@ void LidarCameraFusion::SemanticImageCallback(const sensor_msgs::Image::ConstPtr
         semantic_frame = cv_image_ptr->image;
     else // 我们自己的语义分割没有去畸变，这里要处理
         cv::undistort(cv_image_ptr->image, semantic_frame, camera_instrinsics_mat, distortion_coefficients);
-
-    // TODO: 是否需要单独保存语义图像的 ID，用来与 image_frame 比较确保是两者同步？
 }
 
 /**
-  * @brief LEDNet 分割后最大概率语义图像的置信度回调
-  * @details 目前使用 Max Fusion 语义融合方法
-  * @param[in] confidence 订阅的置信度矩阵
+  * @brief 语义分割的最大概率置信度回调
+  * @details 没有使用 semantic_msg/max_msg
+  * @param[in] conf 订阅的置信度矩阵
   * @return void
   * @note 
-  *     该函数的参数需要修改！
-  * @todo 
-  *     把参数修改为 float 类型的矩阵
   * @author DLonng
-  * @date 2020-07-07
+  * @date 2020-07-24
   */
-#if 0 
-void LidarCameraFusion::ConfidenceCallback(const std_msgs::Float32MultiArray::ConstPtr& conf)
-{
-    // 确保相机内参和畸变矩阵已经初始化！
-    if (camera_instrinsics_mat_ok == false) {
-        ROS_INFO("[%s] SemanticImageCallback: wait to read camera instrinsics mat!", kNodeName.c_str());
-        return;
-    }
-
-    // TODO: init confidences!
-    for (int r = 0; r < image_size.height; r++) {
-        for (int l = 0; l < image_size.width; l++) {
-            this->confidences.at<float>(r, l) = conf->data[r * image_size.width + l];
-            ROS_INFO("[%s]: confidences.at<float>(%d, %d) = %f", kNodeName.c_str(), r, l, this->confidences.at<float>(r, l));
-        }
-    }
-}
-#endif
-
 void LidarCameraFusion::ConfidenceCallback(const rospy_tutorials::Floats::ConstPtr& conf)
 {
     // 确保相机内参和畸变矩阵已经初始化！
@@ -562,7 +518,6 @@ void LidarCameraFusion::ConfidenceCallback(const rospy_tutorials::Floats::ConstP
     for (int r = 0; r < image_size.height; r++) {
         for (int l = 0; l < image_size.width; l++) {
             this->confidences.at<float>(r, l) = conf->data[r * image_size.width + l];
-            //ROS_INFO("[%s]: confidences.at<float>(%d, %d) = %f", kNodeName.c_str(), r, l, this->confidences.at<float>(r, l));
         }
     }
 }
@@ -574,11 +529,10 @@ void LidarCameraFusion::ConfidenceCallback(const rospy_tutorials::Floats::ConstP
   * @return void
   * @note 
   *     可能需要考虑一次传输的数据量太大的问题
-  *     置信度能够传输矩阵呢？
   * @todo 
-  *     还没测试！
+  *     这个消息还没测试！
   * @author DLonng
-  * @date 2020-07-17
+  * @date 2020-07-24
   */
 void LidarCameraFusion::MaxSemanticCallback(const semantic_msg::max_msg::ConstPtr& max_semantic)
 {
@@ -589,7 +543,7 @@ void LidarCameraFusion::MaxSemanticCallback(const semantic_msg::max_msg::ConstPt
 
     // Get semantic_img_max
     cv_bridge::CvImagePtr cv_image_ptr = cv_bridge::toCvCopy(max_semantic->semantic_img_max, "bgr8");
-    
+
     if (is_kitti)
         max_frame = cv_image_ptr->image;
     else
@@ -609,11 +563,14 @@ void LidarCameraFusion::MaxSemanticCallback(const semantic_msg::max_msg::ConstPt
   * @param[in] bayes_semantic 订阅的 semantic/bayes_msg 自定义语义消息
   * @return void
   * @note 
-  *     需要考虑数据传输问题！因为一个 msg 里面包含 3 组图像和置信度！
+  *     1. 需要考虑数据传输问题！因为一个 msg 里面包含 3 组图像和置信度！
+  *     2. 语义分割产生 2 组语义信息 5Hz，该点云回调为 10 Hz，导致发布的语义点云也为 10Hz
+  *        考虑融合的逻辑性，应该在频率最慢的回调中进行语义的融合操作，即应该将融合的逻辑移动到该回调中！
   * @todo 
-  *     还没测试！
+  *     把点云回调中的融合逻辑移动到这个函数中！
+  *     记得让庄明溪修改 confidence 单词！
   * @author DLonng
-  * @date 2020-07-17
+  * @date 2020-07-24
   */
 void LidarCameraFusion::BayesSemanticCallback(const semantic_msg::bayes_msg::ConstPtr& bayes_semantic)
 {
@@ -625,34 +582,30 @@ void LidarCameraFusion::BayesSemanticCallback(const semantic_msg::bayes_msg::Con
     // Get 3 best semantic_img
     cv_bridge::CvImagePtr p_semantic_img_1 = cv_bridge::toCvCopy(bayes_semantic->semantic_img_1, "bgr8");
     cv_bridge::CvImagePtr p_semantic_img_2 = cv_bridge::toCvCopy(bayes_semantic->semantic_img_2, "bgr8");
-    cv_bridge::CvImagePtr p_semantic_img_3 = cv_bridge::toCvCopy(bayes_semantic->semantic_img_3, "bgr8");
+    //cv_bridge::CvImagePtr p_semantic_img_3 = cv_bridge::toCvCopy(bayes_semantic->semantic_img_3, "bgr8");
 
     if (is_kitti) {
         bayes_frame_1 = p_semantic_img_1->image;
         bayes_frame_2 = p_semantic_img_2->image;
-        bayes_frame_3 = p_semantic_img_3->image;
+        //bayes_frame_3 = p_semantic_img_3->image;
     } else {
         cv::undistort(p_semantic_img_1->image, bayes_frame_1, camera_instrinsics_mat, distortion_coefficients);
         cv::undistort(p_semantic_img_2->image, bayes_frame_2, camera_instrinsics_mat, distortion_coefficients);
-        cv::undistort(p_semantic_img_3->image, bayes_frame_3, camera_instrinsics_mat, distortion_coefficients);
+        //cv::undistort(p_semantic_img_3->image, bayes_frame_3, camera_instrinsics_mat, distortion_coefficients);
     }
 
     // Get 3 best bayes_confidences
     for (int r = 0; r < image_size.height; r++) {
         for (int l = 0; l < image_size.width; l++) {
-            this->bayes_confidences_1.at<float>(r, l) = bayes_semantic->confidence_1.data[r * image_size.width + l];
-            this->bayes_confidences_2.at<float>(r, l) = bayes_semantic->confidence_2.data[r * image_size.width + l];
-            this->bayes_confidences_3.at<float>(r, l) = bayes_semantic->confidence_3.data[r * image_size.width + l];
+            // 暂时改为 condifence，因为录制包的时候写错了，记得改回来
+            this->bayes_confidences_1.at<float>(r, l) = bayes_semantic->condifence_1.data[r * image_size.width + l];
+            this->bayes_confidences_2.at<float>(r, l) = bayes_semantic->condifence_2.data[r * image_size.width + l];
+            //this->bayes_confidences_3.at<float>(r, l) = bayes_semantic->confidence_3.data[r * image_size.width + l];
         }
     }
 }
 
-/*
- * @Description: 在 TF 树中寻找雷达和相机的坐标转换关系并返回
- * @Author: Dlonng
- * @Date: 2020-05-05
- * @LastEditTime:
- */
+
 tf::StampedTransform LidarCameraFusion::FindTransform(const std::string& target_frame, const std::string& source_frame)
 {
     tf::StampedTransform transform;
@@ -670,12 +623,7 @@ tf::StampedTransform LidarCameraFusion::FindTransform(const std::string& target_
     return transform;
 }
 
-/*
- * @Description: 对输入点云做 transform 坐标变换
- * @Author: Dlonng
- * @Date: 2020-05-05
- * @LastEditTime:
- */
+
 pcl::PointXYZ LidarCameraFusion::TransformPoint(const pcl::PointXYZ& in_point, const tf::StampedTransform& in_transform)
 {
     tf::Vector3 point(in_point.x, in_point.y, in_point.z);
@@ -693,7 +641,9 @@ pcl::PointXYZ LidarCameraFusion::TransformPoint(const pcl::PointXYZ& in_point, c
  * @param[in]: max_cluster_size 聚类的最大点云数量
  * @return: 聚类的结果 std::vector<pcl::PointIndices>，每行代表一个聚类簇，pcl::PointIndeices = std::vector<int>
  * @author: DLonng
- * @date: 2020-05-18
+ * @todo:
+ *      聚类工作还未开始！
+ * @date: 2020-07-24
  */
 void LidarCameraFusion::EucCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud,
     std::vector<pcl::PointIndices>& cluster_indices,

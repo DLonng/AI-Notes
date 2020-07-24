@@ -95,7 +95,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 196
+      Max Intensity: 127
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: PointCloud2
@@ -162,11 +162,11 @@ Visualization Manager:
         base_link:
           rslidar:
             {}
-        camera:
-          {}
         map:
           camera_init:
             aft_mapped:
+              {}
+            camera:
               {}
             laser_odom:
               {}
@@ -221,25 +221,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 36.8117981
+      Distance: 19.9444752
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -10.6506243
-        Y: -9.69762993
-        Z: 3.95032912e-05
+        X: 2.44448757
+        Y: -0.862478256
+        Z: 2.9966548e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.730201721
+      Pitch: 0.480202079
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.1959362
+      Yaw: 4.57593536
     Saved: ~
 Window Geometry:
   Displays:

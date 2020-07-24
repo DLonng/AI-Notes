@@ -1,10 +1,4 @@
 <launch>
-  <!-- Start ZED! -->
-  <include file = "$(find zed_cpu_ros)/launch/zed_cpu_ros.launch" />
-
-  <!-- Start Robosense LIDAR! -->
-  <include file = "$(find rslidar_pointcloud)/launch/rs_lidar_16.launch" />
-
   <!-- Start fusion node! -->
   <include file = "$(find lidar_camera_fusion)/launch/lidar_left_camera_fusion.launch" />
 
@@ -13,13 +7,8 @@
 
   <!-- Start Lego Loam! -->
   <include file = "$(find lego_loam)/launch/run_laser_odom.launch" />
-
-  <!-- Start Lego Loam RVIZ! -->
-  <include file = "$(find lego_loam)/launch/demo.launch" />
-
-  <!-- Start scout! Need run init_can.sh-->
-  <include file = "$(find scout_bringup)/launch/scout_minimal.launch" />
-
+  <!-- <include file = "$(find lego_loam)/launch/demo.launch" /> -->
+  
   <!-- Only using in map build test! -->
   <node pkg = "tf2_ros" type = "static_transform_publisher" name = "dlonng_octomap_generator_static_broadcaster" args = "0 0 0 0 0 0 base_link rslidar" />
 

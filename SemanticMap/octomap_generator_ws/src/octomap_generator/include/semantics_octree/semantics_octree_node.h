@@ -25,7 +25,7 @@ public:
     SemanticsOcTreeNode()
         : ColorOcTreeNode()
         , semantics()
-        , use_semantic_color(true)
+        , use_semantic_color(true) // 在车上测试，设置为 false 每个节点显示 RGB 颜色
         //, time_stamp(0)
     {
     }

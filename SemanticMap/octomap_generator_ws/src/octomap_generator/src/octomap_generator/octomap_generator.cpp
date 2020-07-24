@@ -88,14 +88,23 @@ void OctomapGenerator<CLOUD, OCTREE>::insertPointCloud(const pcl::PCLPointCloud2
     // Update colors and semantics, differs between templates
     updateColorAndSemantics(&pcl_cloud);
 
-    // 时间间隔最好能根据运动速度动态更新
-    //octomap_.degradeOutdatedNodes(5);
-
     // updates inner node occupancy and colors
     if (endpoint_count > 0)
         octomap_.updateInnerOccupancy();
 }
 
+/**
+  * @brief 用于对局部地图中的每个过期节点进行删除
+  * @details 目前只是在每个节点内增加时间戳，删除与当前时刻间隔大于指定阈值的节点
+  * @param[in] time_thres 该参数不一定使用时间命名，考虑更改，因为测试时时间戳与速度相关联
+  * @return void
+  * @note 
+  *     局部地图的实现方法还需要优化！
+  * @todo 
+  *     
+  * @author DLonng
+  * @date 2020-07-24
+  */
 template <class CLOUD, class OCTREE>
 void OctomapGenerator<CLOUD, OCTREE>::UpdateLocalMap(unsigned int time_thres)
 {
@@ -103,6 +112,7 @@ void OctomapGenerator<CLOUD, OCTREE>::UpdateLocalMap(unsigned int time_thres)
     //octomap_.updateInnerOccupancy();
 }
 
+// 普通 RGB 地图语义更新策略
 template <>
 void OctomapGenerator<PCLColor, ColorOcTree>::updateColorAndSemantics(PCLColor* pcl_cloud)
 {
@@ -116,6 +126,7 @@ void OctomapGenerator<PCLColor, ColorOcTree>::updateColorAndSemantics(PCLColor* 
     //std::cout << "Color: " << node->getColor()<< std::endl;
 }
 
+// 全局 Max 地图语义更新策略
 template <>
 void OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>::updateColorAndSemantics(PCLSemanticsMax* pcl_cloud)
 {
@@ -142,6 +153,7 @@ void OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>::updateColorAndSemant
     //std::cout << "Semantics: " << node->getSemantics() << std::endl;
 }
 
+// 局部 Max 地图语义更新策略
 template <>
 void OctomapGenerator<PCLSemanticsMax, LocalSemanticsOctreeMax>::updateColorAndSemantics(PCLSemanticsMax* pcl_cloud)
 {
@@ -168,6 +180,7 @@ void OctomapGenerator<PCLSemanticsMax, LocalSemanticsOctreeMax>::updateColorAndS
     //std::cout << "Semantics: " << node->getSemantics() << std::endl;
 }
 
+// 全局 Bayes 地图语义更新策略
 template <>
 void OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>::updateColorAndSemantics(PCLSemanticsBayesian* pcl_cloud)
 {
@@ -193,6 +206,32 @@ void OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>::updateColo
     //std::cout << "Semantics: " << node->getSemantics() << std::endl;
 }
 
+// 局部 Bayes 地图语义更新策略
+template <>
+void OctomapGenerator<PCLSemanticsBayesian, LocalSemanticsOctreeBayesian>::updateColorAndSemantics(PCLSemanticsBayesian* pcl_cloud)
+{
+    for (PCLSemanticsBayesian::const_iterator it = pcl_cloud->begin(); it < pcl_cloud->end(); it++) {
+        if (!std::isnan(it->x) && !std::isnan(it->y) && !std::isnan(it->z)) {
+            octomap_.averageNodeColor(it->x, it->y, it->z, it->r, it->g, it->b);
+            // Get semantics
+            octomap::SemanticsBayesian sem;
+            for (int i = 0; i < 3; i++) {
+                uint32_t rgb;
+                std::memcpy(&rgb, &it->data_sem[i], sizeof(uint32_t));
+                sem.data[i].color.r = (rgb >> 16) & 0x0000ff;
+                sem.data[i].color.g = (rgb >> 8) & 0x0000ff;
+                sem.data[i].color.b = (rgb)&0x0000ff;
+                sem.data[i].confidence = it->data_conf[i];
+            }
+            octomap_.updateNodeSemantics(it->x, it->y, it->z, sem);
+        }
+    }
+    LocalSemanticsOcTreeNodeBayesian* node = octomap_.search(pcl_cloud->begin()->x, pcl_cloud->begin()->y, pcl_cloud->begin()->z);
+    //std::cout << "Example octree node: " << std::endl;
+    //std::cout << "Color: " << node->getColor()<< std::endl;
+    //std::cout << "Semantics: " << node->getSemantics() << std::endl;
+}
+
 template <class CLOUD, class OCTREE>
 bool OctomapGenerator<CLOUD, OCTREE>::save(const char* filename) const
 {
@@ -213,7 +252,8 @@ bool OctomapGenerator<CLOUD, OCTREE>::save(const char* filename) const
 //template class OctomapGenerator<PCLColor, ColorOcTree>;
 
 template class OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>;
-template class OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>;
 template class OctomapGenerator<PCLSemanticsMax, LocalSemanticsOctreeMax>;
 
-//template class OctomapGenerator<MyPCLColor, MyColorOcTree>;
+// 新添加的类模板需要在导出模板实例
+template class OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>;
+template class OctomapGenerator<PCLSemanticsBayesian, LocalSemanticsOctreeBayesian>;
