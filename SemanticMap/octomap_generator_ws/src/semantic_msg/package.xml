@@ -53,6 +53,7 @@
   <build_depend>cv_bridge</build_depend>
   <build_export_depend>cv_bridge</build_export_depend>
   <exec_depend>cv_bridge</exec_depend>
+  
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>sensor_msgs</build_depend>
@@ -70,6 +71,7 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  
   <build_depend>python-numpy</build_depend>
   <exec_depend>python-numpy</exec_depend>
 

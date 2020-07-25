@@ -9,8 +9,11 @@
 
     <arg name = "semantic_confidence" default = "/semantic_array"/>
 
-    <!-- 图像点云融合输出话题名 -->
+    <!-- Max 图像点云融合输出话题名 -->
     <arg name = "semantic_cloud_max" default = "/semantic_cloud_max"/>
+
+    <!-- Bayes 图像点云融合输出话题名 -->
+    <arg name = "semantic_cloud_bayes" default = "/semantic_cloud_bayes"/>
 
     <!-- 左相机与雷达 Autoware 外参标定文件路径 -->
     <arg name = "lidar_left_camera_calibration_file" default = "$(find lidar_camera_fusion)/calibr_file/2020-06-02-16-25-autoware_lidar_left_camera_calibration.yaml" />
@@ -33,6 +36,7 @@
         <param name = "semantic_confidence" type = "str" value = "$(arg semantic_confidence)" />
 
         <param name = "semantic_cloud_max" type = "str" value = "$(arg semantic_cloud_max)" />
+        <param name = "semantic_cloud_bayes" type = "str" value = "$(arg semantic_cloud_bayes)" />
 
         <param name = "max_semantic" type = "str" value = "$(arg max_semantic)" />
         <param name = "bayes_semantic" type = "str" value = "$(arg bayes_semantic)" />

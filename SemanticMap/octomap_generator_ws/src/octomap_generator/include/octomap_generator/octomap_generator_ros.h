@@ -1,21 +1,21 @@
 #ifndef OCTOMAP_GENERATOR_ROS_H
 #define OCTOMAP_GENERATOR_ROS_H
 
-#include <ros/ros.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <semantics_octree/semantics_octree.h>
-#include <std_srvs/Empty.h>
+#include <boost/shared_ptr.hpp>
+#include <memory>
+#include <message_filters/subscriber.h>
 #include <octomap/ColorOcTree.h>
 #include <octomap/Pointcloud.h>
 #include <octomap/octomap.h>
-#include <memory>
-#include <boost/shared_ptr.hpp>
-#include <tf/transform_listener.h>
-#include <tf/message_filter.h>
-#include <message_filters/subscriber.h>
-#include <string>
-#include <octomap_msgs/Octomap.h>
 #include <octomap_generator/octomap_generator.h>
+#include <octomap_msgs/Octomap.h>
+#include <ros/ros.h>
+#include <semantics_octree/semantics_octree.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <std_srvs/Empty.h>
+#include <string>
+#include <tf/message_filter.h>
+#include <tf/transform_listener.h>
 
 // 编译完消息后，如果没有找到头文件
 // 重新 source，然后重启 code
@@ -31,8 +31,8 @@
  * \author Xuan Zhang
  * \data Mai-July 2018
  */
-class OctomapGeneratorNode{
-  public:
+class OctomapGeneratorNode {
+public:
     /**
      * \brief Constructor
      * \param nh The ros node handler to be used in OctomapGenerator
@@ -55,9 +55,9 @@ class OctomapGeneratorNode{
 
     void ScoutStatusCallback(const scout_msgs::ScoutStatus::ConstPtr& scout_status);
 
-  protected:
+protected:
     OctomapGeneratorBase* octomap_generator_; ///<Octomap instance pointer
-    ros::ServiceServer service_;  ///<ROS service to toggle semantic color display
+    ros::ServiceServer service_; ///<ROS service to toggle semantic color display
     bool toggleUseSemanticColor(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response); ///<Function to toggle whether write semantic color or rgb color as when serializing octree
     ros::NodeHandle nh_; ///<ROS handler
     ros::Publisher fullmap_pub_; ///<ROS publisher for octomap message
@@ -65,14 +65,15 @@ class OctomapGeneratorNode{
     tf::MessageFilter<sensor_msgs::PointCloud2>* tf_pointcloud_sub_; ///<ROS tf message filter to sychronize the tf and pointcloud messages
     tf::TransformListener tf_listener_; ///<Listener for the transform between the camera and the world coordinates
     std::string world_frame_id_; ///<Id of the world frame
-    std::string pointcloud_topic_; ///<Topic name for subscribed pointcloud message
+    std::string max_pointcloud_topic_; ///<Topic name for subscribed pointcloud message
+    std::string bayes_pointcloud_topic_;
     float max_range_; ///<Max range for points to be inserted into octomap
     float raycast_range_; ///<Max range for points to perform raycasting to free unoccupied space
     float clamping_thres_max_; ///<Upper bound of occupancy probability for a node
     float clamping_thres_min_; ///<Lower bound of occupancy probability for a node
     float resolution_; ///<Resolution of octomap
     float occupancy_thres_; ///<Minimum occupancy probability for a node to be considered as occupied
-    float prob_hit_;  ///<Hit probability of sensor
+    float prob_hit_; ///<Hit probability of sensor
     float prob_miss_; ///<Miss probability of sensor
     int tree_type_; ///<0: color octree, 1: semantic octree using bayesian fusion, 2: semantic octree using max fusion
     octomap_msgs::Octomap map_msg_; ///<ROS octomap message
@@ -86,6 +87,9 @@ class OctomapGeneratorNode{
     float linear_velocity;
     float angular_velocity;
     ros::Subscriber sub_scout_status;
-  };
 
-#endif//OCTOMAP_GENERATOR_ROS
+private:
+    static const std::string kNodeName;
+};
+
+#endif //OCTOMAP_GENERATOR_ROS

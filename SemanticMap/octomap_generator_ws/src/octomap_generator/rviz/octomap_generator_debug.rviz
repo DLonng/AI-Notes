@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /TF1
         - /TF1/Frames1
       Splitter Ratio: 0.695804
     Tree Height: 311
@@ -26,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: Image
 Toolbars:
   toolButtonStyle: 2
 Visualization Manager:
@@ -92,10 +93,10 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 127
+      Max Intensity: 159
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: PointCloud2
@@ -109,28 +110,28 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
-    - Class: octomap_rviz_plugin/ColorOccupancyGrid
-      Enabled: true
-      Max. Height Display: 3.40282347e+38
-      Max. Octree Depth: 16
-      Min. Height Display: -3.40282347e+38
-      Name: ColorOccupancyGrid
-      Octomap Topic: /octomap_full
-      Queue Size: 5
-      Value: true
-      Voxel Alpha: 1
-      Voxel Coloring: Cell Color
-      Voxel Rendering: Occupied Voxels
+      Value: false
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
       Enabled: false
       Max. Height Display: 3.40282347e+38
       Max. Octree Depth: 16
       Min. Height Display: -3.40282347e+38
       Name: ColorOccupancyGrid
-      Octomap Topic: /octomap_local
+      Octomap Topic: /octomap_full
       Queue Size: 5
       Value: false
+      Voxel Alpha: 1
+      Voxel Coloring: Cell Color
+      Voxel Rendering: Occupied Voxels
+    - Class: octomap_rviz_plugin/ColorOccupancyGrid
+      Enabled: true
+      Max. Height Display: 3.40282347e+38
+      Max. Octree Depth: 16
+      Min. Height Display: -3.40282347e+38
+      Name: ColorOccupancyGrid
+      Octomap Topic: /octomap_local
+      Queue Size: 5
+      Value: true
       Voxel Alpha: 1
       Voxel Coloring: Cell Color
       Voxel Rendering: Occupied Voxels
@@ -140,7 +141,7 @@ Visualization Manager:
       Frames:
         All Enabled: false
         aft_mapped:
-          Value: true
+          Value: false
         base_link:
           Value: false
         camera:
@@ -148,9 +149,11 @@ Visualization Manager:
         camera_init:
           Value: true
         laser_odom:
-          Value: true
+          Value: false
         map:
-          Value: true
+          Value: false
+        odom:
+          Value: false
         rslidar:
           Value: false
       Marker Scale: 5
@@ -221,25 +224,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 19.9444752
+      Distance: 16.4723396
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.44448757
-        Y: -0.862478256
-        Z: 2.9966548e-05
+        X: 1.23465109
+        Y: -2.11145878
+        Z: 2.66286879e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.480202079
+      Pitch: 0.705202341
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.57593536
+      Yaw: 4.93914604
     Saved: ~
 Window Geometry:
   Displays:

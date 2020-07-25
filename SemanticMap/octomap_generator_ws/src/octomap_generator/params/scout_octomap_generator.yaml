@@ -1,8 +1,9 @@
 octomap:
-    pointcloud_topic: "/semantic_cloud_max"
+    max_pointcloud_topic: "/semantic_cloud_max"
+    bayes_pointcloud_topic: "/semantic_cloud_bayes"
+    scout_status: "/scout_status"
     tree_type: 1
     world_frame_id: "/camera_init"
-    scout_status: "/scout_status"
     resolution: 0.15
     max_range: 15.0
     raycast_range: 2.0

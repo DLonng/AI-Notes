@@ -7,21 +7,25 @@
 #include <pcl_ros/transforms.h>
 #include <sstream>
 
-#define TEST_VEL 1
+#define TEST_VEL 0
+
+const std::string OctomapGeneratorNode::kNodeName = "OctomapGenerator";
 
 OctomapGeneratorNode::OctomapGeneratorNode(ros::NodeHandle& nh)
     : nh_(nh)
 {
     nh_.getParam("/octomap/tree_type", tree_type_);
+
     // Initiate octree
     if (tree_type_ == SEMANTICS_OCTREE_BAYESIAN || tree_type_ == SEMANTICS_OCTREE_MAX) {
         if (tree_type_ == SEMANTICS_OCTREE_BAYESIAN) {
-            ROS_INFO("Semantic octomap generator [bayesian fusion]");
+            ROS_INFO("[%s]: [%s] Semantic octomap generator [bayesian fusion]", kNodeName.c_str(), __FUNCTION__);
             octomap_generator_ = new OctomapGenerator<PCLSemanticsBayesian, SemanticsOctreeBayesian>();
+            // 创建局部 Bayes 地图对象
             // Bayes 语义融合的发布频率问题还没解决
             local_octomap_generator = new OctomapGenerator<PCLSemanticsBayesian, LocalSemanticsOctreeBayesian>();
         } else {
-            ROS_INFO("Semantic octomap generator [max fusion]");
+            ROS_INFO("[%s]: [%s] Semantic octomap generator [max fusion]", kNodeName.c_str(), __FUNCTION__);
             octomap_generator_ = new OctomapGenerator<PCLSemanticsMax, SemanticsOctreeMax>();
             // 再创建一个局部地图管理器，单独管理局部地图对象
             // 如果后期不需要很大的修改，其实可以把局部地图的逻辑放在全局地图中，这样才符合模板的使用理念
@@ -29,7 +33,7 @@ OctomapGeneratorNode::OctomapGeneratorNode(ros::NodeHandle& nh)
         }
         service_ = nh_.advertiseService("toggle_use_semantic_color", &OctomapGeneratorNode::toggleUseSemanticColor, this);
     } else {
-        ROS_INFO("Color octomap generator");
+        ROS_INFO("[%s]: [%s] Color octomap generator", kNodeName.c_str(), __FUNCTION__);
         // 因为没有为 ColorOcTree 加上局部地图的功能，为了能够使模板编译通过，所以注释掉
         //octomap_generator_ = new OctomapGenerator<PCLColor, ColorOcTree>();
     }
@@ -45,7 +49,14 @@ OctomapGeneratorNode::OctomapGeneratorNode(ros::NodeHandle& nh)
     nh_.param<std::string>("scout_status", scout_status, "/scout_status");
     sub_scout_status = nh_.subscribe(scout_status, 1, &OctomapGeneratorNode::ScoutStatusCallback, this);
 
-    pointcloud_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, pointcloud_topic_, 5);
+    // 根据八叉树的类型选择订阅哪种类型的语义点云
+    std::string pointcloud_topic;
+    if (tree_type_ == SEMANTICS_OCTREE_BAYESIAN)
+        pointcloud_topic = bayes_pointcloud_topic_;
+    else
+        pointcloud_topic = max_pointcloud_topic_;
+
+    pointcloud_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, pointcloud_topic, 5);
     tf_pointcloud_sub_ = new tf::MessageFilter<sensor_msgs::PointCloud2>(*pointcloud_sub_, tf_listener_, world_frame_id_, 5);
     tf_pointcloud_sub_->registerCallback(boost::bind(&OctomapGeneratorNode::insertCloudCallback, this, _1));
 }
@@ -54,7 +65,8 @@ OctomapGeneratorNode::~OctomapGeneratorNode() { }
 /// Clear octomap and reset values to paramters from parameter server
 void OctomapGeneratorNode::reset()
 {
-    nh_.getParam("/octomap/pointcloud_topic", pointcloud_topic_);
+    nh_.getParam("/octomap/pointcloud_topic", max_pointcloud_topic_);
+    nh_.getParam("/octomap/bayes_pointcloud_topic", bayes_pointcloud_topic_);
     nh_.getParam("/octomap/world_frame_id", world_frame_id_);
     nh_.getParam("/octomap/resolution", resolution_);
     nh_.getParam("/octomap/max_range", max_range_);
@@ -119,6 +131,7 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     Eigen::Matrix4f sensorToWorld;
     pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
 
+    // 小车静止不动也需要插入地图
     octomap_generator_->insertPointCloud(cloud, sensorToWorld);
     local_octomap_generator->insertPointCloud(cloud, sensorToWorld);
 
@@ -130,22 +143,20 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     else
         ROS_ERROR("Error serializing Full OctoMap");
 
-        // 在自己的机器上使用固定的速度测试，在小车上使用真实的速度
 #if TEST_VEL
-    // 更新局部地图并发布主题
+    // 在自己的机器上使用固定的速度测试，在小车上使用真实的速度
     float v = 1.0;
     unsigned int time_thres = (1 / v) + 5;
     local_octomap_generator->UpdateLocalMap(time_thres);
 #else
     float EPSINON = 0.000001;
-    // 线速度不为 0，根据速度快慢更新局部地图消失速度
+    // 线速度不为 0 时才更新局部地图，根据小车速度和传感器最大融合范围更新局部地图消失速度
     if (linear_velocity >= EPSINON) {
-        // 5 是当速度很快时，预留的局部地图显示范围
-        unsigned int time_thres = (1 / linear_velocity) + 5;
+        // 时间间隔的更新还需要优化！
+        unsigned int time_thres = (max_range_ / linear_velocity);
         local_octomap_generator->UpdateLocalMap(time_thres);
     }
 #endif
-
 
     // 发布局部地图消息
     local_map_msg.header.frame_id = world_frame_id_;
@@ -154,7 +165,6 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
         local_map_pub.publish(local_map_msg);
     else
         ROS_ERROR("Error serializing Local OctoMap");
-       
 }
 
 void OctomapGeneratorNode::ScoutStatusCallback(const scout_msgs::ScoutStatus::ConstPtr& scout_status)

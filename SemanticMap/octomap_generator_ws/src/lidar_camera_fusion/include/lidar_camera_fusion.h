@@ -194,7 +194,8 @@ private:
     ros::Subscriber sub_bayes_semantic;
 
     // 融合结果发布者
-    ros::Publisher pub_semantic_cloud;
+    ros::Publisher pub_bayes_semantic_cloud;
+    ros::Publisher pub_max_semantic_cloud;
 
 private:
     // 当前图像帧的 ID
@@ -202,6 +203,8 @@ private:
 
     // 当前融合处理的原始图像
     cv::Mat image_frame;
+
+    sensor_msgs::PointCloud2 cloud_frame;
 
     // 当前融合处理的语义图像
     cv::Mat semantic_frame;
