@@ -8,6 +8,5 @@ sensor_msgs/Image semantic_img_2
 # 需要把这个 condifence_2 改为 confidence_2
 rospy_tutorials/Floats condifence_2
 
-# 传输 3 组语义信息频率太低
 #sensor_msgs/Image semantic_img_3
 #rospy_tutorials/Floats confidence_3

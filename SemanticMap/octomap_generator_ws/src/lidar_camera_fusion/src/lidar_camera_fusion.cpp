@@ -15,7 +15,7 @@
 
 // 1: 在单独的语义回调函数中融合并发布语义点云
 // 0: 在点云回调中融合 2 种类型的语义点云
-#define SWITCH_FUSION 0
+#define SWITCH_FUSION 1
 
 // SWITCH_FUSION 设置为 0 才使用下面这 2 个开关
 // USING_MAX_SEMANTIC 0 表示在点云回调中使用 Max 类型的点云，但是不給语义信息
@@ -162,6 +162,7 @@ void LidarCameraFusion::InitROS()
     sub_image_raw = topic_handle.subscribe(image_raw, topic_buff, &LidarCameraFusion::ImageRawCallback, this);
     sub_cloud_raw = topic_handle.subscribe(cloud_raw, topic_buff, &LidarCameraFusion::CloudRawCallback, this);
 
+    // 最大概率语义图像和置信度分开订阅的逻辑
     sub_semantic_img = topic_handle.subscribe(semantic_img, topic_buff, &LidarCameraFusion::SemanticImageCallback, this);
     sub_confidence = topic_handle.subscribe(semantic_confidence, topic_buff, &LidarCameraFusion::ConfidenceCallback, this);
 
@@ -414,7 +415,7 @@ void LidarCameraFusion::BayesSemanticCallback(const semantic_msg::bayes_msg::Con
             semantic_point_bayes.s2_g = semantic_pixel[1];
             semantic_point_bayes.s2_b = semantic_pixel[0];
 
-            // semantic 2
+            // semantic 3
             //semantic_pixel = bayes_frame_3.at<cv::Vec3b>(row, col);
             //semantic_point_bayes.s3_r = semantic_pixel[2];
             //semantic_point_bayes.s3_g = semantic_pixel[1];
@@ -423,7 +424,7 @@ void LidarCameraFusion::BayesSemanticCallback(const semantic_msg::bayes_msg::Con
             // confidence
             semantic_point_bayes.confidence1 = bayes_semantic->condifence_1.data[row * image_size.width + col];
             semantic_point_bayes.confidence2 = bayes_semantic->condifence_2.data[row * image_size.width + col];
-            //semantic_point_bayes.confidence2 = bayes_semantic->condifence_3.data[row * image_size.width + col];
+            //semantic_point_bayes.confidence3 = bayes_semantic->condifence_3.data[row * image_size.width + col];
 
             // 这样做一次转换也不会降低太多频率，不过还是直接用 bayes_semantic 里面的数组
             //semantic_point_bayes.confidence1 = bayes_confidences_1.at<float>(row, col);

@@ -65,7 +65,7 @@ OctomapGeneratorNode::~OctomapGeneratorNode() { }
 /// Clear octomap and reset values to paramters from parameter server
 void OctomapGeneratorNode::reset()
 {
-    nh_.getParam("/octomap/pointcloud_topic", max_pointcloud_topic_);
+    nh_.getParam("/octomap/max_pointcloud_topic", max_pointcloud_topic_);
     nh_.getParam("/octomap/bayes_pointcloud_topic", bayes_pointcloud_topic_);
     nh_.getParam("/octomap/world_frame_id", world_frame_id_);
     nh_.getParam("/octomap/resolution", resolution_);
@@ -101,14 +101,29 @@ void OctomapGeneratorNode::reset()
 bool OctomapGeneratorNode::toggleUseSemanticColor(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
 {
     octomap_generator_->setUseSemanticColor(!octomap_generator_->isUseSemanticColor());
+    
     if (octomap_generator_->isUseSemanticColor())
-        ROS_INFO("Using semantic color");
+        ROS_INFO("Full Octomap using semantic color");
     else
-        ROS_INFO("Using rgb color");
+        ROS_INFO("Full Octomap using rgb color");
+
     if (octomap_msgs::fullMapToMsg(*octomap_generator_->getOctree(), map_msg_))
         fullmap_pub_.publish(map_msg_);
     else
-        ROS_ERROR("Error serializing OctoMap");
+        ROS_ERROR("Error serializing Full OctoMap");
+
+    local_octomap_generator->setUseSemanticColor(!local_octomap_generator->isUseSemanticColor());
+    
+    if (local_octomap_generator->isUseSemanticColor())
+        ROS_INFO("Local Octomap using semantic color");
+    else
+        ROS_INFO("Local Octomap using rgb color");
+
+    if (octomap_msgs::fullMapToMsg(*local_octomap_generator->getOctree(), local_map_msg))
+        local_map_pub.publish(local_map_msg);
+    else
+        ROS_ERROR("Error serializing Local OctoMap");
+
     return true;
 }
 

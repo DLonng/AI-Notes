@@ -64,8 +64,8 @@ int main(int argc, char** argv)
             // source_frame: turtle1
             // ros::Time(0): 获取变换的时间，这里获取最新的变换
             // ros::Duration(0.0): 寻找变换的超时时间，默认为 0，该参数默认省略，我这里加上了
-            
-            transformStamped = tfBuffer.lookupTransform("turtle2", "turtle1", ros::Time(0));
+            transformStamped = tfBuffer.lookupTransform("turtle2", "carrot1", ros::Time(0));
+            //transformStamped = tfBuffer.lookupTransform("turtle2", "turtle1", ros::Time(0));
             //transformStamped = tfBuffer.lookupTransform("turtle2", "turtle1", ros::Time::now(), ros::Duration(3.0));
             
 #if 0
