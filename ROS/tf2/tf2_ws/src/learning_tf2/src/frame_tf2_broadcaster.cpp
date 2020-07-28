@@ -31,8 +31,8 @@ int main(int argc, char** argv)
         transformStamped.header.stamp = ros::Time::now();
 
         // 这两行表示让该 carrot1 参考系随着时间移动
-        transformStamped.transform.translation.x = 2.0 * sin(ros::Time::now().toSec());
-        transformStamped.transform.translation.y = 2.0 * cos(ros::Time::now().toSec());
+        //transformStamped.transform.translation.x = 2.0 * sin(ros::Time::now().toSec());
+        //transformStamped.transform.translation.y = 2.0 * cos(ros::Time::now().toSec());
 
         // 将 carrot1 相对于 tutle1 的坐标变换广播到 TF 系统中
         tfb.sendTransform(transformStamped);
