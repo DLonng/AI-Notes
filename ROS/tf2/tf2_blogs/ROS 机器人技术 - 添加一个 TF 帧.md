@@ -154,7 +154,7 @@ roslaunch learning_tf2 start_demo.launch
 
 你应该会发现现在的小乌龟产生的跟随运动与之前不一定了，两者之间的 y 方向有一定的距离，这个距离就是我们发布变换时指定的坐标系的相对位置：
 
-
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/add_tf_frame.gif)
 
 OK！TF 系统常用的基础就学完了，目前因为项目有用到 TF，所以写了几篇基础的文章，之前没有看过的可以再回过头看下：
 

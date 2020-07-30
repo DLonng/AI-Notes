@@ -85,7 +85,28 @@ sudo apt install systemback
 
 分区：
 
-- swap: 8G
-- boot/efi: 200
-- /: 30
-- /home:60
+- swap: 8G，物理内存的整数倍
+- boot/efi: 1 G
+- /: 尽量大，
+- /home:尽量大，
+
+根目录：home = 1:1 或者 1:2
+
+
+
+
+
+#### Intel NUC 256G 分区
+
+- boot/efi: 1G = 1024 M
+- swap: 16G = 16384M
+- /：100 G = 102400 M
+- /home: 139G = remain
+
+
+
+
+
+参考博客：
+
+- https://blog.csdn.net/u012052268/article/details/77145427

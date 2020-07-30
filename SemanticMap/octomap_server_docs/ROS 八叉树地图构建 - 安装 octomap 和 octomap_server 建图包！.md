@@ -1,8 +1,6 @@
-项目要用到八叉树库 Octomap 来构建地图，这里记录下安装、可视化，启用带颜色的 Octomap 的过程。
+项目要用到八叉树库 Octomap 来构建地图，这里记录下安装、可视化，并启用带颜色的 Octomap 的过程。
 
-## 一、安装 Octomap 的 2 种方法
-
-### 1. apt 安装
+## 一、Apt 安装 Octomap 库
 
 如果你不需要修改源码，可以直接安装编译好的 octomap 库，记得把 ROS 版本「kinetic」替换成你用的：
 
@@ -10,17 +8,19 @@
 sudo apt-get install ros-kinetic-octomap*
 ```
 
-上面这一行命令等价于安装以下所有的 octomap 组件：
+上面这一行命令等价于安装以下的 octomap 组件：
 
 ```shell
-sudo apt-get install ros-kinetic-octomap ros-kinetic-octomap-mapping ros-kinetic-octomap-msgs ros-kinetic-octomap-ros ros-kinetic-octomap-rviz-plugins ros-kinetic-octomap-server
+sudo apt-get install ros-kinetic-octomap ros-kinetic-octomap-mapping ros-kinetic-octomap-msgs ros-kinetic-octomap-ros ros-kinetic-octomap-rviz-plugins
 ```
 
-### 2. 源码编译安装
+注意：上面没有安装 `ros-kinetic-octomap-server`，原因是我要使用这个包来建图，并且需要修改它，所以在下一步我直接通过编译源码来安装它！
 
-因为我要启用八叉树体素栅格的颜色支持，需要修改源码，所以必须使用源码编译安装，过程如下：
+## 二、编译安装 OctomapServer 建图包
 
-(1) 创建编译用的工作空间：
+因为我要启用八叉树体素栅格的 RGB 颜色支持，需要修改源码，所以必须使用源码编译安装，过程如下：
+
+### 2.1 创建编译用的工作空间
 
 ```shell
 cd 你的一个目录/
@@ -39,29 +39,16 @@ catkin_make
 source devel/setup.zsh
 ```
 
-(2) 下载 [octomap_server](https://github.com/OctoMap/octomap_mapping) 源码到 src 文件夹中：
+### 2.2 下载编译源码
+
+下载 [octomap_server](https://github.com/OctoMap/octomap_mapping) 源码到 src 文件夹中：
 
 ```shell
 cd src/
 git clone https://github.com/OctoMap/octomap_mapping.git
 ```
 
-(3) 打开头文件：
-
-```shell
-vim octomap_mapping/octomap_server/include/octomap_server/OctomapServer.h
-```
-
-打开注释以开启 ColorOctomap 宏：
-
-```cpp
-// switch color here - easier maintenance, only maintain OctomapServer. 
-// Two targets are defined in the cmake, octomap_server_color and octomap_server. One has this defined, and the other doesn't
-// 打开这个注释
-#define COLOR_OCTOMAP_SERVER
-```
-
-(4) 返回你的工作空间主目录，我直接返回到上级目录就是主目录了，开始编译：
+返回你的工作空间主目录，安装下依赖，然后开始编译：
 
 ```shell
 cd ../
@@ -71,7 +58,7 @@ rosdep install octomap_mapping
 catkin_make
 ```
 
-编译过程基本没有遇到问题，如果你遇到问题，直接复制错误信息浏览器搜索看看，启动节点测试：
+编译过程基本没有报错，如果你遇到问题，直接复制错误信息浏览器搜索解决，然后启动测试的 launch：
 
 ```shell
 roslaunch octomap_server octomap_mapping.launch
@@ -81,19 +68,21 @@ roslaunch octomap_server octomap_mapping.launch
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/build_octomap.png)
 
-## 二、可视化 Octomap
+有这个话题说明这个建图包可以正常工作啦：）
 
-ROS 中提供了一个 Rviz 可视化 Octomap 的插件，使用下面的命令安装：
+## 二、Rviz 可视化 Octomap
+
+ROS 中提供了一个 Rviz 可视化 Octomap 的插件，如果没有安装使用下面的命令即可：
 
 ```shell
 sudo apt-get install ros-kinetic-octomap-rviz-plugins
 ```
 
-安装后启动 Rviz，直接添加一个八叉树占用网格的话题，第一个是带颜色的类型，第二个不带颜色：
+安装后启动 Rviz，直接添加一个八叉树占用网格的类型，第一个是带颜色的类型，第二个不带颜色：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/octomap_rviz_plugin2.png)
 
-然后选择话题名称，即可显示出体素栅格，这是我的实验结果，我用的是第一个带颜色的类型：
+建图节点启动后，选择话题名称为 `octomap_full`，即可显示出八叉树体素栅格，这是我的实验结果，我用的是第一个带颜色的类型：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/octomap_rviz_result.png)
 
@@ -156,11 +145,8 @@ catkin_make
 </launch>
 ```
 
-我设置了八叉树帧的 frame 为 rslidar，并将融合的点云话题 `/fusion_cloud` 作为节点的输入，我没有提供 TF，因为目前只是做了一个单帧的体素栅格构建，效果如下：
+我设置了八叉树帧的 frame 为 `rslidar`，并将融合的点云话题 `/fusion_cloud` 作为节点的输入，我没有提供 TF，因为目前只是做了一个单帧的体素栅格构建，效果如下：
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/color_octomap.png)
 
 我在 B 站录了个简短的视频，可以去看下初步的效果：[ROS 单帧带颜色八叉树 Octomap 地图构建实验](https://www.bilibili.com/video/BV1hz4y197Wb)
-
-## 四、八叉树建图
-
