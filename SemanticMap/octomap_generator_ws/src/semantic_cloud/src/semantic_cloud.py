@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Fusion semantic cloud from ZED and Robosense-16
+""" Fusion semantic cloud from ZED and Robosense-16
 
 @author DLonng
 @date 2020-07-30
@@ -85,11 +85,11 @@ class SemanticCloud:
         calibration_fs = cv2.FileStorage(rospy.get_param('/semantic_generator/calibration_file'), cv2.FILE_STORAGE_READ)
 
         self.camera_mat = calibration_fs.getNode('CameraMat').mat()
-        self.fx = self.camera_mat[0][0]
-        self.fy = self.camera_mat[1][1]
-        self.cx = self.camera_mat[0][2]
-        self.cy = self.camera_mat[1][2]
-        print(self.camera_mat)
+        self.fx = self.camera_mat[0, 0]
+        self.fy = self.camera_mat[1, 1]
+        self.cx = self.camera_mat[0, 2]
+        self.cy = self.camera_mat[1, 2]
+        print(self.camera_mat[0, 0])
 
         self.distcoeff_mat = calibration_fs.getNode('DistCoeff').mat()
         self.extrinsic_mat = calibration_fs.getNode('CameraExtrinsicMat').mat()
@@ -107,12 +107,13 @@ class SemanticCloud:
         self.sem_cloud_pub = rospy.Publisher(rospy.get_param('/semantic_generator/semantic_cloud_topic'), PointCloud2, queue_size=1)
 
         # Need to study!
+        # https://blog.csdn.net/chishuideyu/article/details/77479758
         self.ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.cloud_sub], queue_size=1, slop=0.3)
         
         # go!
         self.ts.registerCallback(self.image_cloud_callback)
 
-        self.sem_cloud_generator = SemanticCloudGenerator()
+        self.sem_cloud_generator = SemanticCloudGenerator(self.img_width, self.img_height, self.point_type)
 
         print('Init OK')
 
@@ -124,6 +125,7 @@ class SemanticCloud:
             cloud_raw: raw robosense-16 lidar point cloud (sensor_msgs.PointCloud2)
 
         """
+        # (rows, cols, channels) = cv_image.shape
         cv_img = self.bridge.imgmsg_to_cv2(image_raw, "bgr8")
 
         if self.point_type is PointType.COLOR:
@@ -131,12 +133,17 @@ class SemanticCloud:
         elif self.point_type is PointType.SEMANTIC_MAX:
             print('produce max semantic cloud')
             
-            max_semantic_img, max_confidence = []#self.predict_max(cv_img)
+            
+            #max_semantic_img, max_confidence = self.predict_max(cv_img)
+
+            max_semantic_img = cv_img
+            max_confidence = np.ones(self.img_width * self.img_height)
 
             # produce max semantic cloud
             semantic_cloud = self.sem_cloud_generator.generate_cloud_semantic_max(cv_img,
                                                                                   cloud_raw, 
-                                                                                  extrinsic_mat, 
+                                                                                  self.camera_mat, 
+                                                                                  self.extrinsic_mat, 
                                                                                   max_semantic_img, 
                                                                                   max_confidence, 
                                                                                   image_raw.header.stamp)
@@ -153,16 +160,18 @@ class SemanticCloud:
                                                                                        self.bayes_semantic_imgs,
                                                                                        self.bayes_confidences,
                                                                                        image_raw.header.stamp)
+            print('produce bayes semantic cloud ok!')
 
         # Publihser semantic img
         if self.sem_cloud_pub.get_num_connections() > 0:
             if self.point_type is PointType.SEMANTIC_MAX:
-                #semantic_img_msg = self.bridge.cv2_to_imgmsg(max_semantic_img, encoding="bgr8")
+                semantic_img_msg = self.bridge.cv2_to_imgmsg(max_semantic_img, encoding="bgr8")
                 print('Todo...')
             else:
                 #semantic_img_msg = self.bridge.cv2_to_imgmsg(self.bayes_semantic_imgs[0], encoding="bgr8")
                 print('Todo...')
-            #self.sem_img_pub.publish(semantic_img_msg)
+
+            self.sem_img_pub.publish(semantic_img_msg)
 
         self.sem_cloud_pub.publish(semantic_cloud)
 
