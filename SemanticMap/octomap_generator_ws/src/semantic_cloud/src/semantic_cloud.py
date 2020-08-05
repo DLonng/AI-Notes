@@ -73,10 +73,8 @@ class SemanticCloud:
         # Bayesian: semantic_colors, confidences
         #      Max: semantic_color, confidence
         if self.point_type is PointType.SEMANTIC_BAYESIAN:
-            self.bayes_semantic_imgs = np.zeros(
-                (3, self.img_height, self.img_width, 3), dtype=np.uint8)
-            self.bayes_confidences = np.zeros(
-                (3, self.img_height, self.img_width), dtype=np.float32)
+            self.bayes_semantic_imgs = np.zeros((3, self.img_height, self.img_width, 3), dtype = np.uint8)
+            self.bayes_confidences = np.zeros((3, self.img_height, self.img_width), dtype = np.float32)
 
         # Init ROS
         print('Init ROS')
@@ -84,8 +82,7 @@ class SemanticCloud:
         self.bridge = CvBridge()
 
         # Get camera info
-        calibration_fs = cv2.FileStorage(rospy.get_param(
-            '/semantic_generator/calibration_file'), cv2.FILE_STORAGE_READ)
+        calibration_fs = cv2.FileStorage(rospy.get_param('/semantic_generator/calibration_file'), cv2.FILE_STORAGE_READ)
 
         self.camera_mat = calibration_fs.getNode('CameraMat').mat()
         self.fx = self.camera_mat[0][0]
@@ -100,22 +97,17 @@ class SemanticCloud:
         calibration_fs.release()
 
         # Image subscriber
-        self.image_sub = message_filters.Subscriber(rospy.get_param(
-            '/semantic_generator/image_raw_topic'), Image, queue_size=1)
+        self.image_sub = message_filters.Subscriber(rospy.get_param('/semantic_generator/image_raw_topic'), Image, queue_size=1)
         # Point Cloud subscriber
-        self.cloud_sub = message_filters.Subscriber(rospy.get_param(
-            '/semantic_generator/cloud_raw_topic'), PointCloud2, queue_size=1)
+        self.cloud_sub = message_filters.Subscriber(rospy.get_param('/semantic_generator/cloud_raw_topic'), PointCloud2, queue_size=1)
 
         # Semantic img publisher
-        self.sem_img_pub = rospy.Publisher(rospy.get_param(
-            '/semantic_generator/semantic_img_topic'), Image, queue_size=1)
+        self.sem_img_pub = rospy.Publisher(rospy.get_param('/semantic_generator/semantic_img_topic'), Image, queue_size=1)
         # Semantic cloud publisher
-        self.sem_cloud_pub = rospy.Publisher(rospy.get_param(
-            '/semantic_generator/semantic_cloud_topic'), PointCloud2, queue_size=1)
+        self.sem_cloud_pub = rospy.Publisher(rospy.get_param('/semantic_generator/semantic_cloud_topic'), PointCloud2, queue_size=1)
 
         # Need to study!
-        self.ts = message_filters.ApproximateTimeSynchronizer(
-            [self.image_sub, self.cloud_sub], queue_size=1, slop=0.3)
+        self.ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.cloud_sub], queue_size=1, slop=0.3)
         
         # go!
         self.ts.registerCallback(self.image_cloud_callback)
@@ -144,6 +136,7 @@ class SemanticCloud:
             # produce max semantic cloud
             semantic_cloud = self.sem_cloud_generator.generate_cloud_semantic_max(cv_img,
                                                                                   cloud_raw, 
+                                                                                  extrinsic_mat, 
                                                                                   max_semantic_img, 
                                                                                   max_confidence, 
                                                                                   image_raw.header.stamp)
