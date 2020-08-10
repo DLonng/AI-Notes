@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /TF1
         - /TF1/Frames1
       Splitter Ratio: 0.695804
     Tree Height: 311
@@ -152,8 +151,6 @@ Visualization Manager:
           Value: false
         map:
           Value: false
-        odom:
-          Value: false
         rslidar:
           Value: false
       Marker Scale: 5
@@ -177,7 +174,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /semantic_img
+      Image Topic: /semantic_img_topic
       Max Value: 1
       Median window: 5
       Min Value: 0

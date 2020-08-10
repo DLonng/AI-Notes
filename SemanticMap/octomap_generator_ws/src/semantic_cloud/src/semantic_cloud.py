@@ -94,17 +94,19 @@ class SemanticCloud:
 
         calibration_fs.release()
         
-        #self.image_sub = rospy.Subscriber('/camera/left/image_raw', Image, self.image_callback, queue_size=1)
-        #self.cloud_sub = rospy.Subscriber('rslidar_points', PointCloud2, self.cloud_callback, queue_size=1)
-
+        self.image_sub = rospy.Subscriber(rospy.get_param('/semantic_generator/image_raw_topic'), Image, self.image_callback, queue_size=1)
+        self.cloud_sub = rospy.Subscriber(rospy.get_param('/semantic_generator/cloud_raw_topic'), PointCloud2, self.cloud_callback, queue_size=1)
+        
+        '''
         self.image_sub = message_filters.Subscriber(rospy.get_param('/semantic_generator/image_raw_topic'), Image, queue_size=1)
         self.cloud_sub = message_filters.Subscriber(rospy.get_param('/semantic_generator/cloud_raw_topic'), PointCloud2, queue_size=1)
-
-        self.sem_img_pub = rospy.Publisher(rospy.get_param('/semantic_generator/semantic_img_topic'), Image, queue_size=1)
-        self.sem_cloud_pub = rospy.Publisher(rospy.get_param('/semantic_generator/semantic_cloud_topic'), PointCloud2, queue_size=1)
-
+        
         self.ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.cloud_sub], queue_size=5, slop=0.3)
         self.ts.registerCallback(self.image_cloud_callback)
+        '''
+        
+        self.sem_img_pub = rospy.Publisher(rospy.get_param('/semantic_generator/semantic_img_topic'), Image, queue_size=1)
+        self.sem_cloud_pub = rospy.Publisher(rospy.get_param('/semantic_generator/semantic_cloud_topic'), PointCloud2, queue_size=1)
 
         self.sem_cloud_generator = SemanticCloudGenerator(self.img_width, self.img_height, self.point_type)
 
@@ -127,7 +129,7 @@ class SemanticCloud:
             print('produce max semantic cloud')
             # Or  to predict semantic img in image_callback ?
             max_semantic_img, max_confidence = self.predict_max(cv_img)
-
+         
             # using in test!
             #max_semantic_img = cv_img
             #max_confidence = np.ones(self.img_width * self.img_height)
@@ -166,6 +168,50 @@ class SemanticCloud:
         self.sem_cloud_pub.publish(semantic_cloud)
 
 
+    def image_callback(self, image_raw):
+        self.cv_img = self.bridge.imgmsg_to_cv2(image_raw, "bgr8")
+        self.max_semantic_img, self.max_confidence = self.predict_max(self.cv_img)
+
+    def cloud_callback(self, cloud_raw):
+        if self.point_type is PointType.COLOR:
+            print('No use color point cloud')
+        elif self.point_type is PointType.SEMANTIC_MAX:
+            print('produce max semantic cloud')
+
+            # produce max semantic cloud
+            semantic_cloud = self.sem_cloud_generator.generate_cloud_semantic_max(self.cv_img,
+                                                                                  cloud_raw, 
+                                                                                  self.camera_mat, 
+                                                                                  self.extrinsic_mat_inv, 
+                                                                                  self.max_semantic_img, 
+                                                                                  self.max_confidence)
+
+        else:
+            print('produce bayes semantic cloud')
+            
+            # produce bayes_semantic_imgs and bayes_confidences
+            self.predict_bayesian(self.cv_img)
+
+            # produce bayes semantic cloud
+            semantic_cloud = self.sem_cloud_generator.generate_cloud_semantic_bayesian(self.cv_img, 
+                                                                                       cloud_raw, 
+                                                                                       self.bayes_semantic_imgs,
+                                                                                       self.bayes_confidences,
+                                                                                       cloud_raw.header.stamp)
+            print('produce bayes semantic cloud ok!')
+
+        # Publihser semantic img
+        if self.sem_cloud_pub.get_num_connections() > 0:
+            if self.point_type is PointType.SEMANTIC_MAX:
+                semantic_img_msg = self.bridge.cv2_to_imgmsg(self.max_semantic_img, encoding="bgr8")
+            else:
+                semantic_img_msg = self.bridge.cv2_to_imgmsg(self.bayes_semantic_imgs[0], encoding="bgr8")
+
+            self.sem_img_pub.publish(semantic_img_msg)
+
+        self.sem_cloud_pub.publish(semantic_cloud)
+
+
     def init_cnn(self, device, pretrained):
         """
             No test!
@@ -180,6 +226,7 @@ class SemanticCloud:
         self.model.load_state_dict(torch.load(pretrained))
         self.model.eval()
 
+
     def predict_max(self, cv_img):
         """
             No test!
@@ -192,7 +239,7 @@ class SemanticCloud:
         """
         pilImg = self.cv2PIL(cv_img, cv2.COLOR_BGR2RGB)
         img = self.transform(pilImg).unsqueeze(0).to(self.device)
-
+	
         with torch.no_grad():
             output = self.model(img)
             confidence = F.softmax(output,1).max(1)
@@ -202,7 +249,8 @@ class SemanticCloud:
         
         predict = torch.argmax(output, 1).squeeze(0).cpu().numpy()
         mask = ptutil.get_color_pallete(predict, 'citys')
-
+        mask.save(os.path.join('/home/zmx/catkin_ws/src/semantic_cloud/', 'output.png'))
+        mask = cv2.imread(os.path.join('/home/zmx/catkin_ws/src/semantic_cloud/', 'output.png'))
         #return max_semantic_img, max_confidence
         return mask, confidence
 
@@ -257,7 +305,8 @@ if __name__ == '__main__':
     rospy.init_node('semantic_cloud')
 
     device = torch.device('cuda')
-    pretrained = '/home/zmx/catkin_ws/src/lednet/LEDNet_model_best_6.pth'
+    
+    pretrained = '/home/zmx/catkin_ws/src/semantic_cloud/LEDNet_model_best_6.pth'
 
     seg_cnn = SemanticCloud(device, pretrained)
 
@@ -265,78 +314,3 @@ if __name__ == '__main__':
 
     rospy.spin()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-   def image_callback(self, image_raw):
-        print('image_callback')
-        self.cv_img = self.bridge.imgmsg_to_cv2(image_raw, "bgr8")
-"""
-
-"""
-    def cloud_callback(self, cloud_raw):
-        print('cloud_callback')
-
-        if self.point_type is PointType.COLOR:
-            print('No use color point cloud')
-        elif self.point_type is PointType.SEMANTIC_MAX:
-            print('produce max semantic cloud')
-            
-            
-            #max_semantic_img, max_confidence = self.predict_max(cv_img)
-
-            max_semantic_img = self.cv_img
-            max_confidence = np.ones(self.img_width * self.img_height)
-
-            # produce max semantic cloud
-            semantic_cloud = self.sem_cloud_generator.generate_cloud_semantic_max(self.cv_img,
-                                                                                  cloud_raw, 
-                                                                                  self.camera_mat, 
-                                                                                  self.extrinsic_mat_inv, 
-                                                                                  max_semantic_img, 
-                                                                                  max_confidence)
-
-        else:
-            print('produce bayes semantic cloud')
-            
-            # produce bayes_semantic_imgs and bayes_confidences
-            self.predict_bayesian(self.cv_img)
-
-            # produce bayes semantic cloud
-            semantic_cloud = self.sem_cloud_generator.generate_cloud_semantic_bayesian(self.cv_img, 
-                                                                                       cloud_raw, 
-                                                                                       self.bayes_semantic_imgs,
-                                                                                       self.bayes_confidences,
-                                                                                       cloud_raw.header.stamp)
-            print('produce bayes semantic cloud ok!')
-
-        # Publihser semantic img
-        if self.sem_cloud_pub.get_num_connections() > 0:
-            if self.point_type is PointType.SEMANTIC_MAX:
-                semantic_img_msg = self.bridge.cv2_to_imgmsg(max_semantic_img, encoding="bgr8")
-                print('Todo...')
-            else:
-                #semantic_img_msg = self.bridge.cv2_to_imgmsg(self.bayes_semantic_imgs[0], encoding="bgr8")
-                print('Todo...')
-
-            self.sem_img_pub.publish(semantic_img_msg)
-
-        self.sem_cloud_pub.publish(semantic_cloud)
-"""
