@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../algo/c-cpp"
+		}
+	],
+	"settings": {
+		"python.autoComplete.extraPaths": [
+			"/home/dlonng/Documents/AI-Notes/SemanticMap/octomap_generator_ws/devel/lib/python2.7/dist-packages",
+			"/home/dlonng/Documents/AI-Notes/SemanticMap/semantic_map_ws/devel/lib/python2.7/dist-packages",
+			"/opt/ros/kinetic/lib/python2.7/dist-packages"
+		]
+	}
+}
