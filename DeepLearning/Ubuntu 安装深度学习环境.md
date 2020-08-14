@@ -134,8 +134,6 @@ nvcc -V
 cat /usr/local/cuda/include/cudnn.h | grep CUDNN_MAJOR -A 2
 ```
 
-
-
 参考博客：
 
 - https://www.cnblogs.com/pertor/p/8733010.html
