@@ -128,8 +128,6 @@ sudo chmod a+r /home/dlonng/data3/cuda-9.0/lib64/libcudnn*
 nvcc -V
 ```
 
-
-
 ```shell
 cat /usr/local/cuda/include/cudnn.h | grep CUDNN_MAJOR -A 2
 ```
