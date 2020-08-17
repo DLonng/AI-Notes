@@ -15,6 +15,9 @@
 - [octomap 中 3d-rrt 路径规划](https://blog.csdn.net/hankerbit/article/details/81117572)
 - [无人车路径规划算法 ---（2）地图](https://blog.csdn.net/weixin_40884570/article/details/104054544?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.channel_param)
 - [使用 ORBSLAM2 进行 kineticV2 稠密建图，实时转 octomap 建图以及导航](https://blog.csdn.net/lovely_yoshino/article/details/105272602)
+- [https://blog.csdn.net/crp997576280/article/details/102983855](https://blog.csdn.net/crp997576280/article/details/102983855)
+- [ROS——Gazebo 仿真 —— 四轮小车（SmartCar）详细教程](https://blog.csdn.net/qq_16775293/article/details/88189184)
+- [ROS 与 GAZEBO 实时硬件仿真（1）——urdf 的编写](https://blog.csdn.net/wubaobao1993/article/details/80947968)
 
 
 
@@ -45,7 +48,9 @@
 - [scoutrobot](https://github.com/abelmeadows/scoutrobot)
 - [ORB-SLAM-RGBD-with-Octomap](https://github.com/xiaoxifuhongse/ORB-SLAM-RGBD-with-Octomap)
 
+### 古月居
 
+- [SLAM 建图与自主避障导航 ——3.ros-navigation 机器人自主避障导航](https://www.guyuehome.com/8063)
 
 
 
@@ -65,3 +70,17 @@
 - [UAV Autonomous Navigation , 2D and 3D Mapping in ROS using Gazebo, Rviz, Hector SLAM and Octomap](https://www.youtube.com/watch?v=TtUblDNscnA)
 - [Robotics Weekends #3 - CbBot. Test of SLAM: Gmapping, Google Cartographer, Octomap](https://www.youtube.com/watch?v=EU6X1AYEksc)
 - [RRT based path planning with Octomap - YouTube](https://www.youtube.com/watch?v=lTLWTBVJb_E)
+
+
+
+### Gazebo 仿真
+
+- [gazebo 入门教程（一） 安装，UI 介绍](https://blog.csdn.net/weixin_41045354/article/details/84881498)
+- [Gazebo Tutorials](http://gazebosim.org/tutorials)
+- [ROS 探索总结（五十八）—— Gazebo 物理仿真平台](https://www.guyuehome.com/2256)
+- [URDF 和机器人模型 (一)]([https://gaoyichao.com/Xiaotu/?book=ros&title=URDF%E5%92%8C%E6%9C%BA%E5%99%A8%E4%BA%BA%E6%A8%A1%E5%9E%8B(%E4%B8%80)](https://gaoyichao.com/Xiaotu/?book=ros&title=URDF和机器人模型(一)))
+- [统一机器人描述格式 URDF](https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/chapter8/8.5.html)
+- [ROS 探索总结（二十四）—— 使用 gazebo 中的插件](https://www.guyuehome.com/388)
+- [【ROS】移动机器人导航仿真（1）——3D 建模与简单移动](http://www.jeepxie.net/article/96362.html)
+- [【ROS-Gazebo】SDF 与 URDF 的相互转换](https://www.guyuehome.com/7117)
+- [使用 Gazebo 的 GUI 创建机器人]([https://gaoyichao.com/Xiaotu/?book=ros&title=%E4%BD%BF%E7%94%A8Gazebo%E7%9A%84GUI%E5%88%9B%E5%BB%BA%E6%9C%BA%E5%99%A8%E4%BA%BA](https://gaoyichao.com/Xiaotu/?book=ros&title=使用Gazebo的GUI创建机器人))
