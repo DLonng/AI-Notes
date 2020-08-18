@@ -35,7 +35,7 @@ catkin_package(
 # https://answers.ros.org/question/237183/the-library-is-neither-a-target-nor-builtinstalled-properly/
 
 add_executable(lidar_camera_fusion
-  src/lidar_camera_fusion.cpp
+  src/origin_lidar_camera_fusion.cpp
   src/main.cpp)
 
 target_include_directories(lidar_camera_fusion PRIVATE

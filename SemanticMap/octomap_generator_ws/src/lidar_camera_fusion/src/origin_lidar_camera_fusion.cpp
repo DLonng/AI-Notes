@@ -15,7 +15,7 @@
 
 // 1: 在单独的语义回调函数中融合并发布语义点云
 // 0: 在点云回调中融合 2 种类型的语义点云
-#define SWITCH_FUSION 1
+#define SWITCH_FUSION 0
 
 // SWITCH_FUSION 设置为 0 才使用下面这 2 个开关
 // USING_MAX_SEMANTIC 0 表示在点云回调中使用 Max 类型的点云，但是不給语义信息

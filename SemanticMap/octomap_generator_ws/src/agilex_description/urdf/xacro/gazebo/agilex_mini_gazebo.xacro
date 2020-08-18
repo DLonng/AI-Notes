@@ -1,14 +1,11 @@
 <?xml version="1.0"?>
 
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro"
-    xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
-    xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
-    xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" name="robot">
+<robot name="agilex_mini"
+    xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 
     <xacro:property name="length_wheel" value="0.05" />
     <xacro:property name="radius_wheel" value="0.05" />
-    <xacro:property name="camera_link" value="0.05" />
 
     <xacro:macro name="default_inertial" params="mass">
         <inertial>
@@ -27,12 +24,12 @@
         <xacro:default_inertial mass="0.0001"/>
     </link>
 
-    <xacro:include filename="$(find agilex_description)/urdf/xacro/gazebo/robot.gazebo" />
-
     <gazebo reference="base_footprint">
         <material>Gazebo/Green</material>
         <turnGravityOff>false</turnGravityOff>
     </gazebo>
+
+    <xacro:include filename="$(find agilex_description)/urdf/xacro/gazebo/agilex_mini_gazebo.gazebo" />
 
     <joint name="base_footprint_joint" type="fixed">
         <origin xyz="0 0 0" />
@@ -164,31 +161,30 @@
         <origin rpy="-1.5707 0 0" xyz="-0.1 -0.15 0"/>
     </joint>
 
-    <!-- Camera joint -->
-    <joint name="camera_joint" type="fixed">
-        <axis xyz="0 1 0" />
-        <origin xyz="0.125 0 0.125" rpy="0 0 0"/>
+    <link name="sensor_support">
+        <visual>
+            <geometry>
+                <box size=".06 .16 .10"/>
+            </geometry>
+            <material name="white">
+                <color rgba="1 1 1 1"/>
+            </material>
+        </visual>
+    </link>
+
+    <joint name="sensor_support_joint" type="fixed">
         <parent link="base_link"/>
-        <child link="camera_link"/>
+        <child link="sensor_support"/>
+        <origin rpy="0 0 0" xyz="0.10 0 0.15"/>
     </joint>
 
-    <!-- Camera -->
-    <link name="camera_link">
-        <collision>
+    <link name="zed_camera">
+        <visual>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <box size="0.05 0.05 0.05"/>
+                <box size=".03 .14 .03"/>
             </geometry>
-        </collision>
 
-        <visual>
-            <origin xyz="0 0 0" rpy="0 0 1.5707"/>
-            <geometry>
-                 <!-- <box size="0.05 0.05 0.05"/> -->
-                 <mesh filename="package://agilex_description/meshes/kinect.dae" />
-                 <!-- <mesh filename="http://models.gazebosim.org/kinect/meshes/kinect.dae" /> -->
-                 
-            </geometry>
             <material name="red">
                 <color rgba="1 0 0 1"/>
             </material>
@@ -199,32 +195,39 @@
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
         </inertial>
-    </link>
 
-    <!-- Hokuyo joint -->
-    <joint name="hokuyo_joint" type="fixed">
-        <origin xyz="0.125 0.05 0.125" rpy="0 0 0"/>
-        <parent link="base_link"/>
-        <axis xyz="0 1 0" />
-        <child link="hokuyo_link"/>
-    </joint>
-
-    <!-- Hokuyo Laser -->
-    <link name="hokuyo_link">
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <box size="0.1 0.1 0.1"/>
+                <box size="0.05 0.05 0.05"/>
             </geometry>
         </collision>
+    </link>
 
+    <joint name="zed_joint" type="fixed">
+        <axis xyz="0 1 0" />
+        <origin xyz="0.045 0 0.02" rpy="0 0 0"/>
+        <parent link="sensor_support"/>
+        <child link="zed_camera"/>
+    </joint>
+
+    <link name="rslidar">
         <visual>
+            <geometry>
+                <cylinder length = "0.03" radius = "0.03"/>
+            </geometry>
+
+            <material name="white">
+                <color rgba="1 1 1 1"/>
+            </material>
+        </visual>
+
+        <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <!-- <mesh filename="http://models.gazebosim.org/hokuyo/meshes/hokuyo.dae"/> -->
-                <box size="0.1 0.1 0.1"/>
+                <cylinder length = "0.03" radius = "0.03"/>
             </geometry>
-        </visual>
+        </collision>
 
         <inertial>
             <mass value="1e-5" />
@@ -232,5 +235,12 @@
             <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
         </inertial>
     </link>
+
+    <joint name="rslidar_joint" type="fixed">
+        <axis xyz="0 1 0" />
+        <origin xyz="0 0 0.065" rpy="0 0 0"/>
+        <parent link="sensor_support"/>
+        <child link="rslidar"/>
+    </joint>
 
 </robot>

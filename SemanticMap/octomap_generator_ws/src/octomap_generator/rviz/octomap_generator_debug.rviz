@@ -62,7 +62,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -75,11 +75,11 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.00999999978
       Style: Flat Squares
-      Topic: /fusion_cloud
+      Topic: /semantic_cloud_max
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -95,9 +95,9 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 159
+      Max Intensity: 0
       Min Color: 0; 0; 0
-      Min Intensity: 1
+      Min Intensity: 0
       Name: PointCloud2
       Position Transformer: XYZ
       Queue Size: 10
@@ -123,55 +123,31 @@ Visualization Manager:
       Voxel Coloring: Cell Color
       Voxel Rendering: Occupied Voxels
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
-      Enabled: true
+      Enabled: false
       Max. Height Display: 3.40282347e+38
       Max. Octree Depth: 16
       Min. Height Display: -3.40282347e+38
       Name: ColorOccupancyGrid
       Octomap Topic: /octomap_local
       Queue Size: 5
-      Value: true
+      Value: false
       Voxel Alpha: 1
       Voxel Coloring: Cell Color
       Voxel Rendering: Occupied Voxels
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        aft_mapped:
-          Value: false
-        base_link:
-          Value: false
-        camera:
-          Value: true
-        camera_init:
-          Value: true
-        laser_odom:
-          Value: false
-        map:
-          Value: false
-        rslidar:
-          Value: false
       Marker Scale: 5
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        base_link:
-          rslidar:
-            {}
-        map:
-          camera_init:
-            aft_mapped:
-              {}
-            camera:
-              {}
-            laser_odom:
-              {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Class: rviz/Image
       Enabled: true
       Image Topic: /semantic_img_topic
@@ -221,25 +197,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 16.4723396
+      Distance: 4.99115896
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.23465109
-        Y: -2.11145878
+        X: 0.793305159
+        Y: -0.284344554
         Z: 2.66286879e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.705202341
+      Pitch: 0.710202336
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.93914604
+      Yaw: 3.35912347
     Saved: ~
 Window Geometry:
   Displays:

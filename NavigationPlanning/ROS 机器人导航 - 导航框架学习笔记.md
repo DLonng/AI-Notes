@@ -41,13 +41,6 @@ sudo apt-get remove ros-kinetic-navigation ros-kinetic-navigation-experimental
 
 读取地图参数，发布加载的地图主题 `/map` ([nav_msgs/OccupancyGrid](http://docs.ros.org/api/nav_msgs/html/msg/OccupancyGrid.html))
 
-### Gazebo 小车建模仿真
-
-1. 学习古月居 mbot 仿真
-2. 创建仿真功能包
-3. 根据用户手册对小车建模 URDF，xacro，sdf？
-4. 测试模型
-
 
 
 ## 问题
