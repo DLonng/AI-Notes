@@ -12,17 +12,55 @@ sudo apt install ros-kinetic-navigation
 
 ### 2. 源码编译安装
 
-推荐这种，因为可能自己要修改算法，从这个 [navigation-kinetic-devel](https://github.com/ros-planning/navigation/tree/kinetic-devel) 分支下载 zip 代码到本地，然后先使用下面的方法安装依赖：
+如果做研究，则推荐这种，因为可能自己要修改算法，先使用下面的方法安装依赖：
 
 ```shell
-# 编译过程可能会遇到找不到Bullet等依赖问题，解决这些依赖简便办法
+# 编译过程可能会遇到找不到 Bullet 等依赖问题，解决这些依赖简便办法
 # 先 apt-get 安装 ros-navigation 包，这样依赖会被自动装上 
 sudo apt-get install ros-kinetic-navigation* 
 # 再 apt-get 卸载掉 ros-navigation 包 
 sudo apt-get remove ros-kinetic-navigation ros-kinetic-navigation-experimental
 ```
 
-之所以不直接 git clone 是因为如果对 git 不熟悉的话，clone 下来的默认还是最新的版本，还需要 checkout 一次，所以直接下载 zip 比较妥当，重新 catkin_make 即可。我编译的时候第一次出现错误，然后我重新下载编译又可以了，暂时不知道为何。
+然后从 Github 下载源码有 2 种方法，建议第二种也要掌握，比较方便：
+
+#### 直接下载 zip 包
+
+如果对 git 不熟悉，可以从这个 [navigation-kinetic-devel](https://github.com/ros-planning/navigation/tree/kinetic-devel) 分支直接下载 zip 代码到本地，然后放到工作空间编译即可，不会出现错误。
+
+#### git clone 代码
+
+使用 git 命令直接下载全部代码到工作空间，然后切换到自己的 ros 版本分支：
+
+```shell
+git clone https://github.com/ros-planning/navigation.git
+```
+
+查看当前版本分支：
+
+```shell
+git branch -vv
+```
+
+```shell
+*melodic-devel 4dca437 [origin/melodic-devel] Fix #796 (#1017) 
+ kinetic-devel 3c4d04e [origin/kinetic-devel] Fix #796 (#1017)
+```
+
+当前是 melodic 版本，而我用的 kinetic，所以需要切换到 kinetic-devel 版本分支：
+
+```shell
+git checkout kinetic-devel
+```
+
+再次查看版本即可看到当前已经切换到 kinetic 版本：
+
+```shell
+* kinetic-devel 3c4d04e [origin/kinetic-devel] Fix #796 (#1017)
+  melodic-devel 4dca437 [origin/melodic-devel] Fix #796 (#1017)
+```
+
+同样在工作空间 catkin_make 编译即可，不会出错。
 
 ### 3. 安装局部规划器
 
