@@ -35,10 +35,17 @@ catkin_package(
 # https://answers.ros.org/question/237183/the-library-is-neither-a-target-nor-builtinstalled-properly/
 
 add_executable(lidar_camera_fusion
-  src/origin_lidar_camera_fusion.cpp
+  src/lidar_camera_fusion.cpp
   src/main.cpp)
 
+add_executable(mini_gazebo_lidar_camera_fusion
+  src/mini_gazebo_lidar_camera_fusion.cpp)
+
 target_include_directories(lidar_camera_fusion PRIVATE
+  ${catkin_INCLUDE_DIRS}
+  include)
+
+target_include_directories(mini_gazebo_lidar_camera_fusion PRIVATE
   ${catkin_INCLUDE_DIRS}
   include)
 
@@ -47,5 +54,11 @@ target_link_libraries(lidar_camera_fusion
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
 
+target_link_libraries(mini_gazebo_lidar_camera_fusion
+  ${OpenCV_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES})
+
 add_dependencies(lidar_camera_fusion semantic_msg_gencpp)
+add_dependencies(mini_gazebo_lidar_camera_fusion semantic_msg_gencpp)
 #add_dependencies(lidar_camera_fusion ${catkin_EXPORTED_TARGETS})

@@ -40,7 +40,7 @@ rostopic list
 - https://www.cnblogs.com/tanshengjiang/p/12293024.html
 - https://blog.csdn.net/hitgavin/article/details/51997379)
 
-### RVIZ 显示 URDF 机器人模型
+#### RVIZ 显示 URDF 机器人模型
 
 首先检查模型是否正常：
 
@@ -120,3 +120,13 @@ GazeboRosControlPlugin missing <legacyModeNS> while using DefaultRobotHWSim, def
 参考博客：
 
 - https://answers.ros.org/question/292444/gazebo_ros_control-plugin-gazeboroscontrolplugin-missing-legacymodens-defaultrobothwsim/
+
+### RVIZ 突然不能正常显示模型
+
+如果之前一直可以，突然不行，可以重启电脑
+
+### Gazebo 小车不走
+
+检查轮子是否悬空了
+
+小车轮子半径 和 base_link 的一半，要合适接地面 

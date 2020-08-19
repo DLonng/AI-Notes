@@ -1,0 +1,12 @@
+camera:
+    width: 672
+    height: 376
+
+semantic_generator:
+    point_type: 1
+    image_raw_topic: "/camera/left/image_raw"
+    cloud_raw_topic: "/rslidar_points"
+    semantic_img_topic: "/semantic_img"
+    semantic_cloud_topic: "/semantic_cloud_max"
+    # 换成自己机器上这个包中 yaml 文件的绝对路径
+    calibration_file: "/home/dlonng/Documents/AI-Notes/SemanticMap/octomap_generator_ws/src/semantic_cloud/params/2020-06-02-16-25-autoware_lidar_left_camera_calibration.yaml"

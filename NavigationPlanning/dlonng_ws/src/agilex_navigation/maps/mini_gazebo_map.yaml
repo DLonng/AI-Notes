@@ -1,0 +1,7 @@
+image: mini_gazebo_map.pgm
+resolution: 0.150000
+origin: [-7.200000, -7.200000, -nan]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+
