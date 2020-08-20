@@ -99,15 +99,28 @@ rosdep install teb_local_planner
 
 ### 新建自己的导航包 agilex_navigation
 
-agilex_navigation 用来存储导航用的配置文件和脚本。
+agilex_navigation 用来存储导航用的配置文件和脚本，在内部创建如下文件：
 
 
 
+### 配置 AMCL 参数
 
+3D 雷达能够使用 AMCL 吗？
 
+参考链接：
 
+- [Using PointCloud in AMCL [closed]](https://answers.ros.org/question/196010/using-pointcloud-in-amcl/)
+- [pointcloud_to_laserscan](http://wiki.ros.org/pointcloud_to_laserscan)
 
+### 配置 move_base 参数
 
+可以配置使用 3D 雷达点云话题！
+
+配置导航参考的博客，主要看官网文档：
+
+- https://www.guyuehome.com/8063
+- https://www.guyuehome.com/281
+- http://wiki.ros.org/navigation
 
 ### [map_server](http://wiki.ros.org/map_server)
 
