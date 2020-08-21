@@ -1,0 +1,14 @@
+<launch>
+    <!-- 运行 point_to_laser 节点 -->
+    <include file="$(find agilex_navigation)/launch/agilex_pointcloud_to_laserscan.launch"/>
+
+    <!-- 运行 gmapping 节点 -->
+    <include file="$(find agilex_navigation)/launch/agilex_gmapping.launch"/>
+
+    <!-- 运行 move_base 节点 -->
+    <include file="$(find agilex_navigation)/launch/agilex_mini_move_base.launch"/>
+
+    <!-- 运行 rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find agilex_navigation)/rviz/agilex_mini_nav.rviz"/>
+
+</launch>

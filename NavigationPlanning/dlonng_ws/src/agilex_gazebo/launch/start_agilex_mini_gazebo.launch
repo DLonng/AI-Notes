@@ -24,12 +24,16 @@
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
 
     <!-- 运行 robot_state_publisher 节点，发布 tf  -->
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"  output="screen" >
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen">
         <param name="publish_frequency" type="double" value="50.0" />
     </node>
 
     <!-- 在 gazebo 中加载机器人模型，会发布 /odom /cmd_vel /tf 等机器人底盘发布的话题 -->
     <!-- robot_description 必须存在，不要换成别的名字 -->
-    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-          args="-urdf -model agilex -param robot_description"/>
+    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -model agilex -param robot_description"/>
+
+    <node name="agilex_teleop" pkg="agilex_teleop" type="agilex_teleop.py" output="screen" launch-prefix="gnome-terminal -e">
+        <param name="scale_linear" value="1.0" type="double"/>
+        <param name="scale_angular" value="0.4" type="double"/>
+    </node>
 </launch>

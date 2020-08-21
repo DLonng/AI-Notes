@@ -1,0 +1,15 @@
+<launch>
+
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" clear_params="true">
+        <rosparam file="$(find agilex_navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find agilex_navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find agilex_navigation)/config/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find agilex_navigation)/config/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find agilex_navigation)/config/base_local_planner_params.yaml" command="load" />
+
+        <!-- octomap server 发布的 2D 网格地图叫 projected_map，move_base 默认订阅的是 map，所以这里 remap 一下 -->
+        <remap from="map" to="projected_map"/>
+        
+    </node>
+
+</launch>
