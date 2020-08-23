@@ -61,6 +61,7 @@
         </collision>   
         <xacro:default_inertial mass="10"/>
     </link>
+    
     <joint name="imu_joint" type="fixed">
         <origin xyz="${imu_offset_x} ${imu_offset_y} ${imu_offset_z}" rpy="0 0 0" />
         <parent link="base_link"/>

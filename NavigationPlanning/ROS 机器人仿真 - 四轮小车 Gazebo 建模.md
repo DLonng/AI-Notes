@@ -32,7 +32,41 @@
 <xacro:default_inertial mass="1"/>
 ```
 
-#### 添加 stere camera 插件
+## 二、Gazebo 添加传感器插件
+
+Gazebo 添加插件官方文档：[Tutorial: Using Gazebo plugins with ROS](http://gazebosim.org/tutorials?tut=ros_gzplugins#Tutorial:UsingGazebopluginswithROS)
+
+#### 2.1 添加四轮驱动插件
+
+```xml
+<!-- Drive controller -->
+  <gazebo>
+    <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+      <rosDebugLevel>Debug</rosDebugLevel>
+      <publishWheelTF>true</publishWheelTF>
+      <publishTf>1</publishTf>
+      <publishWheelJointState>true</publishWheelJointState>
+      <alwaysOn>true</alwaysOn>
+      <updateRate>100.0</updateRate>
+      <robotNamespace>/</robotNamespace>
+      <leftFrontJoint>base_to_wheel1</leftFrontJoint>
+      <rightFrontJoint>base_to_wheel3</rightFrontJoint>
+      <leftRearJoint>base_to_wheel2</leftRearJoint>
+      <rightRearJoint>base_to_wheel4</rightRearJoint>
+      <wheelSeparation>0.540</wheelSeparation>
+      <wheelDiameter>0.140</wheelDiameter>
+      <wheelTorque>30</wheelTorque>
+      <wheelAcceleration>1.8</wheelAcceleration>
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <robotBaseFrame>base_footprint</robotBaseFrame>
+      <broadcastTF>1</broadcastTF>
+    </plugin>
+  </gazebo>
+```
+
+#### 2.2 添加 stere camera 插件
 
 ```xml
 <!-- camera_link -->
@@ -100,13 +134,11 @@
   </gazebo>
 ```
 
-
-
 参考博客：
 
 - http://gazebosim.org/tutorials?tut=ros_gzplugins#Camera
 
-#### 添加 Robosense 激光雷达插件
+#### 2.3 添加 Robosense 激光雷达插件
 
 ```xml
 <!-- Gazebo requires the rslidar_gazebo_plugins package -->
@@ -156,12 +188,44 @@
   </gazebo>
 ```
 
-
-
 参考博客：
 
 - https://blog.csdn.net/weixin_44172961/article/details/103493390
 - https://github.com/tomlogan501/robosense_simulator
 
+#### 2.4 添加 IMU 插件
 
+```xml
+  <!-- imu link -->
+  <gazebo reference="imu_link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Red</material>
+  </gazebo>
 
+  <gazebo reference="imu_link">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
+      <topic>__default_topic__</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <topicName>/imu/data</topicName>
+        <bodyName>imu_link</bodyName>
+        <updateRateHZ>100.0</updateRateHZ>
+        <gaussianNoise>0.0</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>imu_link</frameName>
+        <initialOrientationAsReference>false</initialOrientationAsReference>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+```
+
+参考博客：
+
+- https://blog.csdn.net/weixin_43455581/article/details/106378239#SensorPlugin_29
+- http://gazebosim.org/tutorials?tut=ros_gzplugins#IMU(GazeboRosImu)

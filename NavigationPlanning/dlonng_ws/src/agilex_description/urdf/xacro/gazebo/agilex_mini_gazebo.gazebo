@@ -56,13 +56,6 @@
     <material>Gazebo/Red</material>
   </gazebo>
 
-  <!-- rslidar link -->
-  <gazebo reference="rslidar">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-    <material>Gazebo/Red</material>
-  </gazebo>
-
   <gazebo reference="zed_camera">
     <sensor type="multicamera" name="stereo_camera">
       <update_rate>20.0</update_rate>
@@ -119,7 +112,13 @@
     </sensor>
   </gazebo>
 
-  <!-- Gazebo requires the rslidar_gazebo_plugins package -->
+  <!-- rslidar link -->
+  <gazebo reference="rslidar">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Red</material>
+  </gazebo>
+
   <gazebo reference="rslidar">
     <sensor type="ray" name="rslidar">
       <pose>0 0 0 0 0 0</pose>
@@ -165,21 +164,44 @@
     </sensor>
   </gazebo>
 
+  <!-- imu link -->
+  <gazebo reference="imu_link">
+    <mu1>0.2</mu1>
+    <mu2>0.2</mu2>
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <gazebo reference="imu_link">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
+      <topic>__default_topic__</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <topicName>/imu/data</topicName>
+        <bodyName>imu_link</bodyName>
+        <updateRateHZ>100.0</updateRateHZ>
+        <gaussianNoise>0.0</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>imu_link</frameName>
+        <initialOrientationAsReference>false</initialOrientationAsReference>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
   <!-- Drive controller -->
   <gazebo>
     <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
       <rosDebugLevel>Debug</rosDebugLevel>
-
       <publishWheelTF>true</publishWheelTF>
-
-      <publishTf>1</publishTf>
-
+      <!-- 0 no send /odom -->
+      <publishTf>0</publishTf>
       <publishWheelJointState>true</publishWheelJointState>
-
       <alwaysOn>true</alwaysOn>
-
       <updateRate>100.0</updateRate>
-
       <robotNamespace>/</robotNamespace>
 
       <leftFrontJoint>base_to_wheel1</leftFrontJoint>
@@ -189,20 +211,15 @@
 
       <wheelSeparation>0.540</wheelSeparation>
       <wheelDiameter>0.140</wheelDiameter>
-
       <!-- <torque>2</torque> -->
       <wheelTorque>30</wheelTorque>
       <wheelAcceleration>1.8</wheelAcceleration>
-
       <commandTopic>cmd_vel</commandTopic>
-
       <odometryTopic>odom</odometryTopic>
-
       <odometryFrame>odom</odometryFrame>
-
       <robotBaseFrame>base_footprint</robotBaseFrame>
-
-      <broadcastTF>1</broadcastTF>
+      <!-- 0 no send /odom -->
+      <broadcastTF>0</broadcastTF>
     </plugin>
   </gazebo>
 

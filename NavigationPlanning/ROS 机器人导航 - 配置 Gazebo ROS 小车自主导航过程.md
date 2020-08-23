@@ -242,7 +242,7 @@ rosrun map_server map_saver -f map_name map:=/projected_map
 octomap_saver -f octomap_name.ot
 ```
 
-需要完成的工作：给 `octomap_generator` 增加过滤地面和投影 2D 网格地图的功能！
+**！！！需要完成的工作**：给 `octomap_generator` 增加过滤地面和投影 2D 网格地图的功能！
 
 #### 3.1.2 加载地图并导航
 
@@ -277,7 +277,7 @@ octomap_saver -f octomap_name.ot
 
 实验结果：可以实验从 A 点走到 B 点。
 
-### 3.2 实验二：Gazebo -  gmapping + 导航
+### 3.2 实验二：Gazebo -  gmapping 导航
 
 重启 roscore：
 
@@ -303,17 +303,57 @@ roslaunch mbot_navigation gmapping.launch
 roslaunch agilex_navigation start_agilex_mini_nav_with_gmapping.launch
 ```
 
-### 3.3 实验三：Gazebo -  小车 odom + 导航
+### 3.3 实验三：Gazebo -  轮式 odom 导航
+
+可以实现导航，但是只能选择雷达范围内的导航目标点。
 
 
 
-### 3.3 实验 X：小车测试 - 使用导航地图
+#### 3.4 实验四：Gazebo - loam 导航
+
+把 odom 换成 camera_init，并禁止小车发送 odom。
+
+tf 关系：
+
+- map -> camera_init
+- camera -> base_footprint
+
+```xml
+    <node pkg="tf" type="static_transform_publisher" name="camera_init_to_map"  args="0 0 0 1.570795   0        1.570795 /map /camera_init 10" />
+    <node pkg="tf" type="static_transform_publisher" name="base_link_to_camera" args="0 0 0 -1.570795 -1.570795 0 /camera /base_footprint 10" />
+```
+
+代价地图配置：
+
+- global：/map
+- local：/camera_init
+
+move_base launch 修改：
+
+```xml
+<remap from="odom" to="camera_init"/>
+```
+
+可以导航，但是会漂！
+
+### 3.4 实验四：Mini 测试：轮式 odom 导航
+
+- 安装 octomap 再卸载
+- 安装 navigation 再卸载
 
 
 
 
 
-### 3.4 实验 X：小车测试 - SLAM + 导航
+
+
+
+
+### 3.x 实验 X：小车测试 - 使用导航地图
+
+
+
+### 3.x 实验 X：小车测试 - SLAM + 导航
 
 
 

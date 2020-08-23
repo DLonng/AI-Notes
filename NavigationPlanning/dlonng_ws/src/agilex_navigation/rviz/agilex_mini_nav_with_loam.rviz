@@ -47,7 +47,7 @@ Visualization Manager:
         Z: 0
       Plane: XY
       Plane Cell Count: 80
-      Reference Frame: odom
+      Reference Frame: map
       Value: true
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
@@ -133,6 +133,11 @@ Visualization Manager:
           Show Trail: false
           Value: true
         base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        imu_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -340,11 +345,11 @@ Visualization Manager:
           Value: true
         camera_init:
           Value: true
+        imu_link:
+          Value: true
         laser_odom:
           Value: true
         map:
-          Value: true
-        odom:
           Value: true
         rslidar:
           Value: true
@@ -367,24 +372,29 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
-          odom:
-            base_footprint:
-              base_link:
-                camera_init:
-                  {}
-                sensor_support:
-                  rslidar:
+          camera_init:
+            aft_mapped:
+              {}
+            camera:
+              base_footprint:
+                base_link:
+                  imu_link:
                     {}
-                  zed_camera:
+                  sensor_support:
+                    rslidar:
+                      {}
+                    zed_camera:
+                      {}
+                  wheel_1:
                     {}
-                wheel_1:
-                  {}
-                wheel_2:
-                  {}
-                wheel_3:
-                  {}
-                wheel_4:
-                  {}
+                  wheel_2:
+                    {}
+                  wheel_3:
+                    {}
+                  wheel_4:
+                    {}
+            laser_odom:
+              {}
       Update Interval: 0
       Value: true
   Enabled: true

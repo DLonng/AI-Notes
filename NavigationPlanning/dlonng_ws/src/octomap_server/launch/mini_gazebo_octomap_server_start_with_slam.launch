@@ -8,7 +8,7 @@
 
     <!-- name of the fixed frame, needs to be "/map" for SLAM -->
     <!-- 静态全局地图的 frame_id，但在增量式构建地图时，需要提供输入的点云帧和静态全局帧之间的 TF 变换 -->
-    <param name = "frame_id" type = "string" value = "odom" />
+    <param name = "frame_id" type = "string" value = "map" />
 
     <!-- set min to speed up! -->
     <param name = "sensor_model/max_range" value = "15.0" />
@@ -16,7 +16,7 @@
     <!-- 机器人坐标系 base_link，滤除地面需要该 frame -->
     <param name = "base_frame_id" type = "string" value = "base_link" />
 
-    <!-- filter ground plane, distance value should be big! 项目并不需要滤除地面 -->
+    <!-- filter ground plane, distance value should be big! -->
 	  <param name = "filter_ground" type = "bool" value = "true" />
     <param name = "ground_filter/distance" type = "double" value = "0.1" />
     <!-- 分割地面的 Z 轴阈值 value 值 -->
