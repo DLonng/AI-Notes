@@ -1,5 +1,6 @@
 local_costmap:  
-  global_frame: /odom #/camera_init
+  global_frame: /odom
+  #global_frame: /camera_init
   robot_base_frame: base_link
   update_frequency: 5.0 
   publish_frequency: 2.0

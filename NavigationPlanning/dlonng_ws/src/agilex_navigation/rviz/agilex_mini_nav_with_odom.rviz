@@ -5,8 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /RobotModel1/Links1/base_footprint1
-        - /Map1
       Splitter Ratio: 0.652661026
     Tree Height: 671
   - Class: rviz/Selection
@@ -128,12 +126,12 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_footprint:
+        base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        base_link:
+        imu_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -331,13 +329,13 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_footprint:
-          Value: true
         base_link:
           Value: true
-        odom:
+        imu_link:
           Value: true
-        projected_map:
+        map:
+          Value: true
+        odom:
           Value: true
         rslidar:
           Value: true
@@ -359,23 +357,24 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        projected_map:
+        map:
           odom:
-            base_footprint:
-              base_link:
-                sensor_support:
-                  rslidar:
-                    {}
-                  zed_camera:
-                    {}
-                wheel_1:
+            base_link:
+              imu_link:
+                {}
+              sensor_support:
+                rslidar:
                   {}
-                wheel_2:
+                zed_camera:
                   {}
-                wheel_3:
-                  {}
-                wheel_4:
-                  {}
+              wheel_1:
+                {}
+              wheel_2:
+                {}
+              wheel_3:
+                {}
+              wheel_4:
+                {}
       Update Interval: 0
       Value: true
   Enabled: true
@@ -398,25 +397,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 19.7382278
+      Distance: 13.4510498
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -2.50986648
-        Y: -9.90848446
+        X: 0.204271197
+        Y: -3.73461437
         Z: 0
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.11539793
+      Pitch: 1.56979632
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 4.24541426
+      Yaw: 4.50541878
     Saved: ~
 Window Geometry:
   Displays:

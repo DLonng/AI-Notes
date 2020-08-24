@@ -196,10 +196,10 @@
   <gazebo>
     <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
       <rosDebugLevel>Debug</rosDebugLevel>
-      <publishWheelTF>true</publishWheelTF>
-      <!-- 0 no send /odom -->
-      <publishTf>0</publishTf>
-      <publishWheelJointState>true</publishWheelJointState>
+      <publishWheelTF>false</publishWheelTF>
+      <!-- 0 no send /tf -->
+      <publishTf>1</publishTf>
+      <publishWheelJointState>false</publishWheelJointState>
       <alwaysOn>true</alwaysOn>
       <updateRate>100.0</updateRate>
       <robotNamespace>/</robotNamespace>
@@ -217,9 +217,9 @@
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
-      <robotBaseFrame>base_footprint</robotBaseFrame>
+      <robotBaseFrame>base_link</robotBaseFrame>
       <!-- 0 no send /odom -->
-      <broadcastTF>0</broadcastTF>
+      <broadcastTF>1</broadcastTF>
     </plugin>
   </gazebo>
 

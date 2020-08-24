@@ -30,28 +30,7 @@
         </inertial>
     </xacro:macro>
 
-    <link name="base_footprint">
-        <visual>
-            <geometry>
-                <box size="0.001 0.001 0.001"/>
-            </geometry>
-            <origin rpy="0 0 0" xyz="0 0 0"/>
-        </visual>
-        <xacro:default_inertial mass="0.0001"/>
-    </link>
-
-    <gazebo reference="base_footprint">
-        <material>Gazebo/Green</material>
-        <turnGravityOff>false</turnGravityOff>
-    </gazebo>
-
     <xacro:include filename="$(find agilex_description)/urdf/xacro/gazebo/agilex_mini_gazebo.gazebo" />
-
-    <joint name="base_footprint_joint" type="fixed">
-        <origin xyz="0 0 0" />
-        <parent link="base_footprint" />
-        <child link="base_link" />
-    </joint>
 
     <link name="base_link">
         <visual>

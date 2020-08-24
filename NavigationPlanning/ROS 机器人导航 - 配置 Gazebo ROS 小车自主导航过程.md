@@ -177,7 +177,7 @@ map_server 用来给 move_base 提供导航用的 2D 网格地图 `/map` ([nav_m
 
 ## 三、自主导航实验
 
-### 3.1 实验一：Gazebo - 使用导航地图
+### 3.1 实验一：Gazebo - 地图导航
 
 #### 3.1.1 从八叉树构建 2D 网格地图
 
@@ -277,35 +277,13 @@ octomap_saver -f octomap_name.ot
 
 实验结果：可以实验从 A 点走到 B 点。
 
-### 3.2 实验二：Gazebo -  gmapping 导航
-
-重启 roscore：
-
-```shell
-roscore
-```
-
-启动 gazebo 仿真：
-
-```shell
-roslaunch agilex_gazebo start_agilex_mini_gazebo.launch
-```
-
-启动 mbot 包里面的 gmapping：
-
-```shell
-roslaunch mbot_navigation gmapping.launch
-```
-
-启动 mini_nav 导航：
-
-```shell
-roslaunch agilex_navigation start_agilex_mini_nav_with_gmapping.launch
-```
-
-### 3.3 实验三：Gazebo -  轮式 odom 导航
+### 3.2 实验二：Gazebo -  odom 导航
 
 可以实现导航，但是只能选择雷达范围内的导航目标点。
+
+### 3.5 实验三：Gazebo -  loam 导航
+
+会漂，不能正确导航。
 
 
 
@@ -336,10 +314,7 @@ move_base launch 修改：
 
 可以导航，但是会漂！
 
-### 3.4 实验四：Mini 测试：轮式 odom 导航
-
-- 安装 octomap 再卸载
-- 安装 navigation 再卸载
+### 3.4 实验四：小车测试 - odom 导航
 
 
 
@@ -357,15 +332,64 @@ move_base launch 修改：
 
 
 
+
+
+### 3.x 实验二：Gazebo -  gmapping 导航
+
+重启 roscore：
+
+```shell
+roscore
+```
+
+启动 gazebo 仿真：
+
+```shell
+roslaunch agilex_gazebo start_agilex_mini_gazebo.launch
+```
+
+启动 mbot 包里面的 gmapping：
+
+```shell
+roslaunch mbot_navigation gmapping.launch
+```
+
+启动 mini_nav 导航：
+
+```shell
+roslaunch agilex_navigation start_agilex_mini_nav_with_gmapping.launch
+```
+
 ## X、遇到的问题
 
 - 一边 SLAM 一边导航还需要使用 AMCL 吗？不需要，一边定位一边导航只需要使用 SLAM 和 move_base 即可
 - `/odom` 从哪里订阅？
 - `/odom` 的 tf 和 SLAM 定位的 tf 有和不同？
 
+#### 1 Unable to get starting pose of robot, unable to create global plan
 
+增大 transform_tolerance 参数：
 
+```xml
+global_costmap:
+   global_frame: /map
+   robot_base_frame: base_link
+   update_frequency: 1.0
+   publish_frequency: 1.0
+   static_map: true
+   rolling_window: false
+   resolution: 0.01
+   transform_tolerance: 3.0
+   map_type: costmap
+```
 
+参考链接：
+
+- https://answers.ros.org/question/58796/move_base-warning-unable-to-get-starting-pose-of-robot-unable-to-create-global-plan/
+
+#### 2 TF 中不要存在单独的帧节点
+
+把 gazebo 中 odom 去掉，lab3 的导航不会报 Unable to get starting pose of robot, unable to create global plan 错了。
 
 
 
