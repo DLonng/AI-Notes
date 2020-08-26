@@ -1,11 +1,16 @@
 #include <cmath>
-#include <cstring> // For std::memcpy
+#include <cstring>
+#include <sstream>
+
 #include <octomap_generator/octomap_generator_ros.h>
 #include <octomap_msgs/conversions.h>
+
+#include <nav_msgs/OccupancyGrid.h>
+#include <pcl/filters/radius_outlier_removal.h>
+
 #include <pcl/conversions.h>
 #include <pcl_ros/impl/transforms.hpp>
 #include <pcl_ros/transforms.h>
-#include <sstream>
 
 #define TEST_VEL 0
 
@@ -41,8 +46,11 @@ OctomapGeneratorNode::OctomapGeneratorNode(ros::NodeHandle& nh)
     reset();
 
     // 发布全局地图和局部地图
-    fullmap_pub_ = nh_.advertise<octomap_msgs::Octomap>("octomap_full", 1, true);
-    local_map_pub = nh_.advertise<octomap_msgs::Octomap>("octomap_local", 1, true);
+    fullmap_pub_ = nh_.advertise<octomap_msgs::Octomap>("octomap_generator_full", 1, true);
+    local_map_pub = nh_.advertise<octomap_msgs::Octomap>("octomap_generator_local", 1, true);
+
+    bool latchedTopics = true;
+    grid_map_pub = nh_.advertise<nav_msgs::OccupancyGrid>("octomap_generator_projected_map", 5, latchedTopics);
 
     // 订阅小车的状态，获取线速度和角速度
     std::string scout_status;
@@ -76,7 +84,10 @@ void OctomapGeneratorNode::reset()
     nh_.getParam("/octomap/occupancy_thres", occupancy_thres_);
     nh_.getParam("/octomap/prob_hit", prob_hit_);
     nh_.getParam("/octomap/prob_miss", prob_miss_);
-    nh_.getParam("/tree_type", tree_type_);
+    nh_.getParam("/octomap/tree_type", tree_type_);
+
+    nh_.getParam("/octomap/outrem_radius", m_outrem_radius);
+    nh_.getParam("/octomap/outrem_neighbors", m_outrem_neighbors);
 
     octomap_generator_->setClampingThresMin(clamping_thres_min_);
     octomap_generator_->setClampingThresMax(clamping_thres_max_);
@@ -101,7 +112,7 @@ void OctomapGeneratorNode::reset()
 bool OctomapGeneratorNode::toggleUseSemanticColor(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
 {
     octomap_generator_->setUseSemanticColor(!octomap_generator_->isUseSemanticColor());
-    
+
     if (octomap_generator_->isUseSemanticColor())
         ROS_INFO("Full Octomap using semantic color");
     else
@@ -113,7 +124,7 @@ bool OctomapGeneratorNode::toggleUseSemanticColor(std_srvs::Empty::Request& requ
         ROS_ERROR("Error serializing Full OctoMap");
 
     local_octomap_generator->setUseSemanticColor(!local_octomap_generator->isUseSemanticColor());
-    
+
     if (local_octomap_generator->isUseSemanticColor())
         ROS_INFO("Local Octomap using semantic color");
     else
@@ -133,6 +144,22 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     // Create the filtering object
     pcl::PCLPointCloud2::Ptr cloud(new pcl::PCLPointCloud2());
     pcl_conversions::toPCL(*cloud_msg, *cloud);
+
+    // 对一帧融合后的点云进行半径滤波
+    pcl::RadiusOutlierRemoval<pcl::PCLPointCloud2> outrem;
+
+    // 设置输入点云，这里要传递指针，所以做个 share_ptr 的拷贝
+    outrem.setInputCloud(cloud);
+
+    // 设置滤波半径，launch 中配置
+    outrem.setRadiusSearch(m_outrem_radius);
+
+    // 设置近邻数量，launch 中配置
+    outrem.setMinNeighborsInRadius(m_outrem_neighbors);
+
+    // 执行半径滤波
+    outrem.filter(*cloud);
+
     // Get tf transform
     tf::StampedTransform sensorToWorldTf;
     try {
@@ -180,6 +207,11 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
         local_map_pub.publish(local_map_msg);
     else
         ROS_ERROR("Error serializing Local OctoMap");
+}
+
+void OctomapGeneratorNode::FilterGroundPlane(const PCLSemanticsMax& pc, PCLSemanticsMax& ground, PCLSemanticsMax& nonground) const
+{
+    
 }
 
 void OctomapGeneratorNode::ScoutStatusCallback(const scout_msgs::ScoutStatus::ConstPtr& scout_status)

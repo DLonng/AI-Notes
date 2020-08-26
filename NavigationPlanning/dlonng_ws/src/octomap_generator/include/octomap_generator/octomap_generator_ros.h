@@ -55,6 +55,7 @@ public:
 
     void ScoutStatusCallback(const scout_msgs::ScoutStatus::ConstPtr& scout_status);
 
+    void FilterGroundPlane(const PCLSemanticsMax& pc, PCLSemanticsMax& ground, PCLSemanticsMax& nonground) const ;
 protected:
     OctomapGeneratorBase* octomap_generator_; ///<Octomap instance pointer
     ros::ServiceServer service_; ///<ROS service to toggle semantic color display
@@ -87,6 +88,12 @@ protected:
     float linear_velocity;
     float angular_velocity;
     ros::Subscriber sub_scout_status;
+
+    ros::Publisher grid_map_pub;
+
+    // RadiusOutlierRemoval
+    double m_outrem_radius;
+    int m_outrem_neighbors;
 
 private:
     static const std::string kNodeName;

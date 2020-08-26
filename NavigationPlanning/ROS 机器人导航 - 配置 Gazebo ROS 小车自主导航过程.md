@@ -385,7 +385,51 @@ global_costmap:
 
 把 gazebo 中 odom 去掉，lab3 的导航不会报 Unable to get starting pose of robot, unable to create global plan 错了。
 
+#### 3 roslaunch 启动失败
 
+偶然遇到 octomap_generator 启动失败：
+
+![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/ros_error_process_died.png)
+
+原因是我安装了多个可能会冲突的 pcl：
+
+```shell
+/usr/bin/ld: warning: libpcl_sample_consensus.so.1.7, needed by /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/libpcl_filters.so, may conflict with libpcl_sample_consensus.so.1.8
+/usr/bin/ld: warning: libpcl_search.so.1.7, needed by /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/libpcl_filters.so, may conflict with libpcl_search.so.1.8
+/usr/bin/ld: warning: libpcl_kdtree.so.1.7, needed by /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/libpcl_filters.so, may conflict with libpcl_kdtree.so.1.8
+/usr/bin/ld: warning: libpcl_octree.so.1.7, needed by /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/libpcl_filters.so, may conflict with libpcl_octree.so.1.8
+/usr/bin/ld: warning: libpcl_features.so.1.7, needed by /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/libpcl_recognition.so, may conflict with libpcl_features.so.1.8
+/usr/bin/ld: warning: libpcl_common.so.1.8, needed by /usr/local/lib/libpcl_kdtree.so, may conflict with libpcl_common.so.1.7
+/usr/bin/ld: warning: libpcl_filters.so.1.8, needed by /usr/local/lib/libpcl_features.so, may conflict with libpcl_filters.so.1.7
+```
+
+并且我在 CMakeLists.txt 中链接了自己安装的 pcl-1.8，解决方法很简单，去掉 CMakeLists.txt 中链接 pcl-1.8 的规则，只使用 ros 自带的 pcl-1.7 即可：
+
+```cmake
+#find_package(PCL REQUIRED QUIET COMPONENTS common sample_consensus io segmentation filters)
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+  #${PCL_INCLUDE_DIRS}
+  ${OCTOMAP_INCLUDE_DIRS}
+)
+
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS ${PACKAGE_DEPENDENCIES}
+  DEPENDS OCTOMAP #PCL
+)
+
+set(LINK_LIBS
+  ${OCTOMAP_LIBRARIES}
+  ${catkin_LIBRARIES}
+  #${PCL_LIBRARIES}
+)
+```
+
+还是有问题！
 
 
 

@@ -3,6 +3,20 @@ project(octomap_generator)
 
 add_compile_options(-std=c++11)
 
+# SET OCTOMAP_OMP to disable/enable OPENMP (experimental for octomap, default disabled)
+SET(OCTOMAP_OMP FALSE CACHE BOOL "Enable/disable OpenMP parallelization")
+
+IF(DEFINED ENV{OCTOMAP_OMP})
+  SET(OCTOMAP_OMP $ENV{OCTOMAP_OMP})
+ENDIF(DEFINED ENV{OCTOMAP_OMP})
+
+IF(OCTOMAP_OMP)
+  FIND_PACKAGE( OpenMP REQUIRED)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+ENDIF(OCTOMAP_OMP)
+
 set(PACKAGE_DEPENDENCIES
   roscpp
   sensor_msgs
@@ -10,20 +24,21 @@ set(PACKAGE_DEPENDENCIES
   pcl_conversions
   std_srvs
   octomap_msgs
-  octomap_ros
   scout_msgs
   std_msgs
 )
 
 
-find_package(catkin REQUIRED COMPONENTS ${PACKAGE_DEPENDENCIES})
+find_package(PCL REQUIRED QUIET COMPONENTS common sample_consensus io segmentation filters)
 
 find_package(octomap REQUIRED)
 
+find_package(catkin REQUIRED COMPONENTS ${PACKAGE_DEPENDENCIES})
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
   ${OCTOMAP_INCLUDE_DIRS}
 )
 
@@ -31,12 +46,13 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS ${PACKAGE_DEPENDENCIES}
-  DEPENDS OCTOMAP
+  DEPENDS OCTOMAP PCL
 )
 
 set(LINK_LIBS
   ${OCTOMAP_LIBRARIES}
   ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
 )
 
 add_executable(octomap_generator

@@ -1,0 +1,11 @@
+<launch>
+  
+  <include file = "$(find lidar_camera_fusion)/launch/lidar_camera_fusion_no_msg.launch" />
+
+  <include file = "$(find octomap_server)/launch/octomap_server_start.launch" />
+
+  <node pkg = "rviz" type = "rviz" name = "dlonng_octomap_debug_rviz" respawn = "false" output = "screen" args = "-d $(find octomap_server)/rviz/octomap_server_debug.rviz"/>
+  
+  <node pkg = "tf2_ros" type = "static_transform_publisher" name = "dlonng_static_test_broadcaster" args = "0 0 0 0 0 0 base_link rslidar" />
+
+</launch>

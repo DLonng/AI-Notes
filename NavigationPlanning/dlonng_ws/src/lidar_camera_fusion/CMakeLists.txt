@@ -39,14 +39,14 @@ add_executable(lidar_camera_fusion
   src/main.cpp)
 
 # 添加新的编译输出，后面也需要链接头文件和库文件，否则会提示找不到文件
-add_executable(mini_gazebo_lidar_camera_fusion
-  src/mini_gazebo_lidar_camera_fusion.cpp)
+add_executable(lidar_camera_fusion_no_msg
+  src/lidar_camera_fusion_no_msg.cpp)
 
 target_include_directories(lidar_camera_fusion PRIVATE
   ${catkin_INCLUDE_DIRS}
   include)
 
-target_include_directories(mini_gazebo_lidar_camera_fusion PRIVATE
+target_include_directories(lidar_camera_fusion_no_msg PRIVATE
   ${catkin_INCLUDE_DIRS}
   include)
 
@@ -55,11 +55,9 @@ target_link_libraries(lidar_camera_fusion
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
 
-target_link_libraries(mini_gazebo_lidar_camera_fusion
+target_link_libraries(lidar_camera_fusion_no_msg
   ${OpenCV_LIBRARIES}
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
 
 add_dependencies(lidar_camera_fusion semantic_msg_gencpp)
-add_dependencies(mini_gazebo_lidar_camera_fusion semantic_msg_gencpp)
-#add_dependencies(lidar_camera_fusion ${catkin_EXPORTED_TARGETS})
