@@ -38,7 +38,7 @@
 
     <!-- topic from where pointcloud2 messages are subscribed -->
     <!-- 这句话的意思是把当前节点订阅的主题名称从 cloud_in 变为 /pointcloud/output -->
-    <remap from = "/cloud_in" to = "/semantic_cloud_max" />
+    <remap from = "/cloud_in" to = "/semantic_cloud_max_no" />
  
   </node>
 </launch>

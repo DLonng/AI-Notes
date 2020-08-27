@@ -68,7 +68,7 @@ void LidarCameraFusion::InitROS()
     fs["CameraExtrinsicMat"] >> camera_extrinsic_mat;
 
     // 自己的小车如果不使用 TF 则需要求逆
-    camera_extrinsic_mat = camera_extrinsic_mat.inv(); 
+    camera_extrinsic_mat = camera_extrinsic_mat.inv();
     camera_extrinsic_mat_ok = true;
 
     ROS_INFO("[%s]: read camera_extrinsic_mat[0][0] %f", kNodeName.c_str(), camera_extrinsic_mat.at<double>(0, 0));
@@ -257,6 +257,39 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     // void pcl::fromROSMsg(const sensor_msgs::PointCloud2 &, pcl::PointCloud<T> &);
     pcl::fromROSMsg(*cloud_msg, *pcl_cloud_msg);
 
+#if 0
+    // 滤出地面点云
+    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+    pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+
+    pcl::SACSegmentation<pcl::PointXYZ> seg;
+    seg.setOptimizeCoefficients(true);
+    //seg.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE);
+    seg.setModelType(pcl::SACMODEL_PLANE);
+    seg.setMethodType(pcl::SAC_RANSAC);
+    //seg.setMaxIterations(200);
+    seg.setDistanceThreshold(0.05);
+
+    pcl::PointCloud<pcl::PointXYZ> cloud_filtered(*pcl_cloud_msg);
+    pcl::ExtractIndices<pcl::PointXYZ> extract;
+
+    //pcl::PointCloud<pcl::PointXYZ>::Ptr ground(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr nonground(new pcl::PointCloud<pcl::PointXYZ>);
+
+    seg.setInputCloud(cloud_filtered.makeShared());
+    seg.segment(*inliers, *coefficients);
+
+    extract.setInputCloud(cloud_filtered.makeShared());
+    extract.setIndices(inliers);
+
+    //extract.setNegative(false);
+    //extract.filter(ground);
+
+    extract.setNegative(true);
+    extract.filter(*nonground);
+#endif
+
+    //auto in_cloud_msg = nonground;
     auto in_cloud_msg = pcl_cloud_msg;
 
     int row = 0;
@@ -284,7 +317,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
             ROS_INFO("[%s]: confidence is empty! Waiting for current confidence frame ...", kNodeName.c_str());
             return;
         }
-#endif        
+#endif
 
         // 初始化最大概率语义点云
         pcl::PointCloud<PointXYZRGBSemanticsMax>::Ptr out_cloud(new pcl::PointCloud<PointXYZRGBSemanticsMax>);

@@ -29,6 +29,8 @@
 
 #include <octomap_server/OctomapServer.h>
 
+#include <message_filters/subscriber.h>
+
 using namespace octomap;
 using octomap_msgs::Octomap;
 
@@ -176,6 +178,8 @@ OctomapServer::OctomapServer(const ros::NodeHandle private_nh_, const ros::NodeH
     } else
         ROS_INFO("Publishing non-latched (topics are only prepared as needed, will only be re-published on map change");
 
+    sub_octomap_generator_full = m_nh.subscribe("octomap_generator_full", 1, &OctomapServer::OctomapGeneratorFull, this);
+
     m_markerPub = m_nh.advertise<visualization_msgs::MarkerArray>("occupied_cells_vis_array", 1, m_latchedTopics);
     m_binaryMapPub = m_nh.advertise<Octomap>("octomap_binary", 1, m_latchedTopics);
     m_fullMapPub = m_nh.advertise<Octomap>("octomap_full", 1, m_latchedTopics);
@@ -213,6 +217,39 @@ OctomapServer::~OctomapServer()
         delete m_octree;
         m_octree = NULL;
     }
+}
+
+void OctomapServer::OctomapGeneratorFull(const octomap_msgs::Octomap::ConstPtr& octomap_generator_full)
+{
+    ROS_INFO("OctomapGeneratorFull");
+
+    AbstractOcTree* tree = octomap_msgs::fullMsgToMap(*octomap_generator_full);
+
+    m_octree = dynamic_cast<OcTreeT*>(tree);
+
+    if (!m_octree) {
+        ROS_ERROR("Could not read OcTree in file, currently there are no other types supported in .ot");
+        return ;
+    }
+
+    m_treeDepth = m_octree->getTreeDepth();
+    m_maxTreeDepth = m_treeDepth;
+    m_res = m_octree->getResolution();
+    m_gridmap.info.resolution = m_res;
+    double minX, minY, minZ;
+    double maxX, maxY, maxZ;
+    m_octree->getMetricMin(minX, minY, minZ);
+    m_octree->getMetricMax(maxX, maxY, maxZ);
+
+    m_updateBBXMin[0] = m_octree->coordToKey(minX);
+    m_updateBBXMin[1] = m_octree->coordToKey(minY);
+    m_updateBBXMin[2] = m_octree->coordToKey(minZ);
+
+    m_updateBBXMax[0] = m_octree->coordToKey(maxX);
+    m_updateBBXMax[1] = m_octree->coordToKey(maxY);
+    m_updateBBXMax[2] = m_octree->coordToKey(maxZ);
+
+    publishAll();
 }
 
 bool OctomapServer::openFile(const std::string& filename)
@@ -389,6 +426,8 @@ void OctomapServer::insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr
     double total_elapsed = (ros::WallTime::now() - startTime).toSec();
     ROS_DEBUG("Pointcloud insertion in OctomapServer done (%zu+%zu pts (ground/nonground), %f sec)", pc_ground.size(), pc_nonground.size(), total_elapsed);
 
+    // 插入完一帧点云发布一次所有地图的主题
+    // OcTreeT* m_octree;
     publishAll(cloud->header.stamp);
 }
 
@@ -530,6 +569,7 @@ void OctomapServer::publishAll(const ros::Time& rostime)
     bool publishPointCloud = (m_latchedTopics || m_pointCloudPub.getNumSubscribers() > 0);
     bool publishBinaryMap = (m_latchedTopics || m_binaryMapPub.getNumSubscribers() > 0);
     bool publishFullMap = (m_latchedTopics || m_fullMapPub.getNumSubscribers() > 0);
+    // 发布 2D 导航地图
     m_publish2DMap = (m_latchedTopics || m_mapPub.getNumSubscribers() > 0);
 
     // init markers for free space:
@@ -663,6 +703,7 @@ void OctomapServer::publishAll(const ros::Time& rostime)
     }
 
     // call post-traversal hook:
+    // 直接发布 2D 地图主题
     handlePostNodeTraversal(rostime);
 
     // finish MarkerArray:
@@ -714,7 +755,7 @@ void OctomapServer::publishAll(const ros::Time& rostime)
         m_fmarkerPub.publish(freeNodesVis);
     }
 
-    // finish pointcloud:
+    // finish pointcloud: 发布中心点云
     if (publishPointCloud) {
         sensor_msgs::PointCloud2 cloud;
         pcl::toROSMsg(pclCloud, cloud);
@@ -723,9 +764,11 @@ void OctomapServer::publishAll(const ros::Time& rostime)
         m_pointCloudPub.publish(cloud);
     }
 
+    // 发布二进制地图
     if (publishBinaryMap)
         publishBinaryOctoMap(rostime);
 
+    // 发布 full 地图
     if (publishFullMap)
         publishFullOctoMap(rostime);
 

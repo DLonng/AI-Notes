@@ -1,8 +1,12 @@
+
+#include <octomap_generator/octomap_generator_ros.h>
+
+/*
 #include <cmath>
 #include <cstring>
 #include <sstream>
 
-#include <octomap_generator/octomap_generator_ros.h>
+
 #include <octomap_msgs/conversions.h>
 
 #include <nav_msgs/OccupancyGrid.h>
@@ -11,6 +15,10 @@
 #include <pcl/conversions.h>
 #include <pcl_ros/impl/transforms.hpp>
 #include <pcl_ros/transforms.h>
+
+// 放这里会报错，节点启动失败
+//#include <pcl/segmentation/sac_segmentation.h>
+*/
 
 #define TEST_VEL 0
 
@@ -111,6 +119,7 @@ void OctomapGeneratorNode::reset()
 
 bool OctomapGeneratorNode::toggleUseSemanticColor(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
 {
+#if 0    
     octomap_generator_->setUseSemanticColor(!octomap_generator_->isUseSemanticColor());
 
     if (octomap_generator_->isUseSemanticColor())
@@ -134,6 +143,12 @@ bool OctomapGeneratorNode::toggleUseSemanticColor(std_srvs::Empty::Request& requ
         local_map_pub.publish(local_map_msg);
     else
         ROS_ERROR("Error serializing Local OctoMap");
+#endif 
+
+    std::string save_path;
+    nh_.getParam("/octomap/save_path", save_path);
+    this->save(save_path.c_str());
+    ROS_INFO("OctoMap saved.");
 
     return true;
 }
@@ -173,6 +188,23 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     Eigen::Matrix4f sensorToWorld;
     pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
 
+#if 0
+    // 对 cloud 过滤地面点云
+    // pc2 -> pc
+    PCLSemanticsMax pc_cloud;
+    pcl::fromPCLPointCloud2(*cloud, pc_cloud);
+
+    // 把点云帧转到 base_link 坐标系？
+
+    // segmention
+    PCLSemanticsMax pc_ground_cloud;
+    PCLSemanticsMax pc_no_ground_cloud;
+    FilterGroundPlane(pc_cloud, pc_ground_cloud, pc_no_ground_cloud);
+
+    // pc -> pc2
+    pcl::toPCLPointCloud2(pc_no_ground_cloud, *cloud);
+#endif 
+
     // 小车静止不动也需要插入地图
     octomap_generator_->insertPointCloud(cloud, sensorToWorld);
     local_octomap_generator->insertPointCloud(cloud, sensorToWorld);
@@ -209,9 +241,70 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
         ROS_ERROR("Error serializing Local OctoMap");
 }
 
+// 还是不能使用，编译不能通过！
 void OctomapGeneratorNode::FilterGroundPlane(const PCLSemanticsMax& pc, PCLSemanticsMax& ground, PCLSemanticsMax& nonground) const
 {
+    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+    pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+    // undefined reference to `pcl::PCLBase<PointXYZRGBSemanticsMax>::setIndices(boost::shared_ptr<pcl::PointIndices const> const&)
     
+    // 不能分割自己的点云类型
+    //pcl::SACSegmentation<PointXYZRGBSemanticsMax> seg;
+    pcl::SACSegmentation<pcl::PointXYZ> seg2;
+
+    // pc2 类型也不行
+    //pcl::SACSegmentation<pcl::PCLPointCloud2> seg3;
+
+#if 0
+    ground.header = pc.header;
+    nonground.header = pc.header;
+
+    // plane detection for ground plane removal
+    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+    pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+
+    pcl::SACSegmentation<PointXYZRGBSemanticsMax> seg;
+
+    seg.setOptimizeCoefficients(true);
+    seg.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE);
+    seg.setMethodType(pcl::SAC_RANSAC);
+    seg.setMaxIterations(200);
+    seg.setDistanceThreshold(0.01);
+    //seg.setAxis(Eigen::Vector3f(0, 0, 1));
+    //seg.setEpsAngle(m_groundFilterAngle);
+
+    PCLSemanticsMax cloud_filtered(pc);
+    pcl::ExtractIndices<PointXYZRGBSemanticsMax> extract;
+
+    while (cloud_filtered.size() > 10) {
+        seg.setInputCloud(cloud_filtered.makeShared());
+        seg.segment(*inliers, *coefficients);
+
+        if (inliers->indices.size() == 0) {
+            ROS_INFO("FilterGroundPlane: PCL segmentation did not find any plane.");
+            break;
+        }
+
+        //extract.setInputCloud(cloud_filtered.makeShared());
+        //extract.setIndices(inliers);
+
+        extract.setNegative(false);
+        extract.filter(ground);
+
+        // remove ground points from full pointcloud:
+        // workaround for PCL bug:
+        if (inliers->indices.size() != cloud_filtered.size()) {
+            extract.setNegative(true);
+            PCLSemanticsMax cloud_out;
+            // 滤出非地面点云
+            extract.filter(cloud_out);
+            nonground += cloud_out;
+
+            // 执行下一次地面分割
+            cloud_filtered = cloud_out;
+        }
+    }
+#endif
 }
 
 void OctomapGeneratorNode::ScoutStatusCallback(const scout_msgs::ScoutStatus::ConstPtr& scout_status)

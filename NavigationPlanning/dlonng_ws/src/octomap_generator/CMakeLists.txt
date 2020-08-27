@@ -5,21 +5,22 @@ add_compile_options(-std=c++11)
 
 set(PACKAGE_DEPENDENCIES
   roscpp
+  visualization_msgs
   sensor_msgs
   pcl_ros
   pcl_conversions
-  std_srvs
-  octomap_msgs
-  octomap_ros
-  scout_msgs
+  nav_msgs
   std_msgs
+  std_srvs
+  octomap_ros
+  octomap_msgs
+  nodelet
+  scout_msgs
 )
-
 
 find_package(catkin REQUIRED COMPONENTS ${PACKAGE_DEPENDENCIES})
 
 find_package(octomap REQUIRED)
-
 
 include_directories(
   include

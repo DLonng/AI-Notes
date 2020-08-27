@@ -235,9 +235,11 @@ void OctomapGenerator<PCLSemanticsBayesian, LocalSemanticsOctreeBayesian>::updat
 template <class CLOUD, class OCTREE>
 bool OctomapGenerator<CLOUD, OCTREE>::save(const char* filename) const
 {
-    std::ofstream outfile(filename, std::ios_base::out | std::ios_base::binary);
+    //std::ofstream outfile(filename, std::ios_base::out | std::ios_base::binary);
+    std::ofstream outfile;
+    outfile.open(filename, std::ios::out | std::ios::binary);
     if (outfile.is_open()) {
-        std::cout << "Writing octomap to " << filename << std::endl;
+        std::cout << "Writing octomap generator full [.ot] to " << filename << std::endl;
         octomap_.write(outfile);
         outfile.close();
         std::cout << "Color tree written " << filename << std::endl;

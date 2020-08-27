@@ -1,25 +1,49 @@
 #ifndef OCTOMAP_GENERATOR_ROS_H
 #define OCTOMAP_GENERATOR_ROS_H
 
-#include <boost/shared_ptr.hpp>
+#include <ros/ros.h>
+
+#include <iostream>
+#include <sstream>
+#include <string>
+
+#include <cmath>
+#include <cstring>
 #include <memory>
+
+#include <boost/shared_ptr.hpp>
+
 #include <message_filters/subscriber.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <std_srvs/Empty.h>
+#include <nav_msgs/OccupancyGrid.h>
+#include <tf/message_filter.h>
+#include <tf/transform_listener.h>
+
 #include <octomap/ColorOcTree.h>
 #include <octomap/Pointcloud.h>
 #include <octomap/octomap.h>
-#include <octomap_generator/octomap_generator.h>
 #include <octomap_msgs/Octomap.h>
-#include <ros/ros.h>
-#include <semantics_octree/semantics_octree.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <std_srvs/Empty.h>
-#include <string>
-#include <tf/message_filter.h>
-#include <tf/transform_listener.h>
+#include <octomap_msgs/conversions.h>
+
+#include <pcl/filters/radius_outlier_removal.h>
+
+// 更改了头文件的位置，节点启动失败的问题就解决了，可能是头文件包含有冲突
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+
+#include <pcl/filters/extract_indices.h>
+#include <pcl/conversions.h>
+#include <pcl_ros/impl/transforms.hpp>
+#include <pcl_ros/transforms.h>
 
 // 编译完消息后，如果没有找到头文件
 // 重新 source，然后重启 code
 #include <scout_msgs/ScoutStatus.h>
+#include <octomap_generator/octomap_generator.h>
+#include <semantics_octree/semantics_octree.h>
+
 
 #define COLOR_OCTREE 0
 #define SEMANTICS_OCTREE_MAX 1

@@ -102,6 +102,8 @@ public:
   virtual void insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud);
   virtual bool openFile(const std::string& filename);
 
+  void OctomapGeneratorFull(const octomap_msgs::Octomap::ConstPtr& octomap_generator_full);
+
 protected:
   inline static void updateMinKey(const octomap::OcTreeKey& in, octomap::OcTreeKey& min) {
     for (unsigned i = 0; i < 3; ++i)
@@ -266,6 +268,8 @@ protected:
   unsigned m_multires2DScale;
   bool m_projectCompleteMap;
   bool m_useColoredMap;
+
+  ros::Subscriber sub_octomap_generator_full;
 };
 }
 

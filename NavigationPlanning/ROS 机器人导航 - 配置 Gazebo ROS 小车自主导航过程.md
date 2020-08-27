@@ -391,45 +391,62 @@ global_costmap:
 
 ![](https://dlonng.oss-cn-shenzhen.aliyuncs.com/blog/ros_error_process_died.png)
 
-原因是我安装了多个可能会冲突的 pcl：
+头文件产生的冲突，我把头文件全部放到 .h 文件中即可，按照系统、ros、pcl、自己头文件的顺序：
 
-```shell
-/usr/bin/ld: warning: libpcl_sample_consensus.so.1.7, needed by /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/libpcl_filters.so, may conflict with libpcl_sample_consensus.so.1.8
-/usr/bin/ld: warning: libpcl_search.so.1.7, needed by /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/libpcl_filters.so, may conflict with libpcl_search.so.1.8
-/usr/bin/ld: warning: libpcl_kdtree.so.1.7, needed by /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/libpcl_filters.so, may conflict with libpcl_kdtree.so.1.8
-/usr/bin/ld: warning: libpcl_octree.so.1.7, needed by /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/libpcl_filters.so, may conflict with libpcl_octree.so.1.8
-/usr/bin/ld: warning: libpcl_features.so.1.7, needed by /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/libpcl_recognition.so, may conflict with libpcl_features.so.1.8
-/usr/bin/ld: warning: libpcl_common.so.1.8, needed by /usr/local/lib/libpcl_kdtree.so, may conflict with libpcl_common.so.1.7
-/usr/bin/ld: warning: libpcl_filters.so.1.8, needed by /usr/local/lib/libpcl_features.so, may conflict with libpcl_filters.so.1.7
+```cpp
+#include <ros/ros.h>
+
+#include <iostream>
+#include <sstream>
+#include <string>
+
+#include <cmath>
+#include <cstring>
+#include <memory>
+
+#include <boost/shared_ptr.hpp>
+
+#include <message_filters/subscriber.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <std_srvs/Empty.h>
+#include <nav_msgs/OccupancyGrid.h>
+#include <tf/message_filter.h>
+#include <tf/transform_listener.h>
+
+#include <octomap/ColorOcTree.h>
+#include <octomap/Pointcloud.h>
+#include <octomap/octomap.h>
+#include <octomap_msgs/Octomap.h>
+#include <octomap_msgs/conversions.h>
+
+#include <pcl/filters/radius_outlier_removal.h>
+
+// 更改了头文件的位置，节点启动失败的问题就解决了，可能是头文件包含有冲突
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+
+#include <pcl/filters/extract_indices.h>
+#include <pcl/conversions.h>
+#include <pcl_ros/impl/transforms.hpp>
+#include <pcl_ros/transforms.h>
+
+// 编译完消息后，如果没有找到头文件
+// 重新 source，然后重启 code
+#include <scout_msgs/ScoutStatus.h>
+#include <octomap_generator/octomap_generator.h>
+#include <semantics_octree/semantics_octree.h>
 ```
 
-并且我在 CMakeLists.txt 中链接了自己安装的 pcl-1.8，解决方法很简单，去掉 CMakeLists.txt 中链接 pcl-1.8 的规则，只使用 ros 自带的 pcl-1.7 即可：
+具体冲突的地方暂时不确定，以后可以调试查看。
 
-```cmake
-#find_package(PCL REQUIRED QUIET COMPONENTS common sample_consensus io segmentation filters)
+#### 4 Ubuntu 的 PCL 版本
 
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  #${PCL_INCLUDE_DIRS}
-  ${OCTOMAP_INCLUDE_DIRS}
-)
+系统安装了 3 个 PCL，1.8 自己装的，1.7 ros 装的：
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS ${PACKAGE_DEPENDENCIES}
-  DEPENDS OCTOMAP #PCL
-)
+- `/usr/local/include/pcl-1.8/pcl`、`/usr/local/lib/libpcl_*`
+- `/usr/include/pcl-1.7/pcl/`、`/usr/lib/x86_64-linux-gnu/libpcl_*`
+- `/opt/ros/kinetic/include/pcl_ros/`
 
-set(LINK_LIBS
-  ${OCTOMAP_LIBRARIES}
-  ${catkin_LIBRARIES}
-  #${PCL_LIBRARIES}
-)
-```
-
-还是有问题！
-
-
+分割链接错误的原因可能跟 PCL 版本有关，在小车上测试，CMakeLists 中 PCL 也要加上应该。
 
