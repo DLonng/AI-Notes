@@ -27,7 +27,9 @@ LidarCameraFusion::LidarCameraFusion()
     , image_frame_id("")
     , semantic_type(kMaxSemanticType)
 {
-
+    radial_divide_angle = 0.5;
+    concentric_divide_distance = 0.1;
+    min_local_height_threshold = 0.05;
     InitROS();
 }
 
@@ -147,6 +149,9 @@ void LidarCameraFusion::InitROS()
     // 发布消息：pub_fusion_cloud.publish(msg)
     pub_max_semantic_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>(semantic_cloud_max, topic_buff);
     pub_bayes_semantic_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>(semantic_cloud_bayes, topic_buff);
+
+    pub_ground_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>("ground_cloud", topic_buff);
+    pub_no_ground_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>("no_ground_cloud", topic_buff);
 }
 
 /**
@@ -258,39 +263,123 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     pcl::fromROSMsg(*cloud_msg, *pcl_cloud_msg);
 
 #if 0
+/*
+    std::string m_worldFrameId = "base_link";
+    std::string m_baseFrameId = "odom";
+
+    tf::StampedTransform sensorToWorldTf;
+    try {
+        transform_listener.lookupTransform(m_worldFrameId, cloud_msg->header.frame_id, cloud_msg->header.stamp, sensorToWorldTf);
+    } catch (tf::TransformException& ex) {
+        ROS_ERROR_STREAM("Transform error of sensor data: " << ex.what() << ", quitting callback");
+        return;
+    }
+
+    Eigen::Matrix4f sensorToWorld;
+    pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
+
+
+
+    tf::StampedTransform sensorToBaseTf, baseToWorldTf;
+    try {
+        transform_listener.waitForTransform(m_baseFrameId, cloud_msg->header.frame_id, cloud_msg->header.stamp, ros::Duration(0.2));
+        transform_listener.lookupTransform(m_baseFrameId, cloud_msg->header.frame_id, cloud_msg->header.stamp, sensorToBaseTf);
+        transform_listener.lookupTransform(m_worldFrameId, m_baseFrameId, cloud_msg->header.stamp, baseToWorldTf);
+
+    } catch (tf::TransformException& ex) {
+        ROS_ERROR_STREAM("Transform error for ground plane filter: " << ex.what() << ", quitting callback.\n"
+                                                                                     "You need to set the base_frame_id or disable filter_ground.");
+    }
+
+    Eigen::Matrix4f sensorToBase, baseToWorld;
+    pcl_ros::transformAsMatrix(sensorToBaseTf, sensorToBase);
+    pcl_ros::transformAsMatrix(baseToWorldTf, baseToWorld);
+*/
+    auto pc = *pcl_cloud_msg;
+    //pcl::transformPointCloud(pc, pc, sensorToBase);
+
+    // PassThrough Z
+    pcl::PassThrough<pcl::PointXYZ> pass_z;
+    pass_z.setFilterFieldName("z");
+    pass_z.setFilterLimits(-0.05, 10.0);
+    pass_z.setInputCloud(pc.makeShared());
+    //pass_z.filter(pc);
+
+    pcl::PointCloud<pcl::PointXYZ> pc_ground;
+    pcl::PointCloud<pcl::PointXYZ> pc_nonground;
+    FilterGroundPlane(pc, pc_ground, pc_nonground);
+
+    sensor_msgs::PointCloud2 no_ground_ros;
+    pcl::toROSMsg(pc_nonground, no_ground_ros);
+    pub_no_ground_cloud.publish(no_ground_ros);
+
+    sensor_msgs::PointCloud2 ground_ros;
+    pcl::toROSMsg(pc_ground, ground_ros);
+    pub_ground_cloud.publish(ground_ros);
+
+    auto in_cloud_msg = &pc_nonground;
+
+#endif
+
+#if 0
+    // FilterGround
+    pcl::PointCloud<pcl::PointXYZ>::Ptr no_ground_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr ground_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
     // 滤出地面点云
     pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
     pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
 
     pcl::SACSegmentation<pcl::PointXYZ> seg;
     seg.setOptimizeCoefficients(true);
-    //seg.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE);
-    seg.setModelType(pcl::SACMODEL_PLANE);
+
+    // SACMODEL_PLANE 会把垂直的墙体平面也分割掉，所以不使用它
+    //seg.setModelType(pcl::SACMODEL_PLANE);
+    seg.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE);
     seg.setMethodType(pcl::SAC_RANSAC);
     //seg.setMaxIterations(200);
     seg.setDistanceThreshold(0.05);
+    // 垂直 Z 轴的平面
+    seg.setAxis(Eigen::Vector3f(0, 0, 1));
+    // deg = 0.15 x (180 / PI) = 8.59 deg
+    seg.setEpsAngle(0.15);
 
-    pcl::PointCloud<pcl::PointXYZ> cloud_filtered(*pcl_cloud_msg);
-    pcl::ExtractIndices<pcl::PointXYZ> extract;
-
-    //pcl::PointCloud<pcl::PointXYZ>::Ptr ground(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr nonground(new pcl::PointCloud<pcl::PointXYZ>);
-
-    seg.setInputCloud(cloud_filtered.makeShared());
+    seg.setInputCloud(pcl_cloud_msg);
     seg.segment(*inliers, *coefficients);
 
-    extract.setInputCloud(cloud_filtered.makeShared());
+    pcl::ExtractIndices<pcl::PointXYZ> extract;
+    extract.setInputCloud(pcl_cloud_msg);
     extract.setIndices(inliers);
 
-    //extract.setNegative(false);
-    //extract.filter(ground);
-
     extract.setNegative(true);
-    extract.filter(*nonground);
+    extract.filter(*no_ground_cloud);
+
+    sensor_msgs::PointCloud2 no_ground_ros;
+    pcl::toROSMsg(*no_ground_cloud, no_ground_ros);
+    pub_no_ground_cloud.publish(no_ground_ros);
+
+    extract.setNegative(false);
+    extract.filter(*ground_cloud);
+
+    sensor_msgs::PointCloud2 ground_ros;
+    pcl::toROSMsg(*ground_cloud, ground_ros);
+    pub_ground_cloud.publish(ground_ros);
+
+    auto in_cloud_msg = no_ground_cloud;
 #endif
 
-    //auto in_cloud_msg = nonground;
-    auto in_cloud_msg = pcl_cloud_msg;
+#if 1
+    pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_clipped(new pcl::PointCloud<pcl::PointXYZ>);
+    ClipAboveCloud(pcl_cloud_msg, in_cloud_clipped, 2.0, 2, 40, 7);
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr no_ground_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr ground_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    RemoveFloorRayFiltered(in_cloud_clipped, ground_cloud, no_ground_cloud, 0.49, 5.0, 3.0);
+
+    auto in_cloud_msg = no_ground_cloud;
+#endif
+
+    //auto in_cloud_msg = pcl_cloud_msg;
 
     int row = 0;
     int col = 0;
@@ -461,6 +550,224 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
         ROS_INFO("[%s]: [%s] publish bayes_semantic_cloud.", kNodeName.c_str(), __FUNCTION__);
 
         pub_bayes_semantic_cloud.publish(bayes_semantic_cloud);
+    }
+}
+
+void LidarCameraFusion::FilterGroundPlane(const pcl::PointCloud<pcl::PointXYZ>& pc, pcl::PointCloud<pcl::PointXYZ>& ground, pcl::PointCloud<pcl::PointXYZ>& nonground) const
+{
+    ground.header = pc.header;
+    nonground.header = pc.header;
+
+    // 点云数量太少不分割地面
+    if (pc.size() < 50) {
+        ROS_WARN("Pointcloud in FilterGroundPlane too small, skipping ground plane extraction");
+        nonground = pc;
+    } else {
+        // ax + by + cz + d = 0
+        pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+        pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+
+        pcl::SACSegmentation<pcl::PointXYZ> seg;
+        seg.setOptimizeCoefficients(true);
+        seg.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE);
+        seg.setMethodType(pcl::SAC_RANSAC);
+        seg.setMaxIterations(200);
+        // 距离平面模型小于 20 cm 被认为是内点
+        seg.setDistanceThreshold(0.2);
+        seg.setAxis(Eigen::Vector3f(0, 0, 1));
+        // 平面角度
+        seg.setEpsAngle(0.15);
+
+        // 拷贝一份 pc 用于分割
+        pcl::PointCloud<pcl::PointXYZ> cloud_filtered(pc);
+
+        // 提取点云子集的对象
+        pcl::ExtractIndices<pcl::PointXYZ> extract;
+
+        bool groundPlaneFound = false;
+
+        // 点云数量大于 10 个并且没有找到地面
+        while (cloud_filtered.size() > 10 && !groundPlaneFound) {
+
+            seg.setInputCloud(cloud_filtered.makeShared());
+            seg.segment(*inliers, *coefficients);
+
+            // 分割没有提取到内点，说明没有分割出地面
+            if (inliers->indices.size() == 0) {
+                ROS_INFO("PCL segmentation did not find any plane.");
+                break;
+            }
+
+            // 否则就分割出了地面，则提取内点
+            extract.setInputCloud(cloud_filtered.makeShared());
+
+            // inliers 存储的是地面点云的索引
+            extract.setIndices(inliers);
+
+            // values.at(3) = d 判断找到的平面模型是否是地面 d 比较小
+            // 待分割平面的水平高度，比如只分割 1.0 以下的水平面
+            if (std::abs(coefficients->values.at(3)) < 1.0) {
+                // 找到待分割的地面点云
+                ROS_INFO("Ground plane found: %zu/%zu inliers. Coeff: %f %f %f %f", inliers->indices.size(), cloud_filtered.size(),
+                    coefficients->values.at(0), coefficients->values.at(1), coefficients->values.at(2), coefficients->values.at(3));
+
+                // 提取出地面
+                extract.setNegative(false);
+                extract.filter(ground);
+
+                // 提取非地面
+                pcl::PointCloud<pcl::PointXYZ> cloud_out;
+                extract.setNegative(true);
+                extract.filter(cloud_out);
+                nonground += cloud_out;
+
+                cloud_filtered = cloud_out;
+
+                groundPlaneFound = true;
+            } else {
+                ROS_INFO("Horizontal plane (not ground) found: %zu/%zu inliers. Coeff: %f %f %f %f", inliers->indices.size(), cloud_filtered.size(),
+                    coefficients->values.at(0), coefficients->values.at(1), coefficients->values.at(2), coefficients->values.at(3));
+            }
+        }
+    }
+}
+
+/**
+ * @description: 截取点云，去除高度过高的点,去除距离激光雷达中心过近的点, 去除非车辆前面的点
+ */
+void LidarCameraFusion::ClipAboveCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_cloud,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr& out_cloud,
+    const double& height, const double& near_dis, const double& far_dis,
+    const double& left_right_dis)
+{
+    pcl::ExtractIndices<pcl::PointXYZ> extractor;
+    extractor.setInputCloud(in_cloud);
+    pcl::PointIndices indices;
+
+    //#pragma omp for
+    for (size_t i = 0; i < in_cloud->points.size(); i++) {
+        double dis;
+        // 计算 需要移除的点
+        if (in_cloud->points[i].z > height) {
+            indices.indices.push_back(i);
+        } else if (in_cloud->points[i].x < 0 || in_cloud->points[i].y > left_right_dis || in_cloud->points[i].y < -left_right_dis) { // 激光雷达 x正方向朝前，y正方向朝左，z正方向朝上
+            indices.indices.push_back(i);
+        } else if ((dis = sqrt(pow(in_cloud->points[i].x, 2) + pow(in_cloud->points[i].y, 2))) < near_dis || dis > far_dis) {
+            indices.indices.push_back(i);
+        }
+    }
+
+    extractor.setIndices(boost::make_shared<pcl::PointIndices>(indices));
+    extractor.setNegative(true); //true removes the indices, false leaves only the indices
+    extractor.filter(*out_cloud);
+}
+
+/**
+ * @description: 基于 ray_groud_filtered 对地面进行分割 
+ */
+void LidarCameraFusion::RemoveFloorRayFiltered(const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_cloud,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr& out_only_ground_cloud,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr& out_no_ground_cloud,
+    const double& sensor_height, const double& local_max_slope, const double& general_max_slope)
+{
+    pcl::PointIndices only_ground_indices;
+    out_only_ground_cloud->points.clear();
+    out_no_ground_cloud->points.clear();
+
+    std::vector<PointCloudXYZRT> radial_divided_cloud;
+
+    ConvertXYZ2XYZRT(in_cloud, radial_divided_cloud);
+
+//#pragma omp for
+    for (size_t i = 0; i < radial_divided_cloud.size(); i++) {
+        float prev_radius = 0.0;
+        float prev_height = -sensor_height;
+        bool prev_ground = false;
+        bool current_ground = false;
+
+        for (size_t j = 0; j < radial_divided_cloud[i].size(); j++) {
+            float local_twoPoints_dis = radial_divided_cloud[i][j].radius - prev_radius;
+            float local_height_threshold = tan(local_max_slope * M_PI / 180.) * local_twoPoints_dis;
+            float general_height_threshold = tan(general_max_slope * M_PI / 180.) * radial_divided_cloud[i][j].radius;
+            float current_height = radial_divided_cloud[i][j].point.z;
+
+            if (radial_divided_cloud[i][j].radius > concentric_divide_distance && local_height_threshold < min_local_height_threshold) {
+                local_height_threshold = min_local_height_threshold;
+            }
+
+            if (current_height <= (prev_height + local_height_threshold) && current_height >= (prev_height - local_height_threshold)) {
+                if (!prev_ground) {
+                    if (current_height <= (-sensor_height + general_height_threshold) && current_height >= (-sensor_height - general_height_threshold)) {
+                        current_ground = true;
+                    } else {
+                        current_ground = false;
+                    }
+                } else {
+                    current_ground = true;
+                }
+            } else {
+                current_ground = false;
+            }
+
+            if (current_ground) {
+                only_ground_indices.indices.push_back(radial_divided_cloud[i][j].original_index);
+                prev_ground = true;
+            } else {
+                prev_ground = false;
+            }
+            prev_radius = radial_divided_cloud[i][j].radius;
+            prev_height = radial_divided_cloud[i][j].point.z;
+        }
+    }
+
+    pcl::ExtractIndices<pcl::PointXYZ> extractor;
+    extractor.setInputCloud(in_cloud);
+    extractor.setIndices(boost::make_shared<pcl::PointIndices>(only_ground_indices));
+
+    extractor.setNegative(false); //true removes the indices, false leaves only the indices
+    extractor.filter(*out_only_ground_cloud);
+
+    extractor.setNegative(true); //true removes the indices, false leaves only the indices
+    extractor.filter(*out_no_ground_cloud);
+}
+
+/**
+ * @description: 将原始点云转化为 XYZRadialTheta 结构的点云 
+ */
+void LidarCameraFusion::ConvertXYZ2XYZRT(const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_cloud,
+    std::vector<PointCloudXYZRT>& out_radial_divided_cloud)
+{
+    out_radial_divided_cloud.clear();
+
+    double radial_divide_num = ceil(360 / radial_divide_angle);
+
+    out_radial_divided_cloud.resize(radial_divide_num);
+
+    for (size_t i = 0; i < in_cloud->points.size(); i++) {
+        PointXYZRT p;
+        float radius = (float)sqrt(in_cloud->points[i].x * in_cloud->points[i].x + in_cloud->points[i].y * in_cloud->points[i].y);
+        float thera = (float)atan2(in_cloud->points[i].y, in_cloud->points[i].x) * 180 / M_PI;
+
+        if (thera < 0)
+            thera += 360;
+
+        size_t radial_div = (size_t)floor(thera / radial_divide_angle);
+        size_t concentric_div = (size_t)floor(radius / concentric_divide_distance);
+
+        p.point = in_cloud->points[i];
+        p.radius = radius;
+        p.theta = thera;
+        p.radial_div = radial_div;
+        p.concentric_div = concentric_div;
+        p.original_index = i;
+
+        out_radial_divided_cloud[radial_div].push_back(p);
+    }
+
+// #pragma omp for
+    for (size_t j = 0; j < out_radial_divided_cloud.size(); j++) {
+        std::sort(out_radial_divided_cloud[j].begin(), out_radial_divided_cloud[j].end(),
+            [](const PointXYZRT& a, const PointXYZRT& b) { return a.radius < b.radius; });
     }
 }
 

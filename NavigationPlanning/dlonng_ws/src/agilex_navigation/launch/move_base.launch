@@ -8,6 +8,7 @@
         <rosparam file="$(find agilex_navigation)/config/base_local_planner_params.yaml" command="load" />
 
         <remap from="map" to="projected_map"/>
+        <remap from="odom" to="laser_odom_optimization_to_init"/>
     </node>
 
 </launch>

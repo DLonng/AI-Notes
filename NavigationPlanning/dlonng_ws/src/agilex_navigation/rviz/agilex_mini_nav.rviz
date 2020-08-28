@@ -5,9 +5,9 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Status1
-        - /ColorOccupancyGrid2/Status1
+        - /ColorOccupancyGrid1
       Splitter Ratio: 0.627071798
-    Tree Height: 343
+    Tree Height: 226
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -429,9 +429,9 @@ Visualization Manager:
       Value: false
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
       Enabled: true
-      Max. Height Display: inf
+      Max. Height Display: 3.40282347e+38
       Max. Octree Depth: 16
-      Min. Height Display: -inf
+      Min. Height Display: -3.40282347e+38
       Name: ColorOccupancyGrid
       Octomap Topic: /octomap_generator_full
       Queue Size: 5
@@ -456,9 +456,17 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        aft_mapped:
+          Value: true
         base_link:
           Value: true
+        camera:
+          Value: true
+        camera_init:
+          Value: true
         imu_link:
+          Value: true
+        laser_odom:
           Value: true
         map:
           Value: true
@@ -485,23 +493,28 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
-          odom:
-            base_link:
-              imu_link:
-                {}
-              sensor_support:
-                rslidar:
+          camera_init:
+            aft_mapped:
+              {}
+            camera:
+              base_link:
+                imu_link:
                   {}
-                zed_camera:
+                sensor_support:
+                  rslidar:
+                    {}
+                  zed_camera:
+                    {}
+                wheel_1:
                   {}
-              wheel_1:
-                {}
-              wheel_2:
-                {}
-              wheel_3:
-                {}
-              wheel_4:
-                {}
+                wheel_2:
+                  {}
+                wheel_3:
+                  {}
+                wheel_4:
+                  {}
+            laser_odom:
+              {}
       Update Interval: 0
       Value: true
   Enabled: true
@@ -524,35 +537,35 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 17.1195164
+      Distance: 12.3299208
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -2.71758795
-        Y: -3.23037982
+        X: 4.43680096
+        Y: -5.46805382
         Z: -1.90734863e-06
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.635397971
+      Pitch: 1.34039795
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 3.72040033
+      Yaw: 4.69227076
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1025
+  Height: 761
   Hide Left Dock: false
-  Hide Right Dock: false
+  Hide Right Dock: true
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016c000003a6fc0200000007fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000198000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003f00000197000000d600fffffffb0000000a0049006d00610067006501000001dc000001030000001600fffffffb0000000a0049006d00610067006501000002e5000001000000001600ffffff000000010000010f000003a6fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003f000003a6000000ab00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a00000028300fffffffb0000000800540069006d00650100000000000004500000000000000000000004f9000003a600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016c0000029efc0200000007fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000198000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003f00000122000000d600fffffffb0000000a0049006d0061006700650100000167000000b90000001600fffffffb0000000a0049006d0061006700650100000226000000b70000001600ffffff000000010000010f000003a6fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003f000003a6000000ab00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a00000028300fffffffb0000000800540069006d006501000000000000045000000000000000000000042e0000029e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -560,7 +573,7 @@ Window Geometry:
   Tool Properties:
     collapsed: false
   Views:
-    collapsed: false
-  Width: 1920
-  X: 0
-  Y: 27
+    collapsed: true
+  Width: 1440
+  X: 480
+  Y: 44

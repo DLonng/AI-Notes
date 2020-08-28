@@ -5,6 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /ColorOccupancyGrid1
+        - /ColorOccupancyGrid1/Status1
         - /TF1/Frames1
       Splitter Ratio: 0.567058802
     Tree Height: 311
@@ -86,10 +88,10 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 177
+      Max Intensity: 153
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: PointCloud2
@@ -100,6 +102,36 @@ Visualization Manager:
       Size (m): 0.00999999978
       Style: Flat Squares
       Topic: /rslidar_points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: -9999
+        Min Value: 9999
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: AxisColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.00999999978
+      Style: Flat Squares
+      Topic: /semantic_cloud_max
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -129,7 +161,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.00999999978
       Style: Flat Squares
-      Topic: /semantic_cloud_max
+      Topic: /semantic_cloud_bayes
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -144,9 +176,9 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: RGB8
+      Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -159,11 +191,41 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.00999999978
       Style: Flat Squares
-      Topic: /semantic_cloud_bayes
+      Topic: /ground_cloud
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 0.810802937
+        Min Value: -0.240062401
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: AxisColor
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.00999999978
+      Style: Flat Squares
+      Topic: /no_ground_cloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
       Enabled: true
       Max. Height Display: 3.40282347e+38
@@ -174,7 +236,7 @@ Visualization Manager:
       Queue Size: 5
       Value: true
       Voxel Alpha: 1
-      Voxel Coloring: Cell Color
+      Voxel Coloring: Z-Axis
       Voxel Rendering: Occupied Voxels
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
       Enabled: false
@@ -193,19 +255,25 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        aft_mapped:
-          Value: true
         base_link:
           Value: true
-        camera:
+        imu_link:
           Value: true
-        camera_init:
-          Value: true
-        laser_odom:
-          Value: true
-        map:
+        odom:
           Value: true
         rslidar:
+          Value: true
+        sensor_support:
+          Value: true
+        wheel_1:
+          Value: true
+        wheel_2:
+          Value: true
+        wheel_3:
+          Value: true
+        wheel_4:
+          Value: true
+        zed_camera:
           Value: true
       Marker Scale: 3
       Name: TF
@@ -213,16 +281,22 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        base_link:
-          rslidar:
-            {}
-        map:
-          camera_init:
-            aft_mapped:
+        odom:
+          base_link:
+            imu_link:
               {}
-            camera:
+            rslidar:
               {}
-            laser_odom:
+            sensor_support:
+              zed_camera:
+                {}
+            wheel_1:
+              {}
+            wheel_2:
+              {}
+            wheel_3:
+              {}
+            wheel_4:
               {}
       Update Interval: 0
       Value: true
@@ -251,25 +325,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 22.83111
+      Distance: 10.8076992
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.736155152
-        Y: -0.598519564
-        Z: 2.28139907e-05
+        X: 2.01701975
+        Y: -2.49125123
+        Z: 2.42445021e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.01979697
+      Pitch: 0.764797688
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 3.91415167
+      Yaw: 4.25348568
     Saved: ~
 Window Geometry:
   Displays:

@@ -151,36 +151,48 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        aft_mapped:
-          Value: false
         base_link:
           Value: false
-        camera:
+        imu_link:
           Value: true
-        camera_init:
+        odom:
           Value: true
-        laser_odom:
-          Value: false
-        map:
-          Value: false
         rslidar:
           Value: false
+        sensor_support:
+          Value: true
+        wheel_1:
+          Value: true
+        wheel_2:
+          Value: true
+        wheel_3:
+          Value: true
+        wheel_4:
+          Value: true
+        zed_camera:
+          Value: true
       Marker Scale: 5
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        base_link:
-          rslidar:
-            {}
-        camera:
-          {}
-        map:
-          camera_init:
-            aft_mapped:
+        odom:
+          base_link:
+            imu_link:
               {}
-            laser_odom:
+            sensor_support:
+              rslidar:
+                {}
+              zed_camera:
+                {}
+            wheel_1:
+              {}
+            wheel_2:
+              {}
+            wheel_3:
+              {}
+            wheel_4:
               {}
       Update Interval: 0
       Value: true
@@ -209,25 +221,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 28.6343842
+      Distance: 12.9177027
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.36314297
-        Y: -0.242237911
+        X: 0.412346601
+        Y: -1.79280746
         Z: 3.9026454e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.575200379
+      Pitch: 0.715200543
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.22904968
+      Yaw: 4.12909555
     Saved: ~
 Window Geometry:
   Displays:

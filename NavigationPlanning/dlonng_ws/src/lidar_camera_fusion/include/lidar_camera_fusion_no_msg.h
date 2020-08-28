@@ -34,13 +34,31 @@
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/filters/extract_indices.h>
+#include <pcl/filters/passthrough.h>
 #include <pcl_ros/point_cloud.h>
+#include <pcl_ros/transforms.h>
 
 #include <opencv-3.3.1-dev/opencv2/opencv.hpp>
 
 #include <rospy_tutorials/Floats.h>
 
 #include "semantics_point_type.h"
+
+class PointXYZRT {
+public:
+    pcl::PointXYZ point;
+
+    float radius;
+    float theta;
+
+    size_t radial_div;
+    size_t concentric_div;
+
+    size_t original_index;
+};
+
+typedef std::vector<PointXYZRT> PointCloudXYZRT;
+
 
 class LidarCameraFusion {
 public:
@@ -74,7 +92,15 @@ private:
         int cluster_tolerance,
         int min_cluster_size,
         int max_cluster_size);
+    
+    void FilterGroundPlane(const pcl::PointCloud<pcl::PointXYZ>& pc, pcl::PointCloud<pcl::PointXYZ>& ground, pcl::PointCloud<pcl::PointXYZ>& nonground) const;
+    void ClipAboveCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr& out_cloud,
+        const double& height, const double& near_dis, const double& far_dis, const double& left_right_dis);
 
+    void RemoveFloorRayFiltered(const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr& out_only_ground_cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr& out_no_ground_cloud,
+        const double& sensor_height, const double& local_max_slope, const double& general_max_slope);
+
+    void ConvertXYZ2XYZRT(const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_cloud, std::vector<PointCloudXYZRT>& out_radial_divided_cloud);
 private:
     ros::NodeHandle param_handle;
 
@@ -95,6 +121,9 @@ private:
     // 融合结果发布者
     ros::Publisher pub_bayes_semantic_cloud;
     ros::Publisher pub_max_semantic_cloud;
+
+    ros::Publisher pub_ground_cloud;
+    ros::Publisher pub_no_ground_cloud;
 
 private:
     // 当前图像帧的 ID
@@ -140,6 +169,12 @@ private:
 
     // 语义点云类型
     int semantic_type;
+
+    // Ray Floor Filter 参数
+    double radial_divide_angle;
+    double concentric_divide_distance;
+    double min_local_height_threshold;
+    
 
 private:
     // Max 语义

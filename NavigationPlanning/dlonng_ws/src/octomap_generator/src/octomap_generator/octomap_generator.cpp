@@ -41,16 +41,19 @@ void OctomapGenerator<CLOUD, OCTREE>::insertPointCloud(const pcl::PCLPointCloud2
 {
     // Voxel filter to down sample the point cloud
     // Create the filtering object
-    pcl::PCLPointCloud2::Ptr cloud_filtered(new pcl::PCLPointCloud2());
+    //pcl::PCLPointCloud2::Ptr cloud_filtered(new pcl::PCLPointCloud2());
     // Perform voxel filter
-    float voxel_flt_size = octomap_.getResolution();
-    pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
-    sor.setInputCloud(cloud);
-    sor.setLeafSize(voxel_flt_size, voxel_flt_size, voxel_flt_size);
-    sor.filter(*cloud_filtered);
+    //float voxel_flt_size = octomap_.getResolution();
+    //pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+    //sor.setInputCloud(cloud);
+    //sor.setLeafSize(voxel_flt_size, voxel_flt_size, voxel_flt_size);
+    //sor.filter(*cloud_filtered);
+
     // Convert to PCL pointcloud
     CLOUD pcl_cloud;
-    pcl::fromPCLPointCloud2(*cloud_filtered, pcl_cloud);
+    //pcl::fromPCLPointCloud2(*cloud_filtered, pcl_cloud);
+    pcl::fromPCLPointCloud2(*cloud, pcl_cloud);
+
     //std::cout << "Voxel filtered cloud size: "<< pcl_cloud.size() << std::endl;
     // Transform coordinate
     pcl::transformPointCloud(pcl_cloud, pcl_cloud, sensorToWorld);

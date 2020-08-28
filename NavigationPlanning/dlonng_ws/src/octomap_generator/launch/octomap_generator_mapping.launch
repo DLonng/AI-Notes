@@ -1,6 +1,6 @@
 <launch>
 
-  <include file = "$(find lidar_camera_fusion)/launch/lidar_camera_fusion.launch" />
+  <include file = "$(find lidar_camera_fusion)/launch/lidar_camera_fusion_no_msg.launch" />
 
   <include file = "$(find octomap_generator)/launch/octomap_generator.launch" />
 
