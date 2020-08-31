@@ -103,6 +103,7 @@ public:
   virtual bool openFile(const std::string& filename);
 
   void OctomapGeneratorFull(const octomap_msgs::Octomap::ConstPtr& octomap_generator_full);
+  void OctomapGeneratorLocal(const octomap_msgs::Octomap::ConstPtr& octomap_generator_local);
 
 protected:
   inline static void updateMinKey(const octomap::OcTreeKey& in, octomap::OcTreeKey& min) {
@@ -270,6 +271,7 @@ protected:
   bool m_useColoredMap;
 
   ros::Subscriber sub_octomap_generator_full;
+  ros::Subscriber sub_octomap_generator_local;
 };
 }
 

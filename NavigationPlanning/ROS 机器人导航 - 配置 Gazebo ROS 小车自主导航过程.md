@@ -354,6 +354,10 @@ roslaunch mbot_navigation gmapping.launch
 roslaunch agilex_navigation start_agilex_mini_nav_with_gmapping.launch
 ```
 
+## 四、配置导航参数文件
+
+
+
 ## X、遇到的问题
 
 - 一边 SLAM 一边导航还需要使用 AMCL 吗？不需要，一边定位一边导航只需要使用 SLAM 和 move_base 即可

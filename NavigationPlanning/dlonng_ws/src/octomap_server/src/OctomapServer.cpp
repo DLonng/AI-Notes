@@ -179,6 +179,7 @@ OctomapServer::OctomapServer(const ros::NodeHandle private_nh_, const ros::NodeH
         ROS_INFO("Publishing non-latched (topics are only prepared as needed, will only be re-published on map change");
 
     sub_octomap_generator_full = m_nh.subscribe("octomap_generator_full", 1, &OctomapServer::OctomapGeneratorFull, this);
+    //sub_octomap_generator_full = m_nh.subscribe("octomap_generator_local", 1, &OctomapServer::OctomapGeneratorLocal, this);
 
     m_markerPub = m_nh.advertise<visualization_msgs::MarkerArray>("occupied_cells_vis_array", 1, m_latchedTopics);
     m_binaryMapPub = m_nh.advertise<Octomap>("octomap_binary", 1, m_latchedTopics);
@@ -221,15 +222,48 @@ OctomapServer::~OctomapServer()
 
 void OctomapServer::OctomapGeneratorFull(const octomap_msgs::Octomap::ConstPtr& octomap_generator_full)
 {
-    ROS_INFO("OctomapGeneratorFull");
+    //ROS_INFO("OctomapGeneratorFull");
 
     AbstractOcTree* tree = octomap_msgs::fullMsgToMap(*octomap_generator_full);
 
     m_octree = dynamic_cast<OcTreeT*>(tree);
 
     if (!m_octree) {
-        ROS_ERROR("Could not read OcTree in file, currently there are no other types supported in .ot");
-        return ;
+        ROS_ERROR("OctomapGeneratorLocal: Could not dynamic_cast!");
+        return;
+    }
+
+    m_treeDepth = m_octree->getTreeDepth();
+    m_maxTreeDepth = m_treeDepth;
+    m_res = m_octree->getResolution();
+    m_gridmap.info.resolution = m_res;
+    double minX, minY, minZ;
+    double maxX, maxY, maxZ;
+    m_octree->getMetricMin(minX, minY, minZ);
+    m_octree->getMetricMax(maxX, maxY, maxZ);
+
+    m_updateBBXMin[0] = m_octree->coordToKey(minX);
+    m_updateBBXMin[1] = m_octree->coordToKey(minY);
+    m_updateBBXMin[2] = m_octree->coordToKey(minZ);
+
+    m_updateBBXMax[0] = m_octree->coordToKey(maxX);
+    m_updateBBXMax[1] = m_octree->coordToKey(maxY);
+    m_updateBBXMax[2] = m_octree->coordToKey(maxZ);
+
+    publishAll();
+}
+
+void OctomapServer::OctomapGeneratorLocal(const octomap_msgs::Octomap::ConstPtr& octomap_generator_local)
+{
+    //ROS_INFO("OctomapGeneratorLocal");
+
+    AbstractOcTree* tree = octomap_msgs::fullMsgToMap(*octomap_generator_local);
+
+    m_octree = dynamic_cast<OcTreeT*>(tree);
+
+    if (!m_octree) {
+        ROS_ERROR("OctomapGeneratorLocal: Could not dynamic_cast!");
+        return;
     }
 
     m_treeDepth = m_octree->getTreeDepth();

@@ -1,0 +1,34 @@
+# 最大范围传感器读数，机器人只会更新其地图包含距离移动基座 10 米以内的障碍物的信息
+obstacle_range: 10.0
+
+# 清除指定范围外的空间，在代价地图中清除 15.0 米外的障碍物
+raytrace_range: 15.0
+
+# 小车矩形底盘四个角位置
+footprint: [[0.2475, 0.3125], [0.2475, -0.3125], [-0.2475, -0.3125], [-0.2475, 0.3125]]
+# 圆形小车的底盘半径
+#robot_radius: 0.175
+
+# 膨胀半径，机器人与障碍物的最大安全距离 0.25m = 25cm
+# 如果机器人不能很好地通过窄门或其它狭窄的地方，则稍微减小这个值
+# 相反地，如果机器人不断地撞到东西，则尝试增大这个值
+#footprint_inflation: 0.01
+inflation_radius: 0.15
+
+max_obstacle_height: 0.6
+min_obstacle_height: 0.0
+
+# lab1
+#observation_sources: laser_scan_sensor
+# 全局和局部规划都使用点云话题 /cloud_topic
+#point_cloud_sensor: {data_type: LaserScan, topic: /scan, marking: true, clearing: true, expected_update_rate: 0}
+
+observation_sources: point_cloud_sensor
+point_cloud_sensor: {
+    sensor_frame: rslidar,
+    data_type: PointCloud2, 
+    topic: /rslidar_points,
+    marking: true,  # 是否向代价地图添加障碍物信息
+    clearing: true, # 是否从代价地图中清除障碍物信息
+    expected_update_rate: 0
+}

@@ -1,0 +1,13 @@
+<launch>
+
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" clear_params="true">
+        <rosparam file="$(find agilex_navigation)/config/gazebo/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find agilex_navigation)/config/gazebo/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find agilex_navigation)/config/gazebo/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find agilex_navigation)/config/gazebo/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find agilex_navigation)/config/gazebo/base_local_planner_params.yaml" command="load" />
+
+        <remap from="map" to="projected_map"/>
+    </node>
+
+</launch>

@@ -58,7 +58,7 @@ OctomapGeneratorNode::OctomapGeneratorNode(ros::NodeHandle& nh)
     local_map_pub = nh_.advertise<octomap_msgs::Octomap>("octomap_generator_local", 1, true);
 
     bool latchedTopics = true;
-    grid_map_pub = nh_.advertise<nav_msgs::OccupancyGrid>("octomap_generator_projected_map", 5, latchedTopics);
+    //grid_map_pub = nh_.advertise<nav_msgs::OccupancyGrid>("octomap_generator_projected_map", 5, latchedTopics);
 
     // 订阅小车的状态，获取线速度和角速度
     std::string scout_status;

@@ -5,8 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /ColorOccupancyGrid1
-        - /ColorOccupancyGrid1/Status1
         - /TF1/Frames1
       Splitter Ratio: 0.567058802
     Tree Height: 311
@@ -109,8 +107,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: -9999
-        Min Value: 9999
+        Max Value: 3.7904048
+        Min Value: -0.52425313
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -236,7 +234,7 @@ Visualization Manager:
       Queue Size: 5
       Value: true
       Voxel Alpha: 1
-      Voxel Coloring: Z-Axis
+      Voxel Coloring: Cell Color
       Voxel Rendering: Occupied Voxels
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
       Enabled: false
@@ -255,25 +253,19 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        aft_mapped:
+          Value: true
         base_link:
           Value: true
-        imu_link:
+        camera:
           Value: true
-        odom:
+        camera_init:
+          Value: true
+        laser_odom:
+          Value: true
+        map:
           Value: true
         rslidar:
-          Value: true
-        sensor_support:
-          Value: true
-        wheel_1:
-          Value: true
-        wheel_2:
-          Value: true
-        wheel_3:
-          Value: true
-        wheel_4:
-          Value: true
-        zed_camera:
           Value: true
       Marker Scale: 3
       Name: TF
@@ -281,22 +273,16 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        odom:
-          base_link:
-            imu_link:
+        base_link:
+          rslidar:
+            {}
+        camera:
+          {}
+        map:
+          camera_init:
+            aft_mapped:
               {}
-            rslidar:
-              {}
-            sensor_support:
-              zed_camera:
-                {}
-            wheel_1:
-              {}
-            wheel_2:
-              {}
-            wheel_3:
-              {}
-            wheel_4:
+            laser_odom:
               {}
       Update Interval: 0
       Value: true
@@ -325,25 +311,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 10.8076992
+      Distance: 11.0957203
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.01701975
-        Y: -2.49125123
-        Z: 2.42445021e-05
+        X: -0.653585911
+        Y: -1.60239625
+        Z: 2.23371535e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.764797688
+      Pitch: 0.399798036
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.25348568
+      Yaw: 3.20847297
     Saved: ~
 Window Geometry:
   Displays:

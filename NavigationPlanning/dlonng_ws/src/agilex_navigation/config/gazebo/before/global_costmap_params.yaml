@@ -1,0 +1,15 @@
+global_costmap:
+   global_frame: /map
+   robot_base_frame: base_link
+   # 数值越大 CPU 负担会越重，特别对于全局地图，通常设定一个相对较小、在 1.0 到 5.0 之间
+   update_frequency: 1.0
+   # 参数确定代价地图发布可视化信息的频率
+   publish_frequency: 1.0
+   # 确定是否由 map_server 提供的地图服务来进行代价地图的初始化
+   # 如果您没有使用现有的地图或地图服务器，将 static_map 参数设置为 false
+   # 当本地地图需要根据传感器数据动态更新的时候，我们通常会把这个参数设为 false
+   static_map: false
+   rolling_window: false
+   resolution: 0.01
+   transform_tolerance: 1.0
+   map_type: costmap
