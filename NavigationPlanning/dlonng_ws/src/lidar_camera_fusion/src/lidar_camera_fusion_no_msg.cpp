@@ -150,8 +150,8 @@ void LidarCameraFusion::InitROS()
     pub_max_semantic_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>(semantic_cloud_max, topic_buff);
     pub_bayes_semantic_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>(semantic_cloud_bayes, topic_buff);
 
-    pub_ground_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>("ground_cloud", topic_buff);
-    pub_no_ground_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>("no_ground_cloud", topic_buff);
+    pub_ground_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>("dlonng_ground_cloud", topic_buff);
+    pub_no_ground_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>("dlonng_no_ground_cloud", topic_buff);
 }
 
 /**
@@ -375,6 +375,16 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     pcl::PointCloud<pcl::PointXYZ>::Ptr no_ground_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>::Ptr ground_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     RemoveFloorRayFiltered(in_cloud_clipped, ground_cloud, no_ground_cloud, 0.49, 5.0, 3.0);
+
+    sensor_msgs::PointCloud2 no_ground_ros;
+    pcl::toROSMsg(*no_ground_cloud, no_ground_ros);
+    no_ground_ros.header = cloud_msg->header;
+    pub_no_ground_cloud.publish(no_ground_ros);
+
+    sensor_msgs::PointCloud2 ground_ros;
+    pcl::toROSMsg(*ground_cloud, ground_ros);
+    ground_ros.header = cloud_msg->header;
+    pub_ground_cloud.publish(ground_ros);
 
     auto in_cloud_msg = no_ground_cloud;
 #endif
@@ -678,7 +688,7 @@ void LidarCameraFusion::RemoveFloorRayFiltered(const pcl::PointCloud<pcl::PointX
 
     ConvertXYZ2XYZRT(in_cloud, radial_divided_cloud);
 
-//#pragma omp for
+    //#pragma omp for
     for (size_t i = 0; i < radial_divided_cloud.size(); i++) {
         float prev_radius = 0.0;
         float prev_height = -sensor_height;
@@ -764,7 +774,7 @@ void LidarCameraFusion::ConvertXYZ2XYZRT(const pcl::PointCloud<pcl::PointXYZ>::P
         out_radial_divided_cloud[radial_div].push_back(p);
     }
 
-// #pragma omp for
+    // #pragma omp for
     for (size_t j = 0; j < out_radial_divided_cloud.size(); j++) {
         std::sort(out_radial_divided_cloud[j].begin(), out_radial_divided_cloud[j].end(),
             [](const PointXYZRT& a, const PointXYZRT& b) { return a.radius < b.radius; });

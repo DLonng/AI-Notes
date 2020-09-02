@@ -354,7 +354,46 @@ roslaunch mbot_navigation gmapping.launch
 roslaunch agilex_navigation start_agilex_mini_nav_with_gmapping.launch
 ```
 
-## 四、配置导航参数文件
+## 四、详细配置导航参数文件
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 未解决的问题
+
+- move_base 是否需要 map_server 提供代价地图？
+- move_base 订阅的点云是否可以是预处理后的点云？
+- 自己 octomap_server 投影的 costmap 和 move_base 内部通过点云生成的 costmap 有无区别？
+- 自己导航是否应该先构建 2D 导航地图？
+
+
 
 
 
@@ -453,4 +492,21 @@ global_costmap:
 - `/opt/ros/kinetic/include/pcl_ros/`
 
 分割链接错误的原因可能跟 PCL 版本有关，在小车上测试，CMakeLists 中 PCL 也要加上应该。
+
+#### 5 RVIZ 机器人初始位置
+
+```shell
+The robot's start position is off the global costmap. Planning will always fail, are you sure the robot has been properly localized?
+```
+
+解决方法：https://answers.ros.org/question/66399/move_base-start-position-is-off-the-global-costmap/
+
+#### 6 NO Path
+
+```shell
+[ERROR] [1599035118.458805405, 428.072000000]: NO PATH!
+[ERROR] [1599035118.458838884, 428.072000000]: Failed to get a plan from potential when a legal potential was found. This shouldn't happen.
+```
+
+
 

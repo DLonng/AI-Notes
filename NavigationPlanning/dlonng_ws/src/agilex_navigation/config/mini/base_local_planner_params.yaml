@@ -1,12 +1,20 @@
-# 速度和加速度限制需要搞清楚！
+# 用于 mini 小车的实际导航测试！
 TrajectoryPlannerROS:
-  max_vel_x: 0.3
+  # 最大前向速度 20 km/h = 5.56 m/s
+  max_vel_x: 0.5
+  # 最小前向速度 0.1 m/s
   min_vel_x: 0.1
+  # 基底允许的最大旋转速度，单位为弧度/秒
   max_vel_theta: 1.0
+  # 在原地旋转时允许的最小旋转速度，单位为弧度/秒 defalt: 0.4
   min_in_place_vel_theta: 0.4
 
-  acc_lim_theta: 3.2
-  acc_lim_x: 2.5
-  acc_lim_y: 2.5
+  # 机器人的旋转加速度极限，单位是弧度/秒^2 defalt: 3.2
+  acc_lim_theta: 1.0
+  # 机器人的 x 加速度极限，单位是米/秒^2
+  acc_lim_x: 0.5
+  # 机器人的 y 加速度极限，单位是米/秒^2 defalt: 2.5
+  acc_lim_y: 0.5
 
+  # 是否是完整的机器人
   holonomic_robot: true

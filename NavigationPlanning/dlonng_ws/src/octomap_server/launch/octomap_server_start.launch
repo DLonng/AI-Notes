@@ -4,7 +4,7 @@
     <!-- <param name = "map_file" type = "string" value = "/home/dlonng/Documents/octomap_bags/HangYuanMap/HangYuan-2020-06-18-17-00-0.10m-0.5r-outrem-1m-10n.ot" /> -->
 
     <!-- resolution in meters per pixel -->
-    <param name = "resolution" value = "0.15" />
+    <param name = "resolution" value = "0.10" />
 
     <!-- name of the fixed frame, needs to be "/map" for SLAM -->
     <param name = "frame_id" type = "string" value = "map" />
@@ -13,13 +13,13 @@
     <param name = "sensor_model/max_range" value = "15.0" />
 
     <!-- 机器人坐标系 base_link，滤除地面需要该 frame -->
-    <param name = "base_frame_id" type = "string" value = "base_link" />
+    <!--<param name = "base_frame_id" type = "string" value = "base_link" />-->
 
     <!-- filter ground plane, distance value should be big! -->
-	  <param name = "filter_ground" type = "bool" value = "true" />
-    <param name = "ground_filter/distance" type = "double" value = "0.2" />
+	  <!--<param name = "filter_ground" type = "bool" value = "true" />-->
+    <!--<param name = "ground_filter/distance" type = "double" value = "0.2" />-->
     <!-- 分割地面的 Z 轴阈值 value 值 -->
-	  <param name = "ground_filter/plane_distance" type = "double" value = "1.0" />
+	  <!--<param name = "ground_filter/plane_distance" type = "double" value = "1.0" />-->
 
     <!-- 直通滤波的 Z 轴范围，保留 [-1.0, 10.0] 范围内的点 -->
     <!--<param name = "pointcloud_max_z" type = "double" value = "50.0" /> -->

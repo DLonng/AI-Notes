@@ -5,6 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /ColorOccupancyGrid1
+        - /ColorOccupancyGrid1/Status1
         - /TF1/Frames1
       Splitter Ratio: 0.567058802
     Tree Height: 311
@@ -107,8 +109,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 3.7904048
-        Min Value: -0.52425313
+        Max Value: -9999
+        Min Value: 9999
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -234,7 +236,7 @@ Visualization Manager:
       Queue Size: 5
       Value: true
       Voxel Alpha: 1
-      Voxel Coloring: Cell Color
+      Voxel Coloring: Z-Axis
       Voxel Rendering: Occupied Voxels
     - Class: octomap_rviz_plugin/ColorOccupancyGrid
       Enabled: false
@@ -253,19 +255,27 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        aft_mapped:
-          Value: true
         base_link:
           Value: true
-        camera:
-          Value: true
-        camera_init:
-          Value: true
-        laser_odom:
+        imu_link:
           Value: true
         map:
           Value: true
+        odom:
+          Value: true
         rslidar:
+          Value: true
+        sensor_support:
+          Value: true
+        wheel_1:
+          Value: true
+        wheel_2:
+          Value: true
+        wheel_3:
+          Value: true
+        wheel_4:
+          Value: true
+        zed_camera:
           Value: true
       Marker Scale: 3
       Name: TF
@@ -273,17 +283,24 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        base_link:
-          rslidar:
-            {}
-        camera:
-          {}
         map:
-          camera_init:
-            aft_mapped:
-              {}
-            laser_odom:
-              {}
+          odom:
+            base_link:
+              imu_link:
+                {}
+              rslidar:
+                {}
+              sensor_support:
+                zed_camera:
+                  {}
+              wheel_1:
+                {}
+              wheel_2:
+                {}
+              wheel_3:
+                {}
+              wheel_4:
+                {}
       Update Interval: 0
       Value: true
   Enabled: true
@@ -326,10 +343,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.399798036
+      Pitch: 0.759797692
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 3.20847297
+      Yaw: 3.64847946
     Saved: ~
 Window Geometry:
   Displays:

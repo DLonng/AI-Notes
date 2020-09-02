@@ -1,6 +1,7 @@
 <launch>
-    <include file = "$(find lidar_camera_fusion)/launch/lidar_camera_fusion_no_msg.launch" /> 
+    <include file = "$(find lidar_camera_fusion)/launch/lidar_camera_fusion_no_msg.launch" />
 
+    <!-- octomap_generator 仿真会突然卡死，单独启动 mapping 也会，暂时未解决 -->
     <include file = "$(find octomap_generator)/launch/octomap_generator.launch" />
 
     <include file = "$(find octomap_server)/launch/octomap_server_start.launch" />

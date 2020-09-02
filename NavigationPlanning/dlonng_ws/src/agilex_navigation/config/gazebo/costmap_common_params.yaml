@@ -1,34 +1,72 @@
-# 最大范围传感器读数，机器人只会更新其地图包含距离移动基座 10 米以内的障碍物的信息
-obstacle_range: 10.0
-
-# 清除指定范围外的空间，在代价地图中清除 15.0 米外的障碍物
-raytrace_range: 15.0
-
 # 小车矩形底盘四个角位置
 footprint: [[0.2475, 0.3125], [0.2475, -0.3125], [-0.2475, -0.3125], [-0.2475, 0.3125]]
 # 圆形小车的底盘半径
 #robot_radius: 0.175
 
-# 膨胀半径，机器人与障碍物的最大安全距离 0.25m = 25cm
-# 如果机器人不能很好地通过窄门或其它狭窄的地方，则稍微减小这个值
-# 相反地，如果机器人不断地撞到东西，则尝试增大这个值
-#footprint_inflation: 0.01
-inflation_radius: 0.15
 
-max_obstacle_height: 0.6
-min_obstacle_height: 0.0
+# http://wiki.ros.org/costmap_2d/hydro/staticmap
+static_layer:
+    enable: true
+    unknown_cost_value: -1
+    lethal_cost_threshold: 100
+    # 是否需要呢？ 这个参数不是很明白
+    map_topic: /projected_map
+    first_map_only: false
+    # subscribe map_topic_updates = /projected_map_updates
+    # 自己的地图会自动更新
+    subscribe_to_updates: false
+    track_unknown_space: true
+    use_maximum: false
+    trinary_costmap: true
 
-# lab1
-#observation_sources: laser_scan_sensor
-# 全局和局部规划都使用点云话题 /cloud_topic
-#point_cloud_sensor: {data_type: LaserScan, topic: /scan, marking: true, clearing: true, expected_update_rate: 0}
+# http://wiki.ros.org/costmap_2d/hydro/obstacles
+obstacle_layer:
+    enable: true
+    observation_sources: point_cloud_sensor
+    point_cloud_sensor: {
+        topic: /dlonng_no_ground_cloud, # 这个应该换成预处理后滤除地面的点云
+        sensor_frame: rslidar,
+        data_type: PointCloud2,
+        observation_persistence: 0.0,
+        expected_update_rate: 0.0, # 0.0 的值允许无限时间间隔读取
+        clearing: true, # 是否从代价地图中清除障碍物信息
+        marking: true,  # 是否向代价地图添加障碍物信息
+        max_obstacle_height: 2.0,
+        min_obstacle_height: 0.0,
+        obstacle_range: 15.0, # 传感器最大探测距离，在代价地图中引入探测到的障碍物信息
+        raytrace_range: 3.0, # 清楚代价地图中障碍物的距离
+        inf_is_valid: false
+    }
 
-observation_sources: point_cloud_sensor
-point_cloud_sensor: {
-    sensor_frame: rslidar,
-    data_type: PointCloud2,
-    topic: /rslidar_points,
-    marking: true,  # 是否向代价地图添加障碍物信息
-    clearing: true, # 是否从代价地图中清除障碍物信息
-    expected_update_rate: 10 # 设置跟雷达的频率相同 10Hz
-}
+    # Global Filtering Parameters
+    max_obstacle_height: 2.0
+    obstacle_range: 15.0
+    raytrace_range: 3.0
+
+    # ObstacleCostmapPlugin
+    track_unknown_space: true
+    footprint_clearing_enabled: true
+
+    # VoxelCostmapPlugin
+    #origin_z: 0.0
+    #z_resolution: 0.2
+    #z_voxels: 10
+    #unknown_threshold: 10
+    #mark_threshold: 0
+    #publish_voxel_map: false
+    #footprint_clearing_enabled: true
+
+# http://wiki.ros.org/costmap_2d/hydro/inflation
+global_inflation_layer:
+    enable: true
+    # 膨胀半径，机器人与障碍物的最大安全距离 0.15m = 15cm
+    # 如果机器人不能很好地通过窄门或其它狭窄的地方，则稍微减小这个值
+    # 相反地，如果机器人不断地撞到东西，则尝试增大这个值
+    inflation_radius: 0.15
+    cost_scaling_factor: 2.0
+
+# http://wiki.ros.org/costmap_2d/hydro/inflation
+local_inflation_layer:
+    enable: true
+    inflation_radius: 0.15
+    cost_scaling_factor: 5.0

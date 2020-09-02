@@ -4,10 +4,14 @@
     <include file = "$(find octomap_generator)/launch/octomap_generator.launch" />
 
     <include file = "$(find octomap_server)/launch/octomap_server_start.launch" />
+
+    <include file = "$(find lego_loam)/launch/run_laser_odom.launch" />
     
     <include file = "$(find agilex_navigation)/launch/mini_nav/move_base.launch"/>
 
-    <node pkg="tf" type="static_transform_publisher" name="map_odom_broadcaster" args="0 0 0 0 0 0 /map /odom 100" />
+    <!-- <node pkg="tf" type="static_transform_publisher" name="map_odom_broadcaster" args="0 0 0 0 0 0 /map /odom 100" /> -->
+
+    <node pkg="tf" type="static_transform_publisher" name="base_rslidar_broadcaster" args="0 0 0 0 0 0 /base_link /rslidar 100" />
     
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find agilex_navigation)/rviz/agilex_mini_nav.rviz"/>
 

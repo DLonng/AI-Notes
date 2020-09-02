@@ -1,0 +1,7 @@
+# 先测试 base_local_planner
+TebLocalPlannerROS:
+  odom_topic: odom
+  map_frame: map
+
+  # Robot Configuration Parameters
+
