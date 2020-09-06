@@ -480,7 +480,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
         pcl::toROSMsg(*out_cloud, max_semantic_cloud);
         max_semantic_cloud.header = cloud_msg->header;
 
-        ROS_INFO("[%s]: [%s] publish max_semantic_cloud.", kNodeName.c_str(), __FUNCTION__);
+        //ROS_INFO("[%s]: [%s] publish max_semantic_cloud.", kNodeName.c_str(), __FUNCTION__);
 
         pub_max_semantic_cloud.publish(max_semantic_cloud);
 
