@@ -369,12 +369,51 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 #endif
 
 #if 1
+    std::string m_worldFrameId = "map";
+    std::string m_baseFrameId = "base_link";
+
+    tf::StampedTransform sensorToBaseTf, baseToWorldTf;
+    try {
+        transform_listener.waitForTransform(m_baseFrameId, cloud_msg->header.frame_id, ros::Time(0), ros::Duration(3.0));
+        transform_listener.lookupTransform(m_baseFrameId, cloud_msg->header.frame_id, ros::Time(0), sensorToBaseTf);
+        transform_listener.lookupTransform(m_worldFrameId, m_baseFrameId, ros::Time(0), baseToWorldTf);
+
+    } catch (tf::TransformException& ex) {
+        ROS_ERROR_STREAM("Transform error for ground plane filter: " << ex.what() << ", quitting callback.\n");
+    }
+
+    Eigen::Matrix4f sensorToBase, baseToWorld;
+    pcl_ros::transformAsMatrix(sensorToBaseTf, sensorToBase);
+    pcl_ros::transformAsMatrix(baseToWorldTf, baseToWorld);
+
+    auto pc = *pcl_cloud_msg;
+    pcl::transformPointCloud(pc, pc, sensorToBase);
+    pcl::PassThrough<pcl::PointXYZ> pass_z;
+    pass_z.setFilterFieldName("z");
+    pass_z.setFilterLimits(0.0, 3.0);
+    pass_z.setInputCloud(pc.makeShared());
+    pass_z.filter(*pcl_cloud_msg);
+
+
     pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_clipped(new pcl::PointCloud<pcl::PointXYZ>);
-    ClipAboveCloud(pcl_cloud_msg, in_cloud_clipped, 2.0, 2, 40, 7);
+    double clip_height = 2.0;
+    double clip_near_dist = 2.0;
+    double clip_far_dist = 40.0;
+    // 这个参数不使用
+    double clip_left_right_dist = 7.0;
+    // 只去掉高度过高，距离过近，距离过远的点
+    ClipAboveCloud(pcl_cloud_msg, in_cloud_clipped, clip_height, clip_near_dist, clip_far_dist, clip_left_right_dist);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr no_ground_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>::Ptr ground_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    RemoveFloorRayFiltered(in_cloud_clipped, ground_cloud, no_ground_cloud, 0.49, 5.0, 3.0);
+
+    // 雷达高度
+    double sensor_height = 0.49;
+    // 同条射线上邻近两点的坡度阈值，单位度
+    double local_slope_threshold = 10.0; // 5.0
+    // 整个地面的坡度阈值，单位度
+    double general_slope_threshold = 5.0; // 3.0
+    RemoveFloorRayFiltered(in_cloud_clipped, ground_cloud, no_ground_cloud, sensor_height, local_slope_threshold, general_slope_threshold);
 
     sensor_msgs::PointCloud2 no_ground_ros;
     pcl::toROSMsg(*no_ground_cloud, no_ground_ros);
@@ -387,6 +426,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     pub_ground_cloud.publish(ground_ros);
 
     auto in_cloud_msg = no_ground_cloud;
+
 #endif
 
     //auto in_cloud_msg = pcl_cloud_msg;
@@ -661,7 +701,8 @@ void LidarCameraFusion::ClipAboveCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr
         if (in_cloud->points[i].z > height) {
             indices.indices.push_back(i);
         } else if (in_cloud->points[i].x < 0 || in_cloud->points[i].y > left_right_dis || in_cloud->points[i].y < -left_right_dis) { // 激光雷达 x正方向朝前，y正方向朝左，z正方向朝上
-            indices.indices.push_back(i);
+            //indices.indices.push_back(i);
+            ;
         } else if ((dis = sqrt(pow(in_cloud->points[i].x, 2) + pow(in_cloud->points[i].y, 2))) < near_dis || dis > far_dis) {
             indices.indices.push_back(i);
         }
@@ -725,6 +766,7 @@ void LidarCameraFusion::RemoveFloorRayFiltered(const pcl::PointCloud<pcl::PointX
             } else {
                 prev_ground = false;
             }
+
             prev_radius = radial_divided_cloud[i][j].radius;
             prev_height = radial_divided_cloud[i][j].point.z;
         }

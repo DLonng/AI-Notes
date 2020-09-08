@@ -15,4 +15,4 @@ octomap:
     prob_miss: 0.4
     save_path : "/home/dlonng/map.ot"
     outrem_radius: 1.0
-    outrem_neighbors: 10
+    outrem_neighbors: 20

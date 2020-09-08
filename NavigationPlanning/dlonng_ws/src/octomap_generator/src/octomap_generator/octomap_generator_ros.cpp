@@ -176,17 +176,17 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     outrem.filter(*cloud);
 
     // Get tf transform
-    tf::StampedTransform sensorToWorldTf;
+    tf::StampedTransform baseToWorldTf;
     try {
-        tf_listener_.lookupTransform(world_frame_id_, cloud_msg->header.frame_id, cloud_msg->header.stamp, sensorToWorldTf);
+        tf_listener_.lookupTransform("map", "base_link", ros::Time(0), baseToWorldTf);
     } catch (tf::TransformException& ex) {
         ROS_ERROR_STREAM("Transform error of sensor data: " << ex.what() << ", quitting callback");
         return;
     }
 
     // Transform coordinate
-    Eigen::Matrix4f sensorToWorld;
-    pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
+    Eigen::Matrix4f baseToWorld;
+    pcl_ros::transformAsMatrix(baseToWorldTf, baseToWorld);
 
 #if 0
     // 对 cloud 过滤地面点云
@@ -206,8 +206,8 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
 #endif 
 
     // 小车静止不动也需要插入地图
-    octomap_generator_->insertPointCloud(cloud, sensorToWorld);
-    local_octomap_generator->insertPointCloud(cloud, sensorToWorld);
+    octomap_generator_->insertPointCloud(cloud, baseToWorld);
+    local_octomap_generator->insertPointCloud(cloud, baseToWorld);
 
     // Publish octomap
     map_msg_.header.frame_id = world_frame_id_;
