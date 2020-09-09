@@ -38,6 +38,8 @@
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
 
+#include <pcl/filters/radius_outlier_removal.h>
+
 #include <opencv-3.3.1-dev/opencv2/opencv.hpp>
 
 #include <rospy_tutorials/Floats.h>
@@ -190,6 +192,8 @@ private:
 
     // 判断是否找到雷达和相机之间的坐标转换关系
     bool camera_lidar_tf_ok;
+
+    Eigen::Matrix4f lidar_to_base;
 
 private:
     static const std::string kNodeName;

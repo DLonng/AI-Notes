@@ -152,6 +152,18 @@ void LidarCameraFusion::InitROS()
 
     pub_ground_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>("dlonng_ground_cloud", topic_buff);
     pub_no_ground_cloud = topic_handle.advertise<sensor_msgs::PointCloud2>("dlonng_no_ground_cloud", topic_buff);
+
+
+    tf::StampedTransform lidar_to_base_tf;
+    try {
+        transform_listener.waitForTransform("base_link", "rslidar", ros::Time(0), ros::Duration(3.0));
+        transform_listener.lookupTransform("base_link", "rslidar", ros::Time(0), lidar_to_base_tf);
+
+    } catch (tf::TransformException& ex) {
+        ROS_ERROR_STREAM("Transform error for ground plane filter: " << ex.what() << ", quitting callback.\n");
+    }
+
+    pcl_ros::transformAsMatrix(lidar_to_base_tf, lidar_to_base);
 }
 
 /**
@@ -368,35 +380,21 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     auto in_cloud_msg = no_ground_cloud;
 #endif
 
-#if 1
-    std::string m_worldFrameId = "map";
-    std::string m_baseFrameId = "base_link";
-
-    tf::StampedTransform sensorToBaseTf, baseToWorldTf;
-    try {
-        transform_listener.waitForTransform(m_baseFrameId, cloud_msg->header.frame_id, ros::Time(0), ros::Duration(3.0));
-        transform_listener.lookupTransform(m_baseFrameId, cloud_msg->header.frame_id, ros::Time(0), sensorToBaseTf);
-        transform_listener.lookupTransform(m_worldFrameId, m_baseFrameId, ros::Time(0), baseToWorldTf);
-
-    } catch (tf::TransformException& ex) {
-        ROS_ERROR_STREAM("Transform error for ground plane filter: " << ex.what() << ", quitting callback.\n");
-    }
-
-    Eigen::Matrix4f sensorToBase, baseToWorld;
-    pcl_ros::transformAsMatrix(sensorToBaseTf, sensorToBase);
-    pcl_ros::transformAsMatrix(baseToWorldTf, baseToWorld);
-
+#if 0
+    // 对 Z 轴做直通滤波
     auto pc = *pcl_cloud_msg;
-    pcl::transformPointCloud(pc, pc, sensorToBase);
+    pcl::transformPointCloud(pc, pc, lidar_to_base);
     pcl::PassThrough<pcl::PointXYZ> pass_z;
     pass_z.setFilterFieldName("z");
-    pass_z.setFilterLimits(0.0, 3.0);
+    pass_z.setFilterLimits(0.0, 5.0);
     pass_z.setInputCloud(pc.makeShared());
     pass_z.filter(*pcl_cloud_msg);
+    //pass_z.filter(pc);
+    //pcl::transformPointCloud(pc, *pcl_cloud_msg, lidar_to_base.inverse());
 
-
+    // 滤出不符合条件的点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_clipped(new pcl::PointCloud<pcl::PointXYZ>);
-    double clip_height = 2.0;
+    double clip_height = 5.0;
     double clip_near_dist = 2.0;
     double clip_far_dist = 40.0;
     // 这个参数不使用
@@ -404,6 +402,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     // 只去掉高度过高，距离过近，距离过远的点
     ClipAboveCloud(pcl_cloud_msg, in_cloud_clipped, clip_height, clip_near_dist, clip_far_dist, clip_left_right_dist);
 
+    // 滤除地面点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr no_ground_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>::Ptr ground_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -429,7 +428,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
 #endif
 
-    //auto in_cloud_msg = pcl_cloud_msg;
+    auto in_cloud_msg = pcl_cloud_msg;
 
     int row = 0;
     int col = 0;
@@ -519,6 +518,8 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
         sensor_msgs::PointCloud2 max_semantic_cloud;
         pcl::toROSMsg(*out_cloud, max_semantic_cloud);
         max_semantic_cloud.header = cloud_msg->header;
+        //max_semantic_cloud.header.frame_id = "base_link";
+        //max_semantic_cloud.header.stamp = ros::Time(0);
 
         //ROS_INFO("[%s]: [%s] publish max_semantic_cloud.", kNodeName.c_str(), __FUNCTION__);
 

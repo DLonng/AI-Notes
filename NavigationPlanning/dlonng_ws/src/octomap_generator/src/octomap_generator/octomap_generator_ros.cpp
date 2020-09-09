@@ -177,8 +177,10 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
 
     // Get tf transform
     tf::StampedTransform baseToWorldTf;
+    tf::StampedTransform sensorToWorldTf;
     try {
         tf_listener_.lookupTransform("map", "base_link", ros::Time(0), baseToWorldTf);
+        tf_listener_.lookupTransform("map", "rslidar", ros::Time(0), sensorToWorldTf);
     } catch (tf::TransformException& ex) {
         ROS_ERROR_STREAM("Transform error of sensor data: " << ex.what() << ", quitting callback");
         return;
@@ -186,28 +188,13 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
 
     // Transform coordinate
     Eigen::Matrix4f baseToWorld;
+    Eigen::Matrix4f sensorToWorld;
     pcl_ros::transformAsMatrix(baseToWorldTf, baseToWorld);
-
-#if 0
-    // 对 cloud 过滤地面点云
-    // pc2 -> pc
-    PCLSemanticsMax pc_cloud;
-    pcl::fromPCLPointCloud2(*cloud, pc_cloud);
-
-    // 把点云帧转到 base_link 坐标系？
-
-    // segmention
-    PCLSemanticsMax pc_ground_cloud;
-    PCLSemanticsMax pc_no_ground_cloud;
-    FilterGroundPlane(pc_cloud, pc_ground_cloud, pc_no_ground_cloud);
-
-    // pc -> pc2
-    pcl::toPCLPointCloud2(pc_no_ground_cloud, *cloud);
-#endif 
+    pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
 
     // 小车静止不动也需要插入地图
-    octomap_generator_->insertPointCloud(cloud, baseToWorld);
-    local_octomap_generator->insertPointCloud(cloud, baseToWorld);
+    octomap_generator_->insertPointCloud(cloud, sensorToWorld);
+    //local_octomap_generator->insertPointCloud(cloud, baseToWorld);
 
     // Publish octomap
     map_msg_.header.frame_id = world_frame_id_;
@@ -236,9 +223,11 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     local_map_msg.header.frame_id = world_frame_id_;
     local_map_msg.header.stamp = cloud_msg->header.stamp;
     if (octomap_msgs::fullMapToMsg(*local_octomap_generator->getOctree(), local_map_msg))
-        local_map_pub.publish(local_map_msg);
+        ;//local_map_pub.publish(local_map_msg);
     else
         ROS_ERROR("Error serializing Local OctoMap");
+    
+    
 }
 
 // 还是不能使用，编译不能通过！

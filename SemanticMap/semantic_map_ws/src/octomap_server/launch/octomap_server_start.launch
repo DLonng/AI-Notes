@@ -8,7 +8,7 @@
 
     <!-- name of the fixed frame, needs to be "/map" for SLAM -->
     <!-- 静态全局地图的 frame_id，但在增量式构建地图时，需要提供输入的点云帧和静态全局帧之间的 TF 变换 -->
-    <param name = "frame_id" type = "string" value = "camera_init" />
+    <param name = "frame_id" type = "string" value = "map" />
 
     <!-- set min to speed up! -->
     <param name = "sensor_model/max_range" value = "15.0" />
@@ -35,12 +35,12 @@
     <param name = "outrem_neighbors" type = "int" value = "10" />
 
     <!-- when building map, set to false! -->
-    <param name = "latch" value = "false" /> 
+    <param name = "latch" value = "false" />
 
     <!-- topic from where pointcloud2 messages are subscribed -->
     <!-- 要订阅的点云主题名称 /pointcloud/output -->
     <!-- 这句话的意思是把当前节点订阅的主题名称从 cloud_in 变为 /pointcloud/output -->
-    <remap from = "/cloud_in" to = "/fusion_cloud" />
+    <remap from = "/cloud_in" to = "/rslidar_points" />
  
   </node>
 </launch>
