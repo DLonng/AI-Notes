@@ -193,7 +193,7 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
 
     // 小车静止不动也需要插入地图
-    octomap_generator_->insertPointCloud(cloud, sensorToWorld);
+    octomap_generator_->insertPointCloud(cloud, baseToWorld);
     //local_octomap_generator->insertPointCloud(cloud, baseToWorld);
 
     // Publish octomap

@@ -10,7 +10,7 @@ static_layer:
     unknown_cost_value: -1
     lethal_cost_threshold: 100
     # 是否需要呢？ 这个参数不是很明白
-    map_topic: /projected_map
+    map_topic: /map
     first_map_only: false
     # subscribe map_topic_updates = /projected_map_updates
     # 自己的地图会自动更新

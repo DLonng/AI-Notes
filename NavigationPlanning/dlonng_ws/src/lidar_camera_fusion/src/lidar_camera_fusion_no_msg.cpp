@@ -380,13 +380,13 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
     auto in_cloud_msg = no_ground_cloud;
 #endif
 
-#if 0
+#if 1
     // 对 Z 轴做直通滤波
     auto pc = *pcl_cloud_msg;
     pcl::transformPointCloud(pc, pc, lidar_to_base);
     pcl::PassThrough<pcl::PointXYZ> pass_z;
     pass_z.setFilterFieldName("z");
-    pass_z.setFilterLimits(0.0, 5.0);
+    pass_z.setFilterLimits(0.0, 2.0);
     pass_z.setInputCloud(pc.makeShared());
     pass_z.filter(*pcl_cloud_msg);
     //pass_z.filter(pc);
@@ -394,7 +394,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
     // 滤出不符合条件的点云
     pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_clipped(new pcl::PointCloud<pcl::PointXYZ>);
-    double clip_height = 5.0;
+    double clip_height = 2.0;
     double clip_near_dist = 2.0;
     double clip_far_dist = 40.0;
     // 这个参数不使用
@@ -428,7 +428,7 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
 
 #endif
 
-    auto in_cloud_msg = pcl_cloud_msg;
+    //auto in_cloud_msg = pcl_cloud_msg;
 
     int row = 0;
     int col = 0;
@@ -518,8 +518,8 @@ void LidarCameraFusion::CloudRawCallback(const sensor_msgs::PointCloud2::ConstPt
         sensor_msgs::PointCloud2 max_semantic_cloud;
         pcl::toROSMsg(*out_cloud, max_semantic_cloud);
         max_semantic_cloud.header = cloud_msg->header;
-        //max_semantic_cloud.header.frame_id = "base_link";
-        //max_semantic_cloud.header.stamp = ros::Time(0);
+        max_semantic_cloud.header.frame_id = "base_link";
+        max_semantic_cloud.header.stamp = ros::Time(0);
 
         //ROS_INFO("[%s]: [%s] publish max_semantic_cloud.", kNodeName.c_str(), __FUNCTION__);
 

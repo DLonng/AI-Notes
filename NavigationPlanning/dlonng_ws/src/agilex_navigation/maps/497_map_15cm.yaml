@@ -1,0 +1,7 @@
+image: 497_map_15cm.pgm
+resolution: 0.150000
+origin: [-5.550000, -19.050000, -nan]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+

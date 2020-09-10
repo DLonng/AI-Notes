@@ -1,5 +1,12 @@
 <launch>
-    <include file = "$(find lidar_camera_fusion)/launch/lidar_camera_fusion_no_msg.launch" /> 
+
+    <!-- 读取已经构建的地图，设置地图的配置文件 -->
+    <!--<arg name="map" default="map_497_10cm.yaml" /> -->
+
+    <!-- 运行地图服务器，并且加载设置的地图，发布 /map -->
+    <!--<node name="map_server" pkg="map_server" type="map_server" args="$(find agilex_navigation)/maps/$(arg map)"/> -->
+
+    <include file = "$(find lidar_camera_fusion)/launch/lidar_camera_fusion_no_msg.launch" />
 
     <include file = "$(find octomap_generator)/launch/octomap_generator.launch" />
 
