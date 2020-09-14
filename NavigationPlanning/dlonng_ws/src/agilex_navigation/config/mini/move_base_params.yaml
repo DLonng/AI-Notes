@@ -1,6 +1,6 @@
 base_global_planner: "global_planner/GlobalPlanner"
-#base_local_planner: "base_local_planner/TrajectoryPlannerROS"
-base_local_planner: "teb_local_planner/TebLocalPlannerROS"
+base_local_planner: "base_local_planner/TrajectoryPlannerROS"
+#base_local_planner: "teb_local_planner/TebLocalPlannerROS"
 
 # 运行控制向底座发送速度指令的频率。
 controller_frequency: 10.0

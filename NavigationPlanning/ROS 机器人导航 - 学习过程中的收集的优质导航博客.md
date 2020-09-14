@@ -18,6 +18,7 @@
 - [https://blog.csdn.net/crp997576280/article/details/102983855](https://blog.csdn.net/crp997576280/article/details/102983855)
 - [ROS——Gazebo 仿真 —— 四轮小车（SmartCar）详细教程](https://blog.csdn.net/qq_16775293/article/details/88189184)
 - [ROS 与 GAZEBO 实时硬件仿真（1）——urdf 的编写](https://blog.csdn.net/wubaobao1993/article/details/80947968)
+- [ros-semantic-mapper 语义地图开源 ROS 包调试](https://blog.csdn.net/qintianhaohao/article/details/81349210)
 
 
 
@@ -51,6 +52,7 @@
 ### 古月居
 
 - [SLAM 建图与自主避障导航 ——3.ros-navigation 机器人自主避障导航](https://www.guyuehome.com/8063)
+- [ROS 探索总结（四十）——dynamic reconfigure](https://www.guyuehome.com/1173)
 
 
 
@@ -84,3 +86,41 @@
 - [【ROS】移动机器人导航仿真（1）——3D 建模与简单移动](http://www.jeepxie.net/article/96362.html)
 - [【ROS-Gazebo】SDF 与 URDF 的相互转换](https://www.guyuehome.com/7117)
 - [使用 Gazebo 的 GUI 创建机器人]([https://gaoyichao.com/Xiaotu/?book=ros&title=%E4%BD%BF%E7%94%A8Gazebo%E7%9A%84GUI%E5%88%9B%E5%BB%BA%E6%9C%BA%E5%99%A8%E4%BA%BA](https://gaoyichao.com/Xiaotu/?book=ros&title=使用Gazebo的GUI创建机器人))
+
+
+
+### 语义 SLAM
+
+- [语义 SLAM 开源代码汇总](https://zhuanlan.zhihu.com/p/64825421)
+
+
+
+### Navigation 源码解析
+
+- https://my.oschina.net/u/4256916/blog/3311726
+- https://www.guyuehome.com/270
+- [https://hujun1413.github.io/2017/11/25/Navigation/move_base%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0/](https://hujun1413.github.io/2017/11/25/Navigation/move_base源码学习/)
+- https://blog.csdn.net/david_han008/article/details/72032898
+- https://gaoyichao.com/Xiaotu/?book=turtlebot&title=index
+- https://github.com/ahuer2435/ros_naviagtion_study
+- https://zhuanlan.zhihu.com/ros-nav
+- http://hefvcjm.com/2019/07/14/move_base_leaning_firework_1/
+
+
+
+### 路径规划入门
+
+- https://zhuanlan.zhihu.com/p/51372134
+- https://blog.csdn.net/gwplovekimi/article/details/104629629
+
+
+
+### 占据栅格地图
+
+- https://zhuanlan.zhihu.com/p/21738718
+
+
+
+### Octomap 路径规划器
+
+- https://github.com/fferri/octomap_path_planner

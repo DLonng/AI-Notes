@@ -10,7 +10,7 @@ static_layer:
     unknown_cost_value: -1
     lethal_cost_threshold: 100
     # 是否需要呢？ 这个参数不是很明白
-    map_topic: /map
+    map_topic: /projected_map
     first_map_only: false
     # subscribe map_topic_updates = /projected_map_updates
     # 自己的地图会自动更新
@@ -25,7 +25,7 @@ obstacle_layer:
     observation_sources: point_cloud_sensor
     point_cloud_sensor: {
         topic: /dlonng_no_ground_cloud, # 这个应该换成预处理后滤除地面的点云
-        sensor_frame: rslidar,
+        sensor_frame: base_link,
         data_type: PointCloud2,
         observation_persistence: 0.0,
         expected_update_rate: 0.0, # 0.0 的值允许无限时间间隔读取

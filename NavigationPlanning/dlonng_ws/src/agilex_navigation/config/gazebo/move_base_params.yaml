@@ -3,7 +3,8 @@ base_global_planner: "global_planner/GlobalPlanner"
 base_local_planner: "teb_local_planner/TebLocalPlannerROS"
 
 # 运行控制向底座发送速度指令的频率。
-controller_frequency: 10.0
+# Control loop missed its desired rate of 10.0000Hz... the loop actually took 1.1210 seconds 调低这个参数
+controller_frequency: 3.0
 planner_patience: 5.0
 controller_patience: 15.0
 conservative_reset_dist: 3.0

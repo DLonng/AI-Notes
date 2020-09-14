@@ -43,6 +43,7 @@ namespace base_local_planner {
 
   SimpleScoredSamplingPlanner::SimpleScoredSamplingPlanner(std::vector<TrajectorySampleGenerator*> gen_list, std::vector<TrajectoryCostFunction*>& critics, int max_samples) {
     max_samples_ = max_samples;
+    // 初始化要用的轨迹生成器和轨迹代价函数
     gen_list_ = gen_list;
     critics_ = critics;
   }
@@ -56,6 +57,7 @@ namespace base_local_planner {
         gen_id++;
         continue;
       }
+      // 计算每个代价函数的成本
       double cost = score_function_p->scoreTrajectory(traj);
       if (cost < 0) {
         ROS_DEBUG("Velocity %.3lf, %.3lf, %.3lf discarded by cost function  %d with cost: %f", traj.xv_, traj.yv_, traj.thetav_, gen_id, cost);
@@ -98,17 +100,20 @@ namespace base_local_planner {
       count_valid = 0;
       TrajectorySampleGenerator* gen_ = *loop_gen;
       while (gen_->hasMoreTrajectories()) {
+        // 计算轨迹
         gen_success = gen_->nextTrajectory(loop_traj);
         if (gen_success == false) {
           // TODO use this for debugging
           continue;
         }
+        // 给轨迹打分
         loop_traj_cost = scoreTrajectory(loop_traj, best_traj_cost);
         if (all_explored != NULL) {
           loop_traj.cost_ = loop_traj_cost;
           all_explored->push_back(loop_traj);
         }
 
+        // best_traj_cost 一直保存最小 cost 的轨迹
         if (loop_traj_cost >= 0) {
           count_valid++;
           if (best_traj_cost < 0 || loop_traj_cost < best_traj_cost) {
@@ -121,6 +126,8 @@ namespace base_local_planner {
           break;
         }
       }
+
+      // 输出轨迹
       if (best_traj_cost >= 0) {
         traj.xv_ = best_traj.xv_;
         traj.yv_ = best_traj.yv_;

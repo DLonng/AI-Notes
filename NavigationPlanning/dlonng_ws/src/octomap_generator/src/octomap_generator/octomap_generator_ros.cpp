@@ -179,7 +179,7 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     tf::StampedTransform baseToWorldTf;
     tf::StampedTransform sensorToWorldTf;
     try {
-        tf_listener_.lookupTransform("map", "base_link", ros::Time(0), baseToWorldTf);
+        //tf_listener_.lookupTransform("map", "base_link", ros::Time(0), baseToWorldTf);
         tf_listener_.lookupTransform("map", "rslidar", ros::Time(0), sensorToWorldTf);
     } catch (tf::TransformException& ex) {
         ROS_ERROR_STREAM("Transform error of sensor data: " << ex.what() << ", quitting callback");
@@ -193,7 +193,7 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     pcl_ros::transformAsMatrix(sensorToWorldTf, sensorToWorld);
 
     // 小车静止不动也需要插入地图
-    octomap_generator_->insertPointCloud(cloud, baseToWorld);
+    octomap_generator_->insertPointCloud(cloud, sensorToWorld);
     //local_octomap_generator->insertPointCloud(cloud, baseToWorld);
 
     // Publish octomap

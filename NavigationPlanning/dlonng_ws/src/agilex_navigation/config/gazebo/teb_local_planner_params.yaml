@@ -1,6 +1,6 @@
 # 先测试 base_local_planner
 TebLocalPlannerROS:
-  odom_topic: laser_odom_optimization_to_init
+  odom_topic: odom
   map_frame: map
 
   # Robot Configuration Parameters
@@ -20,5 +20,6 @@ TebLocalPlannerROS:
 
   # Optimization
   no_inner_iterations: 2
+  holonomic_robot: false
   
 

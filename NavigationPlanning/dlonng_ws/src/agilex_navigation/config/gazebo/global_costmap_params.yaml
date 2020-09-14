@@ -13,7 +13,7 @@ global_costmap:
    # 确定是否由 map_server 提供的地图服务来进行代价地图的初始化
    # 如果您没有使用现有的地图或地图服务器，将 static_map 参数设置为 false
    # 当本地地图需要根据传感器数据动态更新的时候，我们通常会把这个参数设为 false
-   static_map: false
+   static_map: true
    rolling_window: false
 
    width: 12.0

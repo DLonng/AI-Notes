@@ -10,7 +10,7 @@
         <rosparam file="$(find agilex_navigation)/config/mini/move_base_params.yaml" command="load" />
         
         <rosparam file="$(find agilex_navigation)/config/mini/global_planner_params.yaml" command="load" />
-        <rosparam file="$(find agilex_navigation)/config/mini/teb_local_planner_params.yaml" command="load" />
+        <rosparam file="$(find agilex_navigation)/config/mini/base_local_planner_params.yaml" command="load" />
 
         <remap from="map" to="projected_map"/>
         <remap from="odom" to="laser_odom_optimization_to_init"/>

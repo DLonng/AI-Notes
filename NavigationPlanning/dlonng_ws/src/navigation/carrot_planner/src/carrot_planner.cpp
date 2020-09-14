@@ -64,6 +64,7 @@ void CarrotPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costm
         ros::NodeHandle private_nh("~/" + name);
         private_nh.param("step_size", step_size_, costmap_->getResolution());
         private_nh.param("min_dist_from_robot", min_dist_from_robot_, 0.10);
+        // 从代价地图创建世界模型
         world_model_ = new base_local_planner::CostmapModel(*costmap_);
 
         initialized_ = true;

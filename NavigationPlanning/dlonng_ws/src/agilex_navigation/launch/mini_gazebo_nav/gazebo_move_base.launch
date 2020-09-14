@@ -12,7 +12,8 @@
         <rosparam file="$(find agilex_navigation)/config/gazebo/global_planner_params.yaml" command="load" />
         <rosparam file="$(find agilex_navigation)/config/gazebo/teb_local_planner_params.yaml" command="load" />
 
-        <remap from="map" to="projected_map"/>
+        <!-- <remap from="map" to="projected_map"/> -->
+        <!-- <remap from="odom" to="laser_odom_optimization_to_init"/> -->
     </node>
 
 </launch>

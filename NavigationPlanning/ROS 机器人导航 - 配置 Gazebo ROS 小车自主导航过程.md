@@ -392,6 +392,7 @@ roslaunch agilex_navigation start_agilex_mini_nav_with_gmapping.launch
 - move_base 订阅的点云是否可以是预处理后的点云？
 - 自己 octomap_server 投影的 costmap 和 move_base 内部通过点云生成的 costmap 有无区别？
 - 自己导航是否应该先构建 2D 导航地图？
+- 小车的 TF 树是否要包含 4 个轮子？
 
 
 
