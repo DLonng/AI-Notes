@@ -51,12 +51,14 @@ namespace base_local_planner {
   double SimpleScoredSamplingPlanner::scoreTrajectory(Trajectory& traj, double best_traj_cost) {
     double traj_cost = 0;
     int gen_id = 0;
+    // 遍历传递进来的所有轨迹代价函数，计算总 cost
     for(std::vector<TrajectoryCostFunction*>::iterator score_function = critics_.begin(); score_function != critics_.end(); ++score_function) {
       TrajectoryCostFunction* score_function_p = *score_function;
       if (score_function_p->getScale() == 0) {
         gen_id++;
         continue;
       }
+
       // 计算每个代价函数的成本
       double cost = score_function_p->scoreTrajectory(traj);
       if (cost < 0) {
@@ -64,16 +66,20 @@ namespace base_local_planner {
         traj_cost = cost;
         break;
       }
+
       if (cost != 0) {
         cost *= score_function_p->getScale();
       }
+
       traj_cost += cost;
+      
       if (best_traj_cost > 0) {
         // since we keep adding positives, once we are worse than the best, we will stay worse
         if (traj_cost > best_traj_cost) {
           break;
         }
       }
+
       gen_id ++;
     }
 
@@ -95,6 +101,7 @@ namespace base_local_planner {
       }
     }
 
+    // 这里可以传递多个轨迹生成器
     for (std::vector<TrajectorySampleGenerator*>::iterator loop_gen = gen_list_.begin(); loop_gen != gen_list_.end(); ++loop_gen) {
       count = 0;
       count_valid = 0;
@@ -106,8 +113,9 @@ namespace base_local_planner {
           // TODO use this for debugging
           continue;
         }
-        // 给轨迹打分
+        // 给轨迹打分，这里计算是所有使用的代价函数的总分
         loop_traj_cost = scoreTrajectory(loop_traj, best_traj_cost);
+        
         if (all_explored != NULL) {
           loop_traj.cost_ = loop_traj_cost;
           all_explored->push_back(loop_traj);

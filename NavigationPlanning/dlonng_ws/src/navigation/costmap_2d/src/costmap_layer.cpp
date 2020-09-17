@@ -92,12 +92,13 @@ void CostmapLayer::updateWithOverwrite(costmap_2d::Costmap2D& master_grid, int m
 {
   if (!enabled_)
     return;
+    
   unsigned char* master = master_grid.getCharMap();
   unsigned int span = master_grid.getSizeInCellsX();
 
   for (int j = min_j; j < max_j; j++)
   {
-    unsigned int it = span*j+min_i;
+    unsigned int it = span * j + min_i;
     for (int i = min_i; i < max_i; i++)
     {
       if (costmap_[it] != NO_INFORMATION)

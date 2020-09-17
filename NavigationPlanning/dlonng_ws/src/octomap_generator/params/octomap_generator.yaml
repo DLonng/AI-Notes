@@ -16,3 +16,4 @@ octomap:
     save_path : "/home/dlonng/map.ot"
     outrem_radius: 1.0
     outrem_neighbors: 15
+    #map_file: "/home/dlonng/xmu_hangyuan_2.ot"

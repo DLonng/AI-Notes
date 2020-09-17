@@ -85,6 +85,7 @@ void StaticLayer::onInitialize()
   {
     // we'll subscribe to the latched topic that the map server uses
     ROS_INFO("Requesting the map...");
+    // 订阅静态地图的回调
     map_sub_ = g_nh.subscribe(map_topic, 1, &StaticLayer::incomingMap, this);
     map_received_ = false;
     has_updated_data_ = false;
@@ -101,6 +102,7 @@ void StaticLayer::onInitialize()
     if (subscribe_to_updates_)
     {
       ROS_INFO("Subscribing to updates");
+      // 静态地图如果更新则调用
       map_update_sub_ = g_nh.subscribe(map_topic + "_updates", 10, &StaticLayer::incomingUpdate, this);
 
     }
@@ -161,6 +163,7 @@ unsigned char StaticLayer::interpretValue(unsigned char value)
   return scale * LETHAL_OBSTACLE;
 }
 
+// 处理订阅的 2D 网格地图
 void StaticLayer::incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map)
 {
   unsigned int size_x = new_map->info.width, size_y = new_map->info.height;
@@ -169,6 +172,7 @@ void StaticLayer::incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map)
 
   // resize costmap if size, resolution or origin do not match
   Costmap2D* master = layered_costmap_->getCostmap();
+
   if (!layered_costmap_->isRolling() &&
       (master->getSizeInCellsX() != size_x ||
        master->getSizeInCellsY() != size_y ||
@@ -201,6 +205,7 @@ void StaticLayer::incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map)
     for (unsigned int j = 0; j < size_x; ++j)
     {
       unsigned char value = new_map->data[index];
+      // costmap_[index] 存储的就是成本
       costmap_[index] = interpretValue(value);
       ++index;
     }
@@ -321,6 +326,7 @@ void StaticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int
       ROS_ERROR("%s", ex.what());
       return;
     }
+
     // Copy map data given proper transformations
     for (unsigned int i = min_i; i < max_i; ++i)
     {

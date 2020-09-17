@@ -83,6 +83,8 @@ double ObstacleCostFunction::scoreTrajectory(Trajectory &traj) {
 
   for (unsigned int i = 0; i < traj.getPointsSize(); ++i) {
     traj.getPoint(i, px, py, pth);
+
+    // 计算每个点的障碍物成本
     double f_cost = footprintCost(px, py, pth,
         scale, footprint_spec_,
         costmap_, world_model_);
@@ -122,13 +124,14 @@ double ObstacleCostFunction::footprintCost (
     costmap_2d::Costmap2D* costmap,
     base_local_planner::WorldModel* world_model) {
 
-  //check if the footprint is legal
+  // check if the footprint is legal
   // TODO: Cache inscribed radius
   double footprint_cost = world_model->footprintCost(x, y, th, footprint_spec);
 
   if (footprint_cost < 0) {
     return -6.0;
   }
+
   unsigned int cell_x, cell_y;
 
   //we won't allow trajectories that go off the map... shouldn't happen that often anyways
@@ -136,6 +139,7 @@ double ObstacleCostFunction::footprintCost (
     return -7.0;
   }
 
+  // 障碍物成本计算
   double occ_cost = std::max(std::max(0.0, footprint_cost), double(costmap->getCost(cell_x, cell_y)));
 
   return occ_cost;

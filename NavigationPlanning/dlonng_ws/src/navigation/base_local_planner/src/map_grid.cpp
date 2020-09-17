@@ -105,6 +105,7 @@ namespace base_local_planner{
 
     //if the cell is an obstacle set the max path distance
     unsigned char cost = costmap.getCost(check_cell->cx, check_cell->cy);
+
     if(! getCell(check_cell->cx, check_cell->cy).within_robot &&
         (cost == costmap_2d::LETHAL_OBSTACLE ||
          cost == costmap_2d::INSCRIBED_INFLATED_OBSTACLE ||
@@ -170,33 +171,52 @@ namespace base_local_planner{
   //update what map cells are considered path based on the global_plan
   void MapGrid::setTargetCells(const costmap_2d::Costmap2D& costmap,
       const std::vector<geometry_msgs::PoseStamped>& global_plan) {
+        
     sizeCheck(costmap.getSizeInCellsX(), costmap.getSizeInCellsY());
 
     bool started_path = false;
 
+    // 存储路径距离的队列
     queue<MapCell*> path_dist_queue;
 
     std::vector<geometry_msgs::PoseStamped> adjusted_global_plan;
+
+    // 根据代价地图分辨率，调整全局路径的分辨率
     adjustPlanResolution(global_plan, adjusted_global_plan, costmap.getResolution());
+
     if (adjusted_global_plan.size() != global_plan.size()) {
       ROS_DEBUG("Adjusted global plan resolution, added %zu points", adjusted_global_plan.size() - global_plan.size());
     }
+
     unsigned int i;
+
     // put global path points into local map until we reach the border of the local map
+    // 将全局路径点放入局部地图，直到到达本地地图的边界
     for (i = 0; i < adjusted_global_plan.size(); ++i) {
+      // 得到单个路径点
       double g_x = adjusted_global_plan[i].pose.position.x;
       double g_y = adjusted_global_plan[i].pose.position.y;
+      
+      // 存储单个路径点在 map 地图中的坐标
       unsigned int map_x, map_y;
+      
+      // 先把单个路径点转换到 costmap 坐标系，再判断单个网格的成本量是否存在可用信息
       if (costmap.worldToMap(g_x, g_y, map_x, map_y) && costmap.getCost(map_x, map_y) != costmap_2d::NO_INFORMATION) {
+        // 得到当前网格
         MapCell& current = getCell(map_x, map_y);
+
         current.target_dist = 0.0;
         current.target_mark = true;
+
+        // 把全局路径占据的网格放入队列中
         path_dist_queue.push(&current);
+        
         started_path = true;
       } else if (started_path) {
           break;
       }
     }
+    
     if (!started_path) {
       ROS_ERROR("None of the %d first of %zu (%zu) points of the global plan were in the local costmap and free",
           i, adjusted_global_plan.size(), global_plan.size());
@@ -255,8 +275,10 @@ namespace base_local_planner{
   void MapGrid::computeTargetDistance(queue<MapCell*>& dist_queue, const costmap_2d::Costmap2D& costmap){
     MapCell* current_cell;
     MapCell* check_cell;
+
     unsigned int last_col = size_x_ - 1;
     unsigned int last_row = size_y_ - 1;
+    
     while(!dist_queue.empty()){
       current_cell = dist_queue.front();
 

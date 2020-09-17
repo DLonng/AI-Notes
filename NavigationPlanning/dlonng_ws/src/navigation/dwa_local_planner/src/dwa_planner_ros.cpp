@@ -197,7 +197,8 @@ namespace dwa_local_planner {
     drive_cmds.frame_id_ = costmap_ros_->getBaseFrameID();
 
     // call with updated footprint
-    // 计算下一时刻的 x y z
+    // 计算下一时刻 drive_cmds 的 x y z
+    // 找到了 path = result_traj_ 最优的轨迹，cost 最大
     base_local_planner::Trajectory path = dp_->findBestPath(global_pose, robot_vel, drive_cmds);
     //ROS_ERROR("Best: %.2f, %.2f, %.2f, %.2f", path.xv_, path.yv_, path.thetav_, path.cost_);
 
@@ -210,7 +211,7 @@ namespace dwa_local_planner {
     */
 
     //pass along drive commands
-    // 保存下一时刻的 x y z
+    // 输出速度给底盘
     cmd_vel.linear.x = drive_cmds.getOrigin().getX();
     cmd_vel.linear.y = drive_cmds.getOrigin().getY();
     cmd_vel.angular.z = tf::getYaw(drive_cmds.getRotation());
@@ -229,24 +230,28 @@ namespace dwa_local_planner {
                     cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z);
 
     // Fill out the local plan
+    // 遍历最优轨迹的所有点，用于重新发布到 Rviz 中
     for(unsigned int i = 0; i < path.getPointsSize(); ++i) {
       double p_x, p_y, p_th;
+      // 获取当前 index 的 x y z 位置
       path.getPoint(i, p_x, p_y, p_th);
 
+      // 把每个位置组成一个 geometry_msgs::PoseStamped msg push 到 local plan 中
       tf::Stamped<tf::Pose> p =
               tf::Stamped<tf::Pose>(tf::Pose(
                       tf::createQuaternionFromYaw(p_th),
                       tf::Point(p_x, p_y, 0.0)),
                       ros::Time::now(),
                       costmap_ros_->getGlobalFrameID());
+
       geometry_msgs::PoseStamped pose;
       tf::poseStampedTFToMsg(p, pose);
       local_plan.push_back(pose);
     }
 
     //publish information to the visualizer
-
     publishLocalPlan(local_plan);
+
     return true;
   }
 

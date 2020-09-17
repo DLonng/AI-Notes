@@ -44,8 +44,8 @@ MapGridCostFunction::MapGridCostFunction(costmap_2d::Costmap2D* costmap,
     double yshift,
     bool is_local_goal_function,
     CostAggregationType aggregationType) :
-    costmap_(costmap),
-    map_(costmap->getSizeInCellsX(), costmap->getSizeInCellsY()),
+    costmap_(costmap), // 代价地图由参数传递
+    map_(costmap->getSizeInCellsX(), costmap->getSizeInCellsY()), // 根据代价地图初始化 MapGrid
     aggregationType_(aggregationType),
     xshift_(xshift),
     yshift_(yshift),
@@ -56,22 +56,33 @@ void MapGridCostFunction::setTargetPoses(std::vector<geometry_msgs::PoseStamped>
   target_poses_ = target_poses;
 }
 
+// 必须重写
 bool MapGridCostFunction::prepare() {
   map_.resetPathDist();
 
   if (is_local_goal_function_) {
+    // MapGrid 会和传递进来的 costmap 关联起来
+    // goal_costs_
     map_.setLocalGoal(*costmap_, target_poses_);
   } else {
+    // path_costs_
     map_.setTargetCells(*costmap_, target_poses_);
   }
+
   return true;
 }
 
 double MapGridCostFunction::getCellCosts(unsigned int px, unsigned int py) {
+  // 根据 mapgrid 获取 px, py 与全局规划路径的距离，把距离作为成本
   double grid_dist = map_(px, py).target_dist;
+  // 获取每个网格的语义颜色信息
+  // double grid_sem_color = map_(px, py).semantic_color;
   return grid_dist;
 }
 
+// 给轨迹打分 cost
+// input: traj, costmap
+// output: cost
 double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
   double cost = 0.0;
   if (aggregationType_ == Product) {
@@ -81,7 +92,9 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
   unsigned int cell_x, cell_y;
   double grid_dist;
 
+  // 遍历轨迹
   for (unsigned int i = 0; i < traj.getPointsSize(); ++i) {
+    // 得到轨迹的第 i 个点
     traj.getPoint(i, px, py, pth);
 
     // translate point forward if specified
@@ -96,12 +109,17 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
     }
 
     //we won't allow trajectories that go off the map... shouldn't happen that often anyways
+    // 把轨迹点的世界坐标转换成代价地图的坐标 cell_x, cell_y
     if ( ! costmap_->worldToMap(px, py, cell_x, cell_y)) {
       //we're off the map
       ROS_WARN("Off Map %f, %f", px, py);
       return -4.0;
     }
+
+    // 得到单个网格距离规划路径的成本，从 MapGrid 中得到的成本，但 MapGird 是与对应的 costmap 相关联的！
+    // 得到单个轨迹点从 MapGrid 中计算的成本
     grid_dist = getCellCosts(cell_x, cell_y);
+
     //if a point on this trajectory has no clear path to the goal... it may be invalid
     if (stop_on_failure_) {
       if (grid_dist == map_.obstacleCosts()) {
@@ -111,6 +129,8 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
       }
     }
 
+    // 根据不同策略进行 cost 累加，把距离当做轨迹的成本
+    // 根据不同的语义累加不同的 cost，比如小草 cost = 1，树木 cost = 10 等等
     switch( aggregationType_ ) {
     case Last:
       cost = grid_dist;
@@ -125,6 +145,7 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
       break;
     }
   }
+
   return cost;
 }
 

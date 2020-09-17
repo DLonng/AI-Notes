@@ -44,6 +44,11 @@
 #include <octomap_generator/octomap_generator.h>
 #include <semantics_octree/semantics_octree.h>
 
+// sudo apt install ros-kinetic-grid-map*
+#include <grid_map_core/GridMap.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
+
+#include <octomap/ColorOcTree.h>
 
 #define COLOR_OCTREE 0
 #define SEMANTICS_OCTREE_MAX 1
@@ -80,6 +85,8 @@ public:
     void ScoutStatusCallback(const scout_msgs::ScoutStatus::ConstPtr& scout_status);
 
     void FilterGroundPlane(const PCLSemanticsMax& pc, PCLSemanticsMax& ground, PCLSemanticsMax& nonground) const ;
+
+    bool OpenFile(const std::string& filename);
 protected:
     OctomapGeneratorBase* octomap_generator_; ///<Octomap instance pointer
     ros::ServiceServer service_; ///<ROS service to toggle semantic color display

@@ -132,6 +132,7 @@ namespace base_local_planner{
 
       /**
        * return a value that indicates cell is in obstacle
+       * 障碍物的成本量
        */
       inline double obstacleCosts() {
         return map_.size();
@@ -140,6 +141,7 @@ namespace base_local_planner{
       /**
        * returns a value indicating cell was not reached by wavefront
        * propagation of set cells. (is behind walls, regarding the region covered by grid)
+       * 不可到达的网格成本量
        */
       inline double unreachableCellCosts() {
         return map_.size() + 1;
@@ -191,7 +193,7 @@ namespace base_local_planner{
       unsigned int size_x_, size_y_; ///< @brief The dimensions of the grid
 
     private:
-
+      // map 是一个由多个 MapCell 组成的 vector
       std::vector<MapCell> map_; ///< @brief Storage for the MapCells
 
   };

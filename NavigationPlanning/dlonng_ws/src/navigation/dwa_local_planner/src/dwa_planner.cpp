@@ -49,6 +49,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 namespace dwa_local_planner {
+  // 动态调整参数
   void DWAPlanner::reconfigure(DWAPlannerConfig &config)
   {
 
@@ -154,6 +155,7 @@ namespace dwa_local_planner {
 
 
     private_nh.param("publish_cost_grid_pc", publish_cost_grid_pc_, false);
+    // map 可视化
     map_viz_.initialize(name, planner_util->getGlobalFrame(), boost::bind(&DWAPlanner::getCellCosts, this, _1, _2, _3, _4, _5, _6));
 
     std::string frame_id;
@@ -179,6 +181,8 @@ namespace dwa_local_planner {
     std::vector<base_local_planner::TrajectorySampleGenerator*> generator_list;
     generator_list.push_back(&generator_);
 
+    // 初始化的时候传递轨迹生成器和代价函数对象
+    // 在内部计算轨迹，并打分取最大 cost 的轨迹
     scored_sampling_planner_ = base_local_planner::SimpleScoredSamplingPlanner(generator_list, critics);
 
     private_nh.param("cheat_factor", cheat_factor_, 1.0);
@@ -294,6 +298,7 @@ namespace dwa_local_planner {
 
   /*
    * given the current state of the robot, find a good trajectory
+   * 寻找最优的路径去执行
    */
   base_local_planner::Trajectory DWAPlanner::findBestPath(
       tf::Stamped<tf::Pose> global_pose,
@@ -305,7 +310,9 @@ namespace dwa_local_planner {
 
     Eigen::Vector3f pos(global_pose.getOrigin().getX(), global_pose.getOrigin().getY(), tf::getYaw(global_pose.getRotation()));
     Eigen::Vector3f vel(global_vel.getOrigin().getX(), global_vel.getOrigin().getY(), tf::getYaw(global_vel.getRotation()));
+
     geometry_msgs::PoseStamped goal_pose = global_plan_.back();
+    
     Eigen::Vector3f goal(goal_pose.pose.position.x, goal_pose.pose.position.y, tf::getYaw(goal_pose.pose.orientation));
     base_local_planner::LocalPlannerLimits limits = planner_util_->getCurrentLimits();
 
@@ -319,6 +326,7 @@ namespace dwa_local_planner {
     result_traj_.cost_ = -7;
     // find best trajectory by sampling and scoring the samples
     std::vector<base_local_planner::Trajectory> all_explored;
+    // 寻找最优路径 result_traj_
     scored_sampling_planner_.findBestTrajectory(result_traj_, &all_explored);
 
     if(publish_traj_pc_)
@@ -363,7 +371,9 @@ namespace dwa_local_planner {
     if (result_traj_.cost_ < 0) {
       drive_velocities.setIdentity();
     } else {
+      // 设置下一时刻底盘要执行的速度？
       tf::Vector3 start(result_traj_.xv_, result_traj_.yv_, 0);
+      // 为何要使用 tf::Stamped<tf::Pose>？如何关联速度？
       drive_velocities.setOrigin(start);
       tf::Matrix3x3 matrix;
       matrix.setRotation(tf::createQuaternionFromYaw(result_traj_.thetav_));

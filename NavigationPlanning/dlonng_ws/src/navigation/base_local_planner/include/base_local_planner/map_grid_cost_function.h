@@ -119,9 +119,13 @@ public:
   double getCellCosts(unsigned int cx, unsigned int cy);
 
 private:
+  // global_plan
   std::vector<geometry_msgs::PoseStamped> target_poses_;
+
+  // 代价地图
   costmap_2d::Costmap2D* costmap_;
 
+  // 网格地图
   base_local_planner::MapGrid map_;
   CostAggregationType aggregationType_;
   /// xshift and yshift allow scoring for different

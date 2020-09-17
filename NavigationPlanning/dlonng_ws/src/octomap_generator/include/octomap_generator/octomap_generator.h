@@ -107,7 +107,8 @@ class OctomapGenerator: public OctomapGeneratorBase
 
     virtual bool isUseSemanticColor();
 
-    virtual octomap::AbstractOcTree* getOctree(){return &octomap_;}
+    //virtual octomap::AbstractOcTree* getOctree(){return &octomap_;}
+    virtual octomap::AbstractOcTree* getOctree(){ return &octomap_; }
 
     /**
      * \brief Save octomap to a file. NOTE: Not tested

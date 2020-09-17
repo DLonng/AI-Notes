@@ -20,6 +20,9 @@
 //#include <pcl/segmentation/sac_segmentation.h>
 */
 
+#define USAGE "\nUSAGE: octomap_generator <map.[bt|ot]>\n" \
+              "  map.bt: inital octomap 3D map file to read\n"
+
 #define TEST_VEL 0
 
 const std::string OctomapGeneratorNode::kNodeName = "OctomapGenerator";
@@ -143,7 +146,7 @@ bool OctomapGeneratorNode::toggleUseSemanticColor(std_srvs::Empty::Request& requ
         local_map_pub.publish(local_map_msg);
     else
         ROS_ERROR("Error serializing Local OctoMap");
-#endif 
+#endif
 
     std::string save_path;
     nh_.getParam("/octomap/save_path", save_path);
@@ -223,11 +226,9 @@ void OctomapGeneratorNode::insertCloudCallback(const sensor_msgs::PointCloud2::C
     local_map_msg.header.frame_id = world_frame_id_;
     local_map_msg.header.stamp = cloud_msg->header.stamp;
     if (octomap_msgs::fullMapToMsg(*local_octomap_generator->getOctree(), local_map_msg))
-        ;//local_map_pub.publish(local_map_msg);
+        ; //local_map_pub.publish(local_map_msg);
     else
         ROS_ERROR("Error serializing Local OctoMap");
-    
-    
 }
 
 // 还是不能使用，编译不能通过！
@@ -236,7 +237,7 @@ void OctomapGeneratorNode::FilterGroundPlane(const PCLSemanticsMax& pc, PCLSeman
     pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
     pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
     // undefined reference to `pcl::PCLBase<PointXYZRGBSemanticsMax>::setIndices(boost::shared_ptr<pcl::PointIndices const> const&)
-    
+
     // 不能分割自己的点云类型
     //pcl::SACSegmentation<PointXYZRGBSemanticsMax> seg;
     pcl::SACSegmentation<pcl::PointXYZ> seg2;
@@ -308,7 +309,158 @@ bool OctomapGeneratorNode::save(const char* filename) const
     octomap_generator_->save(filename);
 }
 
+bool OctomapGeneratorNode::OpenFile(const std::string& filename)
+{
+    std::cout << filename << std::endl;
+
+    if (filename.length() <= 3)
+        return false;
+
+    std::string suffix = filename.substr(filename.length() - 3, 3);
+
+    // 全局八叉树
+    // 使用 dynamic_cast 转换类型会出问题，static_cast 则不会，暂时没解决
+    //SemanticsOctreeMax* max_global_tree = dynamic_cast<SemanticsOctreeMax*>(octomap_generator_->getOctree());
+    //SemanticsOctreeMax* max_global_tree = dynamic_cast<SemanticsOctreeMax*>(abstract_global_tree);
+    //octomap::AbstractOcTree* max_global_tree = octomap_generator_->getOctree();
+
+    SemanticsOctreeMax* max_global_tree = static_cast<SemanticsOctreeMax*>(octomap_generator_->getOctree());
+
+    if (suffix == ".bt") {
+        if (!max_global_tree->readBinary(filename)) {
+            return false;
+        }
+    } else if (suffix == ".ot") {
+        octomap::AbstractOcTree* tree = octomap::AbstractOcTree::read(filename);
+
+        if (!tree) {
+            ROS_ERROR("Could not read file.");
+            return false;
+        }
+
+        // free bug!!!
+        //if (max_global_tree) {
+        //    delete max_global_tree;
+        //    max_global_tree = nullptr;
+        //}
+
+        // 使用 dynamic_cast 转换类型会出问题，static_cast 则不会，暂时没解决
+        max_global_tree = static_cast<SemanticsOctreeMax*>(tree);
+
+        if (!max_global_tree) {
+            ROS_ERROR("Could not static_cast convert to SemanticsOctreeMax.");
+            return false;
+        }
+
+    } else {
+        ROS_ERROR("Could not read other format octomap file.");
+        return false;
+    }
+
+    ROS_INFO("Octomap file %s loaded (%zu nodes).", filename.c_str(), max_global_tree->size());
+    std::cout << "TreeDepth  is: " << max_global_tree->getTreeDepth() << std::endl;
+    std::cout << "Resolution is: " << max_global_tree->getResolution() << std::endl;
+
+    grid_map::GridMap occ_grid_map;
+    grid_map::GridMap sem_grid_map;
+
+    grid_map::Matrix& occ_data = occ_grid_map["static_layer"];
+    grid_map::Matrix& sem_data = sem_grid_map["semantic_layer"];
+
+    // init map info
+
+    // 遍历树的所有叶节点
+    for (typename SemanticsOctreeMax::leaf_iterator it = max_global_tree->begin_leafs(), end = max_global_tree->end_leafs(); it != end; ++it) {
+
+        octomap::point3d cur_coord = it.getCoordinate();
+
+        grid_map::Position position(cur_coord.x(), cur_coord.y());
+        grid_map::Index index;
+        occ_grid_map.getIndex(position, index);
+
+        // 节点被占用，占用概率设置为 100，语义信息设置为节点的颜色
+        if (max_global_tree->isNodeOccupied(*it)) {
+            occ_data(index(0), index(1)) = 100;
+
+            SemanticsOcTreeNodeMax* node = max_global_tree->search(it.getKey());
+
+            octomap::ColorOcTreeNode::Color node_color = node->getColor();
+
+            //sem_data(index(0), index(1)) = ???;
+        } else { // 节点不被占用，占用概率设置为 0，语义信息设置为 -1 表示没有语义
+            occ_data(index(0), index(1)) = 0;
+            sem_data(index(0), index(1)) = -1;
+        }
+    }
+
+    ros::Publisher occ_nav_pub = nh_.advertise<nav_msgs::OccupancyGrid>("/occ_grid_map", 1);
+    ros::Publisher sem_nav_pub = nh_.advertise<nav_msgs::OccupancyGrid>("/sem_grid_map", 1);
+
+    nav_msgs::OccupancyGridPtr occ_nav_map(new nav_msgs::OccupancyGrid);
+    nav_msgs::OccupancyGridPtr sem_nav_map(new nav_msgs::OccupancyGrid);
+
+    //grid_map -> OccupancyGrid
+    grid_map::GridMapRosConverter occ_converter;
+    occ_converter.toOccupancyGrid(occ_grid_map, "static_layer", 0, 100, *occ_nav_map);
+    occ_converter.toOccupancyGrid(sem_grid_map, "semantic_layer", 0, 255, *sem_nav_map);
+
+    occ_nav_pub.publish(occ_nav_map);
+    sem_nav_pub.publish(sem_nav_map);
+
+    return true;
+}
+
+// like octomap_server_node.cpp
 int main(int argc, char** argv)
+{
+    ros::init(argc, argv, "octomap_generator");
+    ros::NodeHandle nh;
+
+    if (argc > 2 || (argc == 2 && std::string(argv[1]) == "-h")) {
+        ROS_ERROR("%s", USAGE);
+        exit(-1);
+    }
+
+    OctomapGeneratorNode octomap_generator_node(nh);
+    ros::spinOnce();
+
+    std::string map_file_name("");
+    std::string map_file_name_param("");
+
+    if (argc == 2) {
+        map_file_name = std::string(argv[1]);
+    }
+
+    if (nh.getParam("/octomap/map_file", map_file_name_param)) {
+        if (map_file_name != "") {
+            ROS_WARN("map_file is specified by the argument '%s' and rosparam '%s'. now loads '%s'",
+                map_file_name.c_str(), map_file_name_param.c_str(), map_file_name.c_str());
+        } else {
+            map_file_name = map_file_name_param;
+        }
+    }
+
+    if (map_file_name != "") {
+        if (!octomap_generator_node.OpenFile(map_file_name)) {
+            ROS_ERROR("Could not open file %s", map_file_name.c_str());
+            exit(1);
+        }
+    } else {
+        std::cout << "map_file_name is null, don't read map." << std::endl;
+    }
+
+    try {
+        ros::spin();
+    } catch (std::runtime_error& e) {
+        ROS_ERROR("octomap_generator exception: %s", e.what());
+        return -1;
+    }
+
+    return 0;
+}
+
+// origin main
+int main1(int argc, char** argv)
 {
     ros::init(argc, argv, "octomap_generator");
     ros::NodeHandle nh;
