@@ -1,7 +1,0 @@
-image: map_497_10cm.pgm
-resolution: 0.100000
-origin: [-5.500000, -19.000001, 0.000]
-negate: 0
-occupied_thresh: 0.65
-free_thresh: 0.196
-

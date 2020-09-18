@@ -1,4 +1,0 @@
-std_msgs/Header header
-
-sensor_msgs/Image semantic_img_max
-rospy_tutorials/Floats confidence_max
