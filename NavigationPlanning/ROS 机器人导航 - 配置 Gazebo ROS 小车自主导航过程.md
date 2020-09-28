@@ -356,11 +356,51 @@ roslaunch agilex_navigation start_agilex_mini_nav_with_gmapping.launch
 
 ## 四、详细配置导航参数文件
 
+### 4.1 teb_local_planner
 
+- https://www.knightdusk.cn/2019/06/features-and-tuning-guide-for-teb-local-planner/
+- https://www.guyuehome.com/9811
+- [https://blog.csdn.net/weixin_44917390/article/details/107568507#TEB%20%E7%9A%84%E5%8F%82%E6%95%B0%E8%B0%83%E8%AF%95%EF%BC%9A](https://blog.csdn.net/weixin_44917390/article/details/107568507#TEB 的参数调试：)
 
+### 4.2 dwa_local_planner
 
+- 倾向于设定最大平移速度和旋转速度低于它们的实际值
+- 对于最小平移速度，我们将它设置为一个大的负值，因为这将可以使机器人陷入困境中时可以后退，即使大多数情况下它都是前进的
+- 对于最小的旋转速度，如果参数允许，我们将其设置为负值，以便机器人可以在任意方向旋转。要注意，DWA 本地规划器采用的是机器人最小旋转速度的绝对值
+- x 方向的速度是指平行于机器人直线运动方向的速度，这与移动速度相同，y 方向的速度垂直于直线运动，它被称之为「冲击速度」，对于非整体机器人（如差速轮机器人），y 速度应该设置为零
+- carrot 规划器检查给定的目标点是否是障碍物，如果是，则通过沿机器人和目标点的向量来选择靠近原始目标的替代目标。最终他将给局部规划器或内部控制器一个有效的目标点。因此，这种规划器没有任何全局路径规划
+- navfn 使用 dijkstra 算法来在起点和终点之间寻找最小代价路线。global 规划器建立了更灵活的替代 navfn 的选择，这些选择包括：（1）支持 A * 算法（2）切换二次近似（3）切换网格路径。
+- 仿真时间越长，计算负荷越大。此外，当仿真时间变长后，本地路径规划器产生路径的时间也会变长，这是合理的。如果将仿真时间设置为非常低的值（≤2.0）将导致性能有限，特别是当机器人需要通过狭窄的门口或家具之间的间隙时，因为没有足够的时间来获得最佳轨迹来通过狭窄的通道。另一方面，由于使用了 DWA 本地规划器，所有的轨迹都是简单的圆弧，如果将仿真时间设置的非常高（≥5.0），将导致长曲线不是非常灵活。
+- vx_sample，vy_sample 确定在 x，y 方向上取多少平移速度样本。vth_sample 控制旋转速度样本的数量。样本的数量取决于你的计算能力。在大多数情况下，我们倾向于设置 vth_sample 高于平移速度样本，因为通常旋转比直线前进更复杂。如果将 y 向最大速度设置为零，则没必要在 y 方向提取速度样本，因为没有可用的样本。我们设置 vx_sample=20,vth_samples=40
+- 仿真粒度：sim_granularity 是在轨迹上的点之间采取的步长。它意味着要多频繁的检查轨迹上的点（检测它们是否与障碍物相交）。较低的值意味着高频率，这需要更多的计算能力
+- 目标函数的值依赖于三个组成部分：到目标点的过程、清除障碍物和前进速度。
+- 目标是获得最小的代价，path_distance_bias 是本地规划器与全局路径保持一致的权重，较大的值将使本地规划器更倾向于跟踪全局路径
+- goal_distance_bias 是机器人尝试到达目标点的权重，实验显示增加 goal_distance_bias 值将会使机器人与全局路径的一致性偏低
+- occdist_scale 是机器人尝试躲避障碍物的权重，这个值偏大将导致机器人陷入困境。
+- 在 RO S 中，代价地图由静态地图层、障碍物图层和膨胀层组成。静态地图层直接给导航堆栈提供静态 SLAM 地图解释，障碍物图层包含 2D 障碍物和 3D 障碍物（体素层）
+- 膨胀层是将障碍物膨胀来计算每个 2D 代价地图单元的代价。
+- 全局代价地图是通过膨胀导航堆栈上的地图障碍物来实现的，局部代价地图是通过将机器人传感器检测到的障碍物膨胀产生的。
+- 足迹是移动基站的轮廓。在 ROS 中，它由二维数组表示 [x0,y0] ; [x1,y1] ; [x2,y2]…… 不需要重复第一个坐标。该占位面积将用于计算内切圆和外接圆的半径，用于以适合此机器人的方式对障碍物进行膨胀。为了安全起见，我们通常将足迹稍大于机器人的实际轮廓。
+- inflation_radius 和 cost_scaling_factor 是决定膨胀的主要参数。inflation_radius 控制零成本点距离障碍物有多远。cost_scaling_factor 与单元的代价值成反比，设置高值将使衰减更陡峭
+- 最佳的代价图衰减曲线是具有相对较低斜率的曲线，以便最佳路径尽可能远离每侧的障碍物，优点是机器人可以在障碍物中间移动
+- 代价地图精度 costmap resolution，它们影响计算负荷和路径规划能力。在低分辨率率（≥0.05）的情况下，障碍物区域可能重叠，导致本地规划器无法找到可用路径
+- 对于全局代价地图精度，只要保持与提供给导航堆栈的地图的分辨率相同即可
+- 障碍物层跟踪二维的，体素层跟踪三维的。障碍物是根据机器人传感器的数据进行标记（检测）或清除（删除），其中需要订阅代价图的主题。
+- 体素层从障碍物层继承，并且都是通过使用激光雷达发布的 Point Cloud 或 PointCloud2 类型的消息来获取障碍物信息，3D 障碍物最终会被膨胀为二维代价图
+- 体素网格是一个 ROS 包，它提供了一个高效的三维体素网格数据结构的实现，它存储三种状态的体素：标记、自由、未知。体素网格占据了代价地图区域内的体积。在每次更新体素边界期间，体素层根据传感器的数据来标记或去除体素网格中的一些体素。它还执行光线跟踪，接下来会讨论。请注意，在更新时，不会重新创建体素网格，而仅仅在更改本地代价图的大小时才更新。
+- max_obstacle_height：插入代价图中的障碍物的最大高度。该参数设置为稍高于机器人的高度，对于体素层，这基本上是体素网格的高度。
+- obstacle_range：障碍物距离机器人的最大距离，障碍物以米为单位掺入代价地图，并可以在每个传感器的基础上进行覆盖
+- raytrace_range：用于使用传感器数据在地图中扫描出障碍物，以米为单位，可以在每个传感器的基础上进行覆盖
+- ROS 导航包有两种恢复行为，分别是清除代价地图恢复和旋转恢复。清除代价地图恢复是将本地代价地图还原成全局代价地图的状态，旋转恢复是通过旋转 360° 来恢复。
+- ROS 恢复行为的参数一般设为默认值
 
+参考博客：
 
+- https://www.cnblogs.com/cv-pr/p/5800270.html
+- https://zhuanlan.zhihu.com/p/143202720
+- https://blog.csdn.net/heyijia0327/article/details/44983551?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.channel_param
+- https://blog.csdn.net/x_r_su/article/details/53089351?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param
+- https://www.cnblogs.com/flyinggod/p/12610883.html
 
 
 
@@ -509,5 +549,25 @@ The robot's start position is off the global costmap. Planning will always fail,
 [ERROR] [1599035118.458838884, 428.072000000]: Failed to get a plan from potential when a legal potential was found. This shouldn't happen.
 ```
 
+#### 7 小车到达终点原地打转
 
+局部路径规划器参数没调好
+
+
+
+参考博客：
+
+- https://blog.csdn.net/Enterenvy/article/details/90699274
+
+#### 8 小车走的不平滑
+
+路径规划器参数没有调好
+
+#### 9 ros tf has two or more unconnected tree
+
+取消多余的 odom，比如我取消了小车底盘的 odom tf
+
+#### 10 DWA fail to product path
+
+#### 11 The origin for the sensor at (0.26, -0.00) is out of map bounds. So, the costmap cannot raytrace for it
 
