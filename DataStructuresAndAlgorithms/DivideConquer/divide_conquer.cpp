@@ -68,6 +68,7 @@ void FullSort(int arr[], int n, int start, int end)
     }
 }
 
+// 没测试
 int main_full_sort()
 {
     int arr[] = { 1, 2, 3, 4 };
@@ -145,6 +146,7 @@ int main_merge()
 
 /////////////////////////////////////////////最大连续和问题/////////////////////////////////////////////
 
+// 拆分为分治算法的模板代码
 int MaxContinuitySum(int a[], int l, int r)
 {
     if (l == r)
@@ -171,7 +173,15 @@ int MaxContinuitySum(int a[], int l, int r)
     return std::max(max_sum, sum_l + sum_r);
 }
 
-void Move(int m, char x, char y, char z)
+// 没测试
+int main_sum()
+{
+    return 0;
+}
+
+/////////////////////////////////////////////汉诺塔问题/////////////////////////////////////////////
+
+void HanuoMove(int m, char x, char y, char z)
 {
     if (m == 1) {
         // 如果只有一个金片了，那么我们直接将其从 X 移至 Z 即可
@@ -180,20 +190,81 @@ void Move(int m, char x, char y, char z)
     }
 
     // 先将 m - 1 个金片从 X 移至 Y
-    Move(m - 1, x, z, y);
+    HanuoMove(m - 1, x, z, y);
 
     // 每次递归时，我们总是将 1 号金片移至 Z
     std::cout << x << " -> " << z << std::endl;
 
     // 再将整体代换的 m - 1 个金片从 Y 移至 Z
-    Move(m - 1, y, x, z);
+    HanuoMove(m - 1, y, x, z);
 }
 
-int main()
+int main_hanuo()
 {
     int m;
-    
+
     std::cin >> m;
 
-    Move(m, 'A', 'B', 'C');
+    HanuoMove(m, 'A', 'B', 'C');
+
+    return 0;
+}
+
+/////////////////////////////////////////////逆序对个数问题/////////////////////////////////////////////
+
+// 保存逆序对个数
+int num = 0;
+
+void Merge2(int a[], int p, int q, int r)
+{
+    int i = p;
+    int j = q + 1;
+    int k = 0;
+
+    int* tmp = new int[r - p + 1];
+
+    while (i <= q && j <= r) {
+        if (a[i] <= a[j]) {
+            tmp[k++] = a[i++];
+        } else {
+            num += (q - i + 1); // 统计 p - q 之间，比 a[j] 大的元素个数 ?
+            tmp[k++] = a[j++];
+        }
+    }
+
+    while (i <= q)
+        tmp[k++] = a[i++];
+
+    while (j <= r)
+        tmp[k++] = a[j++];
+
+    for (i = 0; i <= r - p; ++i)
+        a[p + i] = tmp[i];
+}
+
+void MergeSortCounting(int a[], int p, int r)
+{
+    if (p < r) {
+
+        int q = (p + r) / 2;
+
+        MergeSortCounting(a, p, q);
+
+        MergeSortCounting(a, q + 1, r);
+
+        Merge2(a, p, q, r);
+    }
+}
+
+int main_ok()
+{
+    num = 0;
+
+    int a[] = { 2, 4, 3, 1, 5, 6 };
+
+    MergeSortCounting(a, 0, 6 - 1);
+
+    std::cout << "逆序对个数有 " << num << " 对" << std::endl;
+
+    return 0;
 }
