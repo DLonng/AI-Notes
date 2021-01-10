@@ -1,90 +1,139 @@
-// A C++ program for Dijkstra's single source shortest path algorithm.
-// The program is for adjacency matrix representation of the graph
-// https://www.geeksforgeeks.org/c-program-for-dijkstras-shortest-path-algorithm-greedy-algo-7/
+#include <iostream>
+#include <vector>
+#include <limits>
 
-#include <limits.h>
-#include <stdio.h>
 
-// Number of vertices in the graph
-#define V 9
-
-// A utility function to find the vertex with minimum distance value, from
-// the set of vertices not yet included in shortest path tree
-int minDistance(int dist[], bool sptSet[])
+/**
+ * @brief 求一个数组中合法位置的最小值及其索引
+ * @details 这里的最小值是每个顶点距离源点 src_v 的最短距离
+ * 
+ * @param min_dist [in] 顶点到源点最短距离数组
+ * @param min_get [in] 是否求得最短距离的 bool 数组
+ * @return 距离源点最短距离的顶点索引
+ * 
+ * @author DLonng
+ * @date 2021-01-10
+ */
+int MinDistance(std::vector<int>& min_dist, std::vector<bool>& min_get)
 {
-    // Initialize min value
-    int min = INT_MAX, min_index;
+    int min = std::numeric_limits<int>::max();
+    int min_index = -1;
 
-    for (int v = 0; v < V; v++)
-        if (sptSet[v] == false && dist[v] <= min)
-            min = dist[v], min_index = v;
+    for (int v = 0; v < min_dist.size(); v++) {
+        // 只计算没有求出最短路径的顶点
+        if ((min_get[v] == false) && (min_dist[v] < min)) {
+            min = min_dist[v];
+            min_index = v;
+        }
+    }
 
     return min_index;
 }
 
-// A utility function to print the constructed distance array
-int printSolution(int dist[], int n)
+/**
+ * @brief 单源最短路径 Dijkstra 算法
+ * @details 贪心算法
+ * 
+ * @param graph [in] 邻接矩阵表示的图
+ * @param src_v [in] 源点
+ * @return 最短距离数组 min_dist
+ * 
+ * @author DLonng
+ * @date 2021-01-10
+ * 
+ * @note 参考的博客
+ *      https://zhuanlan.zhihu.com/p/40338107
+ *      https://www.geeksforgeeks.org/c-program-for-dijkstras-shortest-path-algorithm-greedy-algo-7/
+ */
+std::vector<int> Dijkstra(std::vector<std::vector<int>>& graph, int src_v)
 {
-    printf("Vertex Distance from Source\n");
-    for (int i = 0; i < V; i++)
-        printf("%d tt %d\n", i, dist[i]);
-}
+    // 保存每个顶点到 src_v 顶点的最短距离
+    std::vector<int> min_dist;
 
-// Function that implements Dijkstra's single source shortest path algorithm
-// for a graph represented using adjacency matrix representation
-void dijkstra(int graph[V][V], int src)
-{
-    int dist[V]; // The output array. dist[i] will hold the shortest
-    // distance from src to i
+    // 保存顶点是否已经求出最短距离
+    std::vector<bool> min_get;
 
-    bool sptSet[V]; // sptSet[i] will be true if vertex i is included in shortest
-    // path tree or shortest distance from src to i is finalized
+    int v_size = graph.size();
 
-    // Initialize all distances as INFINITE and stpSet[] as false
-    for (int i = 0; i < V; i++)
-        dist[i] = INT_MAX, sptSet[i] = false;
+    // 初始化最小距离为 int 最大值，意思就是无穷大
+    // 初始化所有顶点都没有求得最短路径
+    for (int v = 0; v < v_size; v++) {
+        min_dist.push_back(std::numeric_limits<int>::max());
+        min_get.push_back(false);
+    }
 
-    // Distance of source vertex from itself is always 0
-    dist[src] = 0;
+    // 源点与自身的距离必须要初始化，用于第一次求出顶点 D
+    min_dist[src_v] = 0;
 
-    // Find shortest path for all vertices
-    for (int count = 0; count < V - 1; count++) {
-        // Pick the minimum distance vertex from the set of vertices not
-        // yet processed. u is always equal to src in the first iteration.
-        int u = minDistance(dist, sptSet);
+    // 贪心算法: 每次都做当前的最优选择，即每次都选择距离源点最短距离的顶点
+    // v_size - 1 是因为最后 1 个顶点 A 不用计算
+    // 不减 1 也可以，只是会多一次无效计算
+    for (int i = 0; i < v_size; i++) {
+        // 得到当前距离源点 src_v 最短距离的顶点索引
+        // 这里能够直接得到最小顶点的索引是因为 min_dist 存储的是距离源点 src_v 的最短距离
+        int min_u = MinDistance(min_dist, min_get);
 
-        // Mark the picked vertex as processed
-        sptSet[u] = true;
+        // 把求出最短距离的顶点标记为 true，表示已经求出最短路径了
+        min_get[min_u] = true;
 
-        // Update dist value of the adjacent vertices of the picked vertex.
-        for (int v = 0; v < V; v++) {
-            // Update dist[v] only if is not in sptSet, there is an edge from
-            // u to v, and total weight of path from src to v through u is
-            // smaller than current value of dist[v]
-            if (!sptSet[v] && graph[u][v] && dist[u] != INT_MAX && dist[u] + graph[u][v] < dist[v])
-                dist[v] = dist[u] + graph[u][v];
+        // 计算与当前求出的最短距离顶点 min_u 直接相连的顶点到源点 src_v 的最短距离
+        // 虽然这里遍历图中的每个顶点，但在循环内部会对顶点进行过滤
+        for (int v = 0; v < v_size; v++) {
+            // 只计算没有求出最短路径的顶点
+            // 只计算与当前最短距离顶点存在边的顶点(邻接矩阵中元素为 0 表示没有边存在)
+            // 只计算合法节点中新的距离小于原始距离的节点
+            if ((min_get[v] == false) && (graph[min_u][v] != 0) && (graph[min_u][v] + min_dist[min_u] < min_dist[v]))
+                min_dist[v] = graph[min_u][v] + min_dist[min_u];
         }
     }
 
-    // print the constructed distance array
-    printSolution(dist, V);
+    return min_dist;
 }
 
-// driver program to test above function
+void ShowMinDist(std::vector<int>& min_dist, int src_v)
+{
+    for (int v = 0; v < min_dist.size(); v++)
+        std::cout << static_cast<char>(v + 65) << "->" << static_cast<char>(src_v + 65) << " = " << min_dist[v] << std::endl;
+}
+
+// 编译: g++ dijkstra.cpp -std=c++11
+// 运行: ./a.out
 int main()
 {
-    /* Let us create the example graph discussed above */
-    int graph[V][V] = { { 0, 4, 0, 0, 0, 0, 0, 8, 0 },
-        { 4, 0, 8, 0, 0, 0, 0, 11, 0 },
-        { 0, 8, 0, 7, 0, 4, 0, 0, 2 },
-        { 0, 0, 7, 0, 9, 14, 0, 0, 0 },
-        { 0, 0, 0, 9, 0, 10, 0, 0, 0 },
-        { 0, 0, 4, 14, 10, 0, 2, 0, 0 },
-        { 0, 0, 0, 0, 0, 2, 0, 1, 6 },
-        { 8, 11, 0, 0, 0, 0, 1, 0, 7 },
-        { 0, 0, 2, 0, 0, 0, 6, 7, 0 } };
+    // 实现: https://zhuanlan.zhihu.com/p/40338107
 
-    dijkstra(graph, 0);
+    // 用邻接矩阵存储图
+    std::vector<std::vector<int>> graph;
+
+    std::vector<int> A2other = { 0, 12, 0, 0, 0, 16, 14 };
+    std::vector<int> B2other = { 12, 0, 10, 0, 0, 7, 0 };
+    std::vector<int> C2other = { 0, 10, 0, 3, 5, 6, 0 };
+    std::vector<int> D2other = { 0, 0, 3, 0, 4, 0, 0 };
+    std::vector<int> E2other = { 0, 0, 5, 4, 0, 2, 8 };
+    std::vector<int> F2other = { 16, 7, 6, 0, 2, 0, 9 };
+    std::vector<int> G2other = { 14, 0, 0, 0, 8, 9, 0 };
+
+    graph.push_back(A2other);
+    graph.push_back(B2other);
+    graph.push_back(C2other);
+    graph.push_back(D2other);
+    graph.push_back(E2other);
+    graph.push_back(F2other);
+    graph.push_back(G2other);
+
+    std::vector<int> min_dist = Dijkstra(graph, 3);
+    
+    /*
+        求顶点 D = 3 到其他节点的最短路径:
+            A->D = 22
+            B->D = 13
+            C->D = 3
+            D->D = 0
+            E->D = 4
+            F->D = 6
+            G->D = 12
+    */
+    ShowMinDist(min_dist, 3);
 
     return 0;
 }
